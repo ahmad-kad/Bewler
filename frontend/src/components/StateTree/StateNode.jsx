@@ -1,141 +1,194 @@
-import { useState } from 'react';
-import { getStateColor } from '../../config/stateDefinitions';
+import React from 'react';
+import { SystemState, AutonomousSubstate, CalibrationSubstate } from '../../config/stateDefinitions';
 
 /**
- * StateNode Component - Individual state node in the state tree
+ * Enhanced StateNode Component - Professional flowchart node
  *
- * Renders a state as a colored circle with text, supporting:
- * - Hover effects
- * - Selection highlighting
- * - Current state indication
- * - Click handling
+ * Renders a state as a modern rounded rectangle with enhanced visual indicators:
+ * - Professional flowchart appearance
+ * - Enhanced hover and selection states
+ * - Smooth transitions and animations
+ * - Status indicators and substate display
  */
 const StateNode = ({
-  stateName,
-  metadata,
+  state,
   position,
-  isCurrent = false,
-  isHovered = false,
-  isSelected = false,
+  isActive,
+  isTransitioning,
+  isHovered,
+  isSelected,
+  isAvailable,
   onClick,
-  onHover
+  onHover,
+  currentSubstate,
+  currentCalibrationSubstate
 }) => {
-  const [isNodeHovered, setIsNodeHovered] = useState(false);
+  // Enhanced color scheme for professional flowchart appearance
+  const getNodeColors = () => {
+    if (isActive) {
+      return {
+        bg: state === SystemState.BOOT ? '#3b82f6' :
+            state === SystemState.CALIBRATION ? '#eab308' :
+            state === SystemState.IDLE ? '#22c55e' :
+            state === SystemState.TELEOPERATION ? '#06b6d4' :
+            state === SystemState.AUTONOMOUS ? '#ef4444' :
+            state === SystemState.SAFETY ? '#f97316' :
+            '#6b7280',
+        border: state === SystemState.BOOT ? '#1d4ed8' :
+                state === SystemState.CALIBRATION ? '#ca8a04' :
+                state === SystemState.IDLE ? '#16a34a' :
+                state === SystemState.TELEOPERATION ? '#0891b2' :
+                state === SystemState.AUTONOMOUS ? '#dc2626' :
+                state === SystemState.SAFETY ? '#ea580c' :
+                '#4b5563',
+        text: '#ffffff',
+        shadow: state === SystemState.BOOT ? '0 0 20px rgba(59, 130, 246, 0.5)' :
+                state === SystemState.CALIBRATION ? '0 0 20px rgba(234, 179, 8, 0.5)' :
+                state === SystemState.IDLE ? '0 0 20px rgba(34, 197, 94, 0.5)' :
+                state === SystemState.TELEOPERATION ? '0 0 20px rgba(6, 182, 212, 0.5)' :
+                state === SystemState.AUTONOMOUS ? '0 0 20px rgba(239, 68, 68, 0.5)' :
+                state === SystemState.SAFETY ? '0 0 20px rgba(249, 115, 22, 0.5)' :
+                '0 0 20px rgba(107, 114, 128, 0.5)'
+      };
+    } else if (isAvailable) {
+      return {
+        bg: '#10b981',
+        border: '#059669',
+        text: '#ffffff',
+        shadow: '0 0 15px rgba(16, 185, 129, 0.3)'
+      };
+    } else {
+      return {
+        bg: '#f1f5f9',
+        border: '#cbd5e1',
+        text: '#475569',
+        shadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+      };
+    }
+  };
 
-  if (!metadata) {
-    console.warn(`No metadata found for state: ${stateName}`);
-    return null;
-  }
-
-  const { x, y, level } = position;
-  const nodeSize = level === 0 ? 40 : level === 1 ? 30 : 25;
-  const fontSize = level === 0 ? 10 : level === 1 ? 9 : 8;
-
-  // Determine node appearance
-  const baseColor = getStateColor(metadata.color || 'gray');
-  const isActive = isCurrent || isHovered || isSelected || isNodeHovered;
-
-  // Node styling
-  const nodeClasses = `
-    ${baseColor}
-    ${isActive ? 'ring-4 ring-primary ring-opacity-50' : ''}
-    ${isCurrent ? 'ring-2 ring-white ring-opacity-100 scale-110' : ''}
-    cursor-pointer transition-all duration-200 ease-in-out
-    hover:scale-105 hover:shadow-lg
-  `.trim();
-
-  // Text styling
-  const textClasses = `
-    fill-current text-white font-medium text-center
-    ${isCurrent ? 'font-bold' : ''}
-    select-none pointer-events-none
-  `.trim();
+  const colors = getNodeColors();
 
   const handleMouseEnter = () => {
-    setIsNodeHovered(true);
-    onHover && onHover(stateName);
+    if (onHover) onHover(state);
   };
 
   const handleMouseLeave = () => {
-    setIsNodeHovered(false);
-    onHover && onHover(null);
+    if (onHover) onHover(null);
   };
 
   const handleClick = () => {
-    onClick && onClick(stateName);
+    if (isActive || isAvailable) {
+      onClick(state);
+    }
   };
 
   return (
-    <g
-      className="state-node"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
-    >
-      {/* Node circle */}
-      <circle
-        cx={x}
-        cy={y}
-        r={nodeSize / 2}
-        className={nodeClasses}
+    <g>
+      {/* Main node */}
+      <rect
+        x={position.x}
+        y={position.y}
+        width="150"
+        height="60"
+        rx="12"
+        fill={colors.bg}
+        stroke={colors.border}
+        strokeWidth="2"
+        style={{
+          filter: colors.shadow ? `drop-shadow(${colors.shadow})` : 'none',
+          cursor: isActive || isAvailable ? 'pointer' : 'default',
+          transition: 'all 0.3s ease',
+          transform: isActive ? 'scale(1.05)' : isHovered ? 'scale(1.02)' : 'scale(1)',
+          transformOrigin: `${position.x + 75}px ${position.y + 30}px`
+        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       />
 
-      {/* Node border for better visibility */}
-      <circle
-        cx={x}
-        cy={y}
-        r={nodeSize / 2}
-        fill="none"
-        stroke="rgba(255,255,255,0.3)"
-        strokeWidth="1"
-      />
-
-      {/* State name text */}
+      {/* State name */}
       <text
-        x={x}
-        y={y}
+        x={position.x + 75}
+        y={position.y + 25}
         textAnchor="middle"
-        dominantBaseline="middle"
-        className={textClasses}
-        style={{ fontSize: `${fontSize}px` }}
+        fill={colors.text}
+        fontSize="12"
+        fontWeight="600"
+        style={{ pointerEvents: 'none', userSelect: 'none' }}
       >
-        {metadata.displayName || stateName}
+        {state}
       </text>
 
-      {/* Current state indicator */}
-      {isCurrent && (
+      {/* Substate indicator */}
+      {(isActive && state === SystemState.AUTONOMOUS && currentSubstate && currentSubstate !== AutonomousSubstate.NONE) && (
+        <text
+          x={position.x + 75}
+          y={position.y + 42}
+          textAnchor="middle"
+          fill={colors.text}
+          fontSize="9"
+          fontWeight="500"
+          opacity="0.9"
+          style={{ pointerEvents: 'none', userSelect: 'none' }}
+        >
+          {currentSubstate}
+        </text>
+      )}
+
+      {(isActive && state === SystemState.CALIBRATION && currentCalibrationSubstate && currentCalibrationSubstate !== CalibrationSubstate.NONE) && (
+        <text
+          x={position.x + 75}
+          y={position.y + 42}
+          textAnchor="middle"
+          fill={colors.text}
+          fontSize="9"
+          fontWeight="500"
+          opacity="0.9"
+          style={{ pointerEvents: 'none', userSelect: 'none' }}
+        >
+          {currentCalibrationSubstate}
+        </text>
+      )}
+
+      {/* Status indicator dot */}
+      <circle
+        cx={position.x + 135}
+        cy={position.y + 10}
+        r="4"
+        fill={isActive ? '#ffffff' : isAvailable ? '#10b981' : '#94a3b8'}
+        opacity="0.8"
+      />
+
+      {/* Transitioning animation overlay */}
+      {isTransitioning && (
         <circle
-          cx={x}
-          cy={y}
-          r={(nodeSize / 2) + 8}
+          cx={position.x + 75}
+          cy={position.y + 30}
+          r="25"
           fill="none"
-          stroke="#ffffff"
-          strokeWidth="3"
-          strokeDasharray="5,5"
-          className="animate-pulse"
-          opacity="0.8"
-        />
+          stroke="#f59e0b"
+          strokeWidth="2"
+          opacity="0.6"
+        >
+          <animate attributeName="r" values="20;30;20" dur="1.5s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.5s" repeatCount="indefinite" />
+        </circle>
       )}
 
-      {/* Substate indicator for states with substates */}
-      {metadata.hasSubstates && (
+      {/* Hover effect */}
+      {isHovered && !isActive && (
         <rect
-          x={x + nodeSize / 2 + 2}
-          y={y - 4}
-          width="8"
-          height="8"
-          fill="#ffffff"
-          rx="2"
-          opacity="0.8"
-        />
-      )}
-
-      {/* Terminal state indicator */}
-      {metadata.isTerminal && (
-        <polygon
-          points={`${x + nodeSize / 2 + 2},${y - 6} ${x + nodeSize / 2 + 8},${y} ${x + nodeSize / 2 + 2},${y + 6}`}
-          fill="#ff6b6b"
-          opacity="0.8"
+          x={position.x - 2}
+          y={position.y - 2}
+          width="154"
+          height="64"
+          rx="14"
+          fill="none"
+          stroke="#3b82f6"
+          strokeWidth="2"
+          strokeDasharray="5,5"
+          opacity="0.7"
         />
       )}
     </g>

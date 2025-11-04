@@ -426,3 +426,14 @@ export default {
   getStateColor,
   getStatePath
 };
+
+// State transition definitions (which states can transition to which others)
+export const StateTransitions = {
+  [SystemState.BOOT]: [SystemState.CALIBRATION, SystemState.IDLE, SystemState.SAFETY, SystemState.SHUTDOWN],
+  [SystemState.CALIBRATION]: [SystemState.IDLE, SystemState.SAFETY, SystemState.SHUTDOWN],
+  [SystemState.IDLE]: [SystemState.CALIBRATION, SystemState.TELEOPERATION, SystemState.AUTONOMOUS, SystemState.SAFETY, SystemState.SHUTDOWN],
+  [SystemState.TELEOPERATION]: [SystemState.IDLE, SystemState.AUTONOMOUS, SystemState.SAFETY, SystemState.SHUTDOWN],
+  [SystemState.AUTONOMOUS]: [SystemState.IDLE, SystemState.TELEOPERATION, SystemState.SAFETY, SystemState.SHUTDOWN],
+  [SystemState.SAFETY]: [SystemState.IDLE, SystemState.TELEOPERATION, SystemState.SHUTDOWN],
+  [SystemState.SHUTDOWN]: [] // Terminal state, no transitions
+};

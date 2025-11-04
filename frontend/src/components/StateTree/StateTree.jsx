@@ -1,292 +1,287 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import StateNode from './StateNode';
 import TransitionArrow from './TransitionArrow';
-import {
-  SystemState,
-  AutonomousSubstate,
-  EquipmentServicingSubstate,
-  CalibrationSubstate,
-  STATE_METADATA,
-  SUBSTATE_METADATA,
-  EQUIPMENT_SERVICING_METADATA,
-  CALIBRATION_METADATA,
-  getStateColor,
-  getStatePath
-} from '../../config/stateDefinitions';
+import { SystemState, StateTransitions, AutonomousSubstate, CalibrationSubstate } from '../../config/stateDefinitions';
 
 /**
- * StateTree Component - Hierarchical state machine visualization
+ * Enhanced StateTree Component - Mermaid-style flowchart visualization
  *
- * Displays the URC 2026 state machine as an interactive tree with:
- * - Color-coded state nodes
- * - Animated transitions
- * - Hierarchical substate display
- * - Current state highlighting
- * - Transition validation
+ * Displays the URC 2026 state machine as an interactive flowchart with:
+ * - Professional flowchart layout (like Mermaid diagrams)
+ * - Smooth curved transition arrows
+ * - Enhanced visual indicators and animations
+ * - Better HCI with intuitive interactions
+ * - Clean, modern design
  */
 const StateTree = ({
-  currentState = SystemState.BOOT,
-  currentSubstate = AutonomousSubstate.NONE,
-  currentSubSubstate = EquipmentServicingSubstate.NONE,
-  currentCalibrationSubstate = CalibrationSubstate.NONE,
-  onStateTransition = null,
-  className = ""
+  currentState,
+  currentSubstate,
+  currentSubSubstate,
+  currentCalibrationSubstate,
+  onStateTransition,
+  className = "",
+  isTransitioning = false
 }) => {
   const [hoveredState, setHoveredState] = useState(null);
   const [selectedState, setSelectedState] = useState(null);
 
-  // Calculate positions for state nodes in a tree layout
-  const statePositions = useMemo(() => {
-    const positions = {};
+  // Enhanced flowchart layout - arranged like a professional state diagram
+  const statePositions = useMemo(() => ({
+    // Top row - initial states
+    [SystemState.BOOT]: { x: 150, y: 120 },
+    [SystemState.CALIBRATION]: { x: 350, y: 120 },
+    [SystemState.IDLE]: { x: 550, y: 120 },
 
-    // Main states positioned in a vertical column
-    const mainStates = Object.values(SystemState);
-    const startY = 50;
-    const spacingY = 80;
+    // Middle row - operational states
+    [SystemState.TELEOPERATION]: { x: 250, y: 320 },
+    [SystemState.AUTONOMOUS]: { x: 450, y: 320 },
 
-    mainStates.forEach((state, index) => {
-      positions[state] = {
-        x: 150,
-        y: startY + (index * spacingY),
-        level: 0
-      };
-    });
+    // Bottom row - terminal/error states
+    [SystemState.SAFETY]: { x: 350, y: 520 },
+    [SystemState.SHUTDOWN]: { x: 550, y: 520 },
+  }), []);
 
-    // Autonomous substates positioned to the right
-    const autonomousSubstates = Object.values(AutonomousSubstate).filter(s => s !== 'NONE');
-    const subStartY = positions[SystemState.AUTONOMOUS].y - 20;
+  // Generate smooth curved transition paths
+  const getArrowPath = (fromState, toState) => {
+    const start = statePositions[fromState];
+    const end = statePositions[toState];
+    if (!start || !end) return '';
 
-    autonomousSubstates.forEach((substate, index) => {
-      positions[substate] = {
-        x: 350,
-        y: subStartY + (index * 60),
-        level: 1,
-        parent: SystemState.AUTONOMOUS
-      };
-    });
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
 
-    // Equipment servicing sub-substates
-    const servicingSubstates = Object.values(EquipmentServicingSubstate).filter(s => s !== 'NONE');
-    const equipmentState = positions[AutonomousSubstate.EQUIPMENT_SERVICING];
+    // Create smooth curved paths for professional flowchart look
+    const startX = start.x + 75;
+    const startY = start.y + 30;
+    const endX = end.x;
+    const endY = end.y + 30;
 
-    servicingSubstates.forEach((substate, index) => {
-      positions[substate] = {
-        x: 550,
-        y: equipmentState.y - 60 + (index * 40),
-        level: 2,
-        parent: AutonomousSubstate.EQUIPMENT_SERVICING
-      };
-    });
+    // Calculate control points for smooth curves
+    if (Math.abs(dx) > Math.abs(dy)) {
+      // Horizontal flow - create gentle S-curve
+      const midX = startX + dx / 2;
+      const control1X = startX + Math.abs(dx) * 0.3;
+      const control2X = endX - Math.abs(dx) * 0.3;
+      const controlY1 = startY + (dy > 0 ? 20 : -20);
+      const controlY2 = endY + (dy > 0 ? -20 : 20);
 
-    // Calibration substates positioned to the right of CALIBRATION
-    const calibrationSubstates = Object.values(CalibrationSubstate).filter(s => s !== 'NONE');
-    const calibStartY = positions[SystemState.CALIBRATION].y - 40;
+      return `M${startX},${startY} C${control1X},${controlY1} ${control2X},${controlY2} ${endX},${endY}`;
+    } else {
+      // Vertical flow - create gentle curve
+      const midY = startY + dy / 2;
+      const controlX1 = startX + (dx > 0 ? 20 : -20);
+      const controlX2 = endX + (dx > 0 ? -20 : 20);
+      const controlY = startY + dy / 2;
 
-    calibrationSubstates.forEach((substate, index) => {
-      positions[substate] = {
-        x: 350,
-        y: calibStartY + (index * 30),
-        level: 1,
-        parent: SystemState.CALIBRATION
-      };
-    });
-
-    return positions;
-  }, []);
-
-  // Generate transition arrows between states
-  const transitionArrows = useMemo(() => {
-    const arrows = [];
-
-    // Main state transitions
-    Object.values(STATE_METADATA).forEach(metadata => {
-      const fromPos = statePositions[metadata.state];
-
-      metadata.allowedTransitions.forEach(toState => {
-        const toPos = statePositions[toState];
-        if (fromPos && toPos) {
-          arrows.push({
-            id: `${metadata.state}-${toState}`,
-            from: metadata.state,
-            to: toState,
-            fromPos,
-            toPos,
-            isActive: currentState === metadata.state
-          });
-        }
-      });
-    });
-
-    // Substate transitions (simplified - just connect to parent)
-    Object.values(SUBSTATE_METADATA).forEach(subMeta => {
-      if (subMeta !== SUBSTATE_METADATA.NONE) {
-        const subPos = statePositions[subMeta];
-        const parentPos = statePositions[SystemState.AUTONOMOUS];
-        if (subPos && parentPos) {
-          arrows.push({
-            id: `autonomous-${subMeta}`,
-            from: SystemState.AUTONOMOUS,
-            to: subMeta,
-            fromPos: parentPos,
-            toPos: subPos,
-            isActive: currentState === SystemState.AUTONOMOUS && currentSubstate === subMeta,
-            isSubstate: true
-          });
-        }
-      }
-    });
-
-    // Calibration substate transitions
-    Object.values(CALIBRATION_METADATA).forEach(calMeta => {
-      if (calMeta !== CALIBRATION_METADATA.NONE) {
-        const calPos = statePositions[calMeta];
-        const parentPos = statePositions[SystemState.CALIBRATION];
-        if (calPos && parentPos) {
-          arrows.push({
-            id: `calibration-${calMeta}`,
-            from: SystemState.CALIBRATION,
-            to: calMeta,
-            fromPos: parentPos,
-            toPos: calPos,
-            isActive: currentState === SystemState.CALIBRATION && currentCalibrationSubstate === calMeta,
-            isSubstate: true
-          });
-        }
-      }
-    });
-
-    return arrows;
-  }, [currentState, currentSubstate, currentCalibrationSubstate, statePositions]);
-
-  // Handle state node click
-  const handleStateClick = (stateName) => {
-    setSelectedState(stateName);
-
-    // If it's a main state and we have an onStateTransition callback
-    if (Object.values(SystemState).includes(stateName) && onStateTransition) {
-      // Check if transition is valid
-      const isValid = STATE_METADATA[currentState]?.allowedTransitions.includes(stateName);
-      onStateTransition(stateName, isValid);
+      return `M${startX},${startY} C${controlX1},${startY} ${controlX2},${endY} ${endX},${endY}`;
     }
   };
 
-  // Get current state path for display
-  const currentStatePath = getStatePath(currentState, currentSubstate, currentSubSubstate, currentCalibrationSubstate);
+  // Generate all transition paths with enhanced metadata
+  const transitionPaths = useMemo(() => {
+    const paths = [];
+    Object.entries(StateTransitions).forEach(([fromState, toStates]) => {
+      toStates.forEach((toState) => {
+        paths.push({
+          id: `${fromState}-${toState}`,
+          path: getArrowPath(fromState, toState),
+          fromState,
+          toState,
+          isActive: currentState === fromState && StateTransitions[fromState].includes(toState),
+          isTransitioning: isTransitioning && currentState === fromState,
+          isAvailable: StateTransitions[currentState]?.includes(toState)
+        });
+      });
+    });
+    return paths;
+  }, [currentState, isTransitioning]);
+
+  // Handle state node interactions
+  const handleStateClick = (state) => {
+    setSelectedState(state);
+    if (onStateTransition) {
+      const isValid = StateTransitions[currentState]?.includes(state);
+      onStateTransition(state, isValid);
+    }
+  };
+
+  // Get current state display info
+  const getCurrentStateInfo = () => {
+    const path = [currentState];
+    if (currentState === SystemState.AUTONOMOUS && currentSubstate !== AutonomousSubstate.NONE) {
+      path.push(currentSubstate);
+    }
+    if (currentState === SystemState.CALIBRATION && currentCalibrationSubstate !== CalibrationSubstate.NONE) {
+      path.push(currentCalibrationSubstate);
+    }
+    return path.join(' → ');
+  };
+
+  const states = Object.values(SystemState);
 
   return (
-    <div className={`relative w-full h-full bg-muted/20 rounded-lg overflow-hidden ${className}`}>
-      {/* Header with current state info */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-card/90 backdrop-blur-sm border-b border-border p-3">
+    <div className={`relative w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl overflow-hidden shadow-lg ${className}`}>
+      {/* Professional header */}
+      <div className="absolute top-0 left-0 right-0 z-20 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 p-4 shadow-sm">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-sm text-primary">Current State</h3>
-            <p className="text-xs text-muted-foreground font-mono">{currentStatePath}</p>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-4 h-4 rounded-full ${
+                currentState === SystemState.BOOT ? 'bg-blue-500 shadow-lg shadow-blue-500/50' :
+                currentState === SystemState.CALIBRATION ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50' :
+                currentState === SystemState.IDLE ? 'bg-green-500 shadow-lg shadow-green-500/50' :
+                currentState === SystemState.TELEOPERATION ? 'bg-cyan-500 shadow-lg shadow-cyan-500/50' :
+                currentState === SystemState.AUTONOMOUS ? 'bg-red-500 shadow-lg shadow-red-500/50' :
+                currentState === SystemState.SAFETY ? 'bg-orange-500 shadow-lg shadow-orange-500/50' :
+                'bg-gray-500 shadow-lg shadow-gray-500/50'
+              } ${isTransitioning ? 'animate-pulse' : ''}`} />
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-lg">State Machine</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-mono">{getCurrentStateInfo()}</p>
+              </div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className={`inline-block w-3 h-3 rounded-full ${getStateColor(currentState)}`} />
-            <p className="text-xs text-muted-foreground mt-1">
-              {STATE_METADATA[currentState]?.displayName || currentState}
-            </p>
+
+          <div className="flex items-center gap-2">
+            {isTransitioning && (
+              <div className="flex items-center gap-2 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                <div className="w-2 h-2 bg-amber-500 rounded-full animate-ping" />
+                <span className="text-xs font-medium text-amber-800 dark:text-amber-200">Transitioning</span>
+              </div>
+            )}
+            <div className="text-xs text-slate-500 dark:text-slate-400">
+              Interactive Flowchart
+            </div>
           </div>
         </div>
       </div>
 
-      {/* SVG Canvas for state tree */}
+      {/* Flowchart canvas */}
       <svg
         className="absolute inset-0 w-full h-full"
-        style={{ paddingTop: '80px' }}
-        viewBox="0 0 700 500"
+        style={{ paddingTop: '100px', paddingBottom: '80px' }}
+        viewBox="0 0 800 600"
         preserveAspectRatio="xMidYMid meet"
       >
+        {/* Subtle grid background */}
+        <defs>
+          <pattern id="flowchart-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.1"/>
+          </pattern>
+
+          {/* Enhanced arrow markers */}
+          <marker id="arrowhead-default" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+            <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#94a3b8" />
+          </marker>
+          <marker id="arrowhead-active" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+            <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#3b82f6" />
+          </marker>
+          <marker id="arrowhead-available" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+            <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#10b981" />
+          </marker>
+          <marker id="arrowhead-transitioning" markerWidth="12" markerHeight="8" refX="11" refY="4" orient="auto">
+            <path d="M0,0 L12,4 L0,8 L3,4 Z" fill="#f59e0b">
+              <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite" />
+            </path>
+          </marker>
+        </defs>
+
+        {/* Grid background */}
+        <rect width="100%" height="100%" fill="url(#flowchart-grid)" />
+
         {/* Transition arrows */}
-        {transitionArrows.map(arrow => (
+        {transitionPaths.map((transition) => (
           <TransitionArrow
-            key={arrow.id}
-            fromPos={arrow.fromPos}
-            toPos={arrow.toPos}
-            isActive={arrow.isActive}
-            isSubstate={arrow.isSubstate}
+            key={transition.id}
+            path={transition.path}
+            isActive={transition.isActive}
+            isAvailable={transition.isAvailable}
+            isTransitioning={transition.isTransitioning}
           />
         ))}
 
         {/* State nodes */}
-        {Object.entries(statePositions).map(([stateName, position]) => {
-          const isCurrent = (
-            stateName === currentState ||
-            stateName === currentSubstate ||
-            stateName === currentSubSubstate ||
-            stateName === currentCalibrationSubstate
-          );
-
-          const isHovered = hoveredState === stateName;
-          const isSelected = selectedState === stateName;
-
-          // Get metadata based on state type
-          let metadata = STATE_METADATA[stateName];
-          if (!metadata) metadata = SUBSTATE_METADATA[stateName];
-          if (!metadata) metadata = EQUIPMENT_SERVICING_METADATA[stateName];
-          if (!metadata) metadata = CALIBRATION_METADATA[stateName];
-
-          return (
-            <StateNode
-              key={stateName}
-              stateName={stateName}
-              metadata={metadata}
-              position={position}
-              isCurrent={isCurrent}
-              isHovered={isHovered}
-              isSelected={isSelected}
-              onClick={() => handleStateClick(stateName)}
-              onHover={setHoveredState}
-            />
-          );
-        })}
+        {states.map((state) => (
+          <StateNode
+            key={state}
+            state={state}
+            position={statePositions[state]}
+            isActive={currentState === state}
+            isTransitioning={isTransitioning && currentState === state}
+            isHovered={hoveredState === state}
+            isSelected={selectedState === state}
+            isAvailable={StateTransitions[currentState]?.includes(state)}
+            onClick={() => handleStateClick(state)}
+            onHover={setHoveredState}
+            currentSubstate={state === SystemState.AUTONOMOUS ? currentSubstate : null}
+            currentCalibrationSubstate={state === SystemState.CALIBRATION ? currentCalibrationSubstate : null}
+          />
+        ))}
       </svg>
 
-      {/* Legend */}
-      <div className="absolute bottom-0 left-0 right-0 bg-card/90 backdrop-blur-sm border-t border-border p-3">
-        <div className="flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full state-boot" />
-            <span>Boot</span>
+      {/* Enhanced legend */}
+      <div className="absolute bottom-0 left-0 right-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-blue-500 shadow-md" />
+              <span className="text-slate-700 dark:text-slate-300 font-medium">Current</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-green-500 shadow-md" />
+              <span className="text-slate-700 dark:text-slate-300">Available</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-slate-400 shadow-md" />
+              <span className="text-slate-700 dark:text-slate-300">Inactive</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-amber-500 shadow-md animate-pulse" />
+              <span className="text-slate-700 dark:text-slate-300">Transitioning</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full state-calibration" />
-            <span>Calibration</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full state-idle" />
-            <span>Idle</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full state-teleoperation" />
-            <span>Teleop</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full state-autonomous" />
-            <span>Autonomous</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full state-safety" />
-            <span>Safety</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full state-shutdown" />
-            <span>Shutdown</span>
+
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Click states to transition • Hover for details
           </div>
         </div>
       </div>
 
-      {/* Hover tooltip */}
+      {/* Enhanced tooltip */}
       {hoveredState && (
-        <div className="absolute top-20 left-4 bg-card border border-border rounded-lg p-3 shadow-lg z-20 max-w-xs">
-          <h4 className="font-semibold text-sm text-primary">{hoveredState}</h4>
-          <p className="text-xs text-muted-foreground mt-1">
-            {STATE_METADATA[hoveredState]?.description ||
-             SUBSTATE_METADATA[hoveredState]?.description ||
-             EQUIPMENT_SERVICING_METADATA[hoveredState]?.description ||
-             CALIBRATION_METADATA[hoveredState]?.description}
+        <div className="absolute z-30 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-4 max-w-sm"
+             style={{
+               left: statePositions[hoveredState]?.x + 100 || 100,
+               top: statePositions[hoveredState]?.y + 50 || 50
+             }}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className={`w-3 h-3 rounded-full ${
+              hoveredState === SystemState.BOOT ? 'bg-blue-500' :
+              hoveredState === SystemState.CALIBRATION ? 'bg-yellow-500' :
+              hoveredState === SystemState.IDLE ? 'bg-green-500' :
+              hoveredState === SystemState.TELEOPERATION ? 'bg-cyan-500' :
+              hoveredState === SystemState.AUTONOMOUS ? 'bg-red-500' :
+              hoveredState === SystemState.SAFETY ? 'bg-orange-500' :
+              'bg-gray-500'
+            }`} />
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100">{hoveredState}</h4>
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            {hoveredState === SystemState.BOOT && "Initial system state after power-on"}
+            {hoveredState === SystemState.CALIBRATION && "Camera and sensor calibration workflow"}
+            {hoveredState === SystemState.IDLE && "System ready, waiting for commands"}
+            {hoveredState === SystemState.TELEOPERATION && "Manual remote control operation"}
+            {hoveredState === SystemState.AUTONOMOUS && "AI-driven autonomous operation"}
+            {hoveredState === SystemState.SAFETY && "Emergency safety mode"}
+            {hoveredState === SystemState.SHUTDOWN && "System shutdown and cleanup"}
           </p>
+          {StateTransitions[hoveredState] && StateTransitions[hoveredState].length > 0 && (
+            <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Can transition to: {StateTransitions[hoveredState].join(', ')}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

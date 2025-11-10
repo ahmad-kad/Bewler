@@ -1,0 +1,18 @@
+# Safestop Control Service
+# Allows operator to engage/disengage/toggle safestop
+
+# Request
+string command              # "ENGAGE", "DISENGAGE", "TOGGLE"
+string operator_id          # ID of operator initiating the command
+bool acknowledge_risks      # Operator acknowledges any risks
+string reason               # Optional reason for the command
+string[] affected_subsystems # Specific subsystems to control (empty = all)
+
+---
+# Response
+bool success                # Command executed successfully
+string message              # Human-readable status message
+string current_state        # "ENGAGED", "DISENGAGED", "IN_PROGRESS", "FAILED"
+string[] affected_subsystems # Subsystems that were affected
+float64 timestamp           # When command was processed
+string operator_id          # Operator who executed the command

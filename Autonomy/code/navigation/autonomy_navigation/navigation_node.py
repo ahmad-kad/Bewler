@@ -1,45 +1,35 @@
-#!/usr/bin/env python3
 """
-Navigation Node - Main navigation controller for URC 2026 rover.
+Main navigation controller for URC 2026 rover.
 
-This node coordinates:
-- GNSS waypoint navigation
-- Terrain-adaptive path planning
-- AR tag precision approaches
-- Obstacle avoidance
-- Mission progress tracking
-
-Author: URC 2026 Autonomy Team
+Coordinates GNSS waypoint navigation, terrain-adaptive path planning,
+AR tag precision approaches, obstacle avoidance, and mission progress tracking.
 """
 
-import rclpy
-from rclpy.node import Node
-from rclpy.action import ActionServer
-from rclpy.executors import MultiThreadedExecutor
-
-# ROS 2 interfaces
-from geometry_msgs.msg import PoseStamped, Twist
-from sensor_msgs.msg import NavSatFix, Imu
-from autonomy_interfaces.action import NavigateToPose
-from std_msgs.msg import String, Bool
-from std_srvs.srv import Trigger
-
-# Standard libraries
-import numpy as np
 import math
-from typing import Optional, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import List, Optional, Tuple
 
-# Project imports
+import numpy as np
+import rclpy
+from rclpy.action import ActionServer
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.node import Node
+
+from autonomy_interfaces.action import NavigateToPose
+from geometry_msgs.msg import PoseStamped, Twist
+from sensor_msgs.msg import Imu, NavSatFix
+from std_msgs.msg import Bool, String
+from std_srvs.srv import Trigger
+
 from .gnss_processor import GNSSProcessor
+from .motion_controller import MotionController
 from .path_planner import PathPlanner
 from .terrain_classifier import TerrainClassifier
-from .motion_controller import MotionController
 
 
 class NavigationState(Enum):
-    """Navigation system states"""
+    """Navigation system states."""
     IDLE = "idle"
     PLANNING = "planning"
     NAVIGATING = "navigating"
@@ -51,7 +41,7 @@ class NavigationState(Enum):
 
 @dataclass
 class Waypoint:
-    """Geographic waypoint"""
+    """Geographic waypoint with navigation metadata."""
     latitude: float
     longitude: float
     altitude: float = 0.0
@@ -61,7 +51,7 @@ class Waypoint:
 
 @dataclass
 class NavigationGoal:
-    """Navigation goal with metadata"""
+    """Navigation goal with approach constraints."""
     waypoint: Waypoint
     approach_tolerance: float = 1.0  # meters
     orientation_required: bool = False
@@ -72,15 +62,12 @@ class NavigationNode(Node):
     """
     Main navigation controller coordinating all navigation subsystems.
 
-    Coordinates:
-    - GNSS waypoint navigation
-    - Terrain-adaptive path planning
-    - AR tag precision approaches
-    - Obstacle avoidance
-    - Mission progress tracking
+    Integrates GNSS waypoint navigation, terrain-adaptive path planning,
+    AR tag precision approaches, obstacle avoidance, and mission tracking.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize navigation node with all subsystems."""
         super().__init__('navigation_node')
 
         # Initialize parameters

@@ -505,10 +505,10 @@ This document is part of the comprehensive URC 2026 documentation ecosystem:
 - **[`../overview/DistributedArchitecture.md`](../overview/DistributedArchitecture.md)** - Multi-Pi architecture and PID distribution
 
 #### **🎯 Subsystem-Specific References:**
-- **[`code/navigation/navigation_TODO.md`](../../code/navigation/navigation_TODO.md)** - Navigation PID implementation roadmap
+- **[`code/navigation/navigation_TODO.md`](../../code/navigation/navigation_TODO.md)** - Navigation system status
 - **[`code/slam/slam_TODO.md`](../../code/slam/slam_TODO.md)** - SLAM PID controller specifications
 - **[`code/computer_vision/computer_vision_TODO.md`](../../code/computer_vision/computer_vision_TODO.md)** - Vision PID requirements
-- **[`code/autonomous_typing/autonomous_typing_TODO.md`](../../code/autonomous_typing/autonomous_typing_TODO.md)** - Arm control PID specifications
+- **[`code/autonomous_typing/autonomous_typing_TODO.md`](../../code/autonomous_typing/autonomous_typing_TODO.md)** - Autonomous typing system status
 - **[`code/state_management/state_management_TODO.md`](../../code/state_management/state_management_TODO.md)** - PID coordination and monitoring
 - **[`code/led_status/led_status_TODO.md`](../../code/led_status/led_status_TODO.md)** - LED control PID details
 
@@ -543,10 +543,10 @@ docs/README.md (Main Overview)
 |-----------|----------------------|-------------------------|
 | **PID Theory** | [`../overview/Robotics_Engineering_Concepts_Guide.md`](../overview/Robotics_Engineering_Concepts_Guide.md) | [`../onboard/reference/LibrariesGuide.md`](../onboard/reference/LibrariesGuide.md) |
 | **ROS2 Integration** | [`../overview/InterfaceContract.md`](../overview/InterfaceContract.md) | [`../overview/SystemArchitecture.md`](../overview/SystemArchitecture.md) |
-| **Navigation PID** | [`../../code/navigation/navigation_TODO.md`](../../code/navigation/navigation_TODO.md) | [`subsystems/navigation/`](../../subsystems/navigation/) |
-| **SLAM PID** | [`../../code/slam/slam_TODO.md`](../../code/slam/slam_TODO.md) | [`subsystems/slam/`](../../subsystems/slam/) |
-| **Vision PID** | [`../../code/computer_vision/computer_vision_TODO.md`](../../code/computer_vision/computer_vision_TODO.md) | [`subsystems/computer_vision/`](../../subsystems/computer_vision/) |
-| **Arm PID** | [`../../code/autonomous_typing/autonomous_typing_TODO.md`](../../code/autonomous_typing/autonomous_typing_TODO.md) | [`subsystems/autonomous_typing/`](../../subsystems/autonomous_typing/) |
+| **Navigation** | [`../../code/navigation/navigation_TODO.md`](../../code/navigation/navigation_TODO.md) | [`subsystems/navigation/`](../../subsystems/navigation/) |
+| **SLAM** | [`../../code/slam/slam_TODO.md`](../../code/slam/slam_TODO.md) | [`subsystems/slam/`](../../subsystems/slam/) |
+| **Vision** | [`../../code/computer_vision/computer_vision_TODO.md`](../../code/computer_vision/computer_vision_TODO.md) | [`subsystems/computer_vision/`](../../subsystems/computer_vision/) |
+| **Arm Control** | [`../../code/autonomous_typing/autonomous_typing_TODO.md`](../../code/autonomous_typing/autonomous_typing_TODO.md) | [`subsystems/autonomous_typing/`](../../subsystems/autonomous_typing/) |
 | **Testing PID** | [`../onboard/guides/DevelopmentPipeline.md`](../onboard/guides/DevelopmentPipeline.md) | [`../onboard/reference/CalibrationGuide.md`](../onboard/reference/CalibrationGuide.md) |
 
 ### **📈 Learning Progression**

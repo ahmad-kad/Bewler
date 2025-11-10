@@ -36,6 +36,10 @@ set(srv_files
   "srv/DetectAruco.srv"
   "srv/FollowMeControl.srv"
   "srv/DetectMissionAruco.srv"
+  "srv/SafestopControl.srv"
+  "srv/SoftwareEstop.srv"
+  "srv/NavigationIntegrityCheck.srv"
+  "srv/TimingSafetyCheck.srv"
 )
 
 set(action_files

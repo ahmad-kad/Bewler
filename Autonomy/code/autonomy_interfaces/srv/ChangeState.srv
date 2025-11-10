@@ -3,6 +3,7 @@
 # Request
 string desired_state             # Target state to transition to
 string desired_substate          # Optional: target substate (empty string if not applicable)
+string desired_calibration_substate  # Optional: target calibration substate (empty string if not applicable)
 string reason                    # Human-readable reason for state change
 string operator_id               # ID of operator/system requesting change
 bool force                       # If true, skip some validation checks (use with caution)
@@ -14,6 +15,7 @@ string[] metadata                # Additional key=value metadata pairs
 bool success                     # True if transition successful
 string actual_state              # Actual state after transition attempt
 string actual_substate           # Actual substate after transition
+string actual_calibration_substate  # Actual calibration substate after transition
 float64 transition_time          # Time taken to complete transition (seconds)
 string message                   # Human-readable status message
 

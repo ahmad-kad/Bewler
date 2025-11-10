@@ -13,6 +13,26 @@ state_machine_director:
     # Safety configuration
     enable_safety_checks: true
     safety_check_rate: 1.0  # Hz
+
+    # Safestop configuration
+    enable_safestop_toggle: true  # Allow operator to toggle safestop
+    safestop_resume_state: "IDLE"  # Default state to resume to from safestop
+
+    # Auto-safe proximity configuration
+    enable_auto_safe: true  # Enable automatic collision avoidance
+    auto_safe_distance: 0.8  # meters (must be < follow_me_distance)
+
+    # Navigation integrity checks
+    enable_nav_integrity_checks: true
+    nav_integrity_check_rate: 0.5  # Hz
+    position_accuracy_threshold: 2.0  # meters
+    heading_accuracy_threshold: 5.0   # degrees
+
+    # Timing safety checks
+    enable_timing_safety: true
+    timing_check_rate: 2.0  # Hz
+    max_response_time: 100.0  # ms
+    timing_violation_threshold: 50  # violations per minute
     
     # Timeout configuration (seconds, 0.0 = no timeout)
     state_timeouts:
@@ -21,7 +41,9 @@ state_machine_director:
       idle: 0.0  # No timeout
       teleoperation: 0.0  # No timeout
       autonomous: 0.0  # No timeout (mission-specific timeouts handled separately)
-      safety: 0.0  # Requires manual clearance
+      estop: 0.0  # Hardware emergency stop - requires manual clearance
+      safestop: 300.0  # 5 minutes - auto-resume if no operator response
+      safety: 0.0  # Legacy safety state - requires manual clearance
       shutdown: 10.0
     
     # Mission timeouts (seconds)

@@ -18,7 +18,9 @@ class SystemState(Enum):
     IDLE = "IDLE"  # Ready but not operating
     TELEOPERATION = "TELEOPERATION"  # Manual remote control
     AUTONOMOUS = "AUTONOMOUS"  # Autonomous operation with substates
-    SAFETY = "SAFETY"  # Safety/emergency state
+    ESTOP = "ESTOP"  # Hardware emergency stop (power cut)
+    SAFESTOP = "SAFESTOP"  # Software graceful pause (toggle-able)
+    SAFETY = "SAFETY"  # Legacy safety state (deprecated, use ESTOP/SAFESTOP)
     SHUTDOWN = "SHUTDOWN"  # Graceful shutdown sequence
 
     def __str__(self) -> str:
@@ -51,6 +53,32 @@ class EquipmentServicingSubstate(Enum):
     FUEL_CONNECTION = "FUEL_CONNECTION"  # Connecting fuel hose
     BUTTON_OPERATIONS = "BUTTON_OPERATIONS"  # Buttons, switches, knobs
     COMPLETE = "COMPLETE"  # Mission complete
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class CalibrationSubstate(Enum):
+    """
+    Substates for detailed calibration procedures.
+
+    URC 2026 Competition Requirements:
+    - Camera intrinsic calibration (required for accurate computer vision)
+    - Camera extrinsic calibration (hand-eye calibration for manipulation)
+    - System validation and integration testing
+    """
+
+    NONE = "NONE"  # Not in calibration
+    SETUP = "SETUP"  # Environment setup and target preparation
+    INTRINSIC_CAPTURE = "INTRINSIC_CAPTURE"  # Capture images for intrinsic calibration
+    INTRINSIC_CALIBRATION = "INTRINSIC_CALIBRATION"  # Compute intrinsic parameters
+    INTRINSIC_VALIDATION = "INTRINSIC_VALIDATION"  # Validate intrinsic calibration quality
+    EXTRINSIC_SETUP = "EXTRINSIC_SETUP"  # Prepare for hand-eye calibration
+    EXTRINSIC_CAPTURE = "EXTRINSIC_CAPTURE"  # Capture robot-camera pose pairs
+    EXTRINSIC_CALIBRATION = "EXTRINSIC_CALIBRATION"  # Compute hand-eye transformation
+    EXTRINSIC_VALIDATION = "EXTRINSIC_VALIDATION"  # Validate extrinsic calibration
+    INTEGRATION_TEST = "INTEGRATION_TEST"  # Test full vision-manipulation pipeline
+    COMPLETE = "COMPLETE"  # Calibration complete, ready for autonomous ops
 
     def __str__(self) -> str:
         return self.value
@@ -153,6 +181,31 @@ STATE_METADATA: Dict[SystemState, StateMetadata] = {
         requires_subsystems=["navigation", "computer_vision", "slam"],
         description="Autonomous operation with mission substates",
     ),
+    SystemState.ESTOP: StateMetadata(
+        state=SystemState.ESTOP,
+        allowed_transitions=[
+            SystemState.IDLE,
+            SystemState.SHUTDOWN,
+        ],
+        entry_requirements=[],  # Can enter from any state
+        exit_requirements=["estop_reset", "power_verified", "manual_verification"],
+        timeout_seconds=0.0,  # No automatic timeout for emergency stop
+        description="Hardware emergency stop - power disconnect requiring manual reset",
+    ),
+    SystemState.SAFESTOP: StateMetadata(
+        state=SystemState.SAFESTOP,
+        allowed_transitions=[
+            SystemState.IDLE,
+            SystemState.TELEOPERATION,
+            SystemState.AUTONOMOUS,
+            SystemState.ESTOP,  # Can escalate to emergency stop
+        ],
+        entry_requirements=[],  # Can enter from any state
+        exit_requirements=["operator_resume", "area_clear"],
+        timeout_seconds=300.0,  # 5 minutes max in safestop before requiring attention
+        auto_transition=SystemState.IDLE,  # Auto-resume if operator doesn't respond
+        description="Software graceful pause - toggle-able by operator",
+    ),
     SystemState.SAFETY: StateMetadata(
         state=SystemState.SAFETY,
         allowed_transitions=[
@@ -162,7 +215,7 @@ STATE_METADATA: Dict[SystemState, StateMetadata] = {
         ],
         entry_requirements=[],  # Can enter from any state
         exit_requirements=["safety_cleared", "manual_verification"],
-        description="Safety/emergency state requiring intervention",
+        description="Legacy safety state - deprecated, use ESTOP/SAFESTOP",
     ),
     SystemState.SHUTDOWN: StateMetadata(
         state=SystemState.SHUTDOWN,

@@ -5,8 +5,23 @@ Direct Calibration from ArUco Markers - URC 2026
 Workaround for OpenCV 4.12 ChArUco detection issue.
 Collects detected ArUco markers and calibrates using cv2.calibrateCamera()
 
+This module provides camera calibration functionality using ArUco markers
+from a ChArUco board. It's designed as a workaround for OpenCV 4.12+ where
+ChArUco board detection has known issues.
+
 Usage:
     python calibrate_from_markers.py --cols 7 --rows 5 --square-size 0.030 --marker-size 0.018 --output cal.json
+
+Classes:
+    None
+
+Functions:
+    calibrate_from_markers: Main calibration function
+    main: Command-line interface
+
+Examples:
+    >>> success = calibrate_from_markers(cols=7, rows=5, square_size=0.030)
+    >>> print("Calibration successful:", success)
 """
 
 import cv2
@@ -16,9 +31,31 @@ import time
 import json
 import sys
 
-def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5, 
+def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
                           square_size=0.030, marker_size=0.018, output_file="calibration.json"):
-    """Calibrate camera by collecting ArUco markers from ChArUco board."""
+    """
+    Calibrate camera by collecting ArUco markers from ChArUco board.
+
+    This function performs camera calibration using ArUco markers detected on a ChArUco board.
+    It captures frames over a specified duration, detects markers, and computes camera intrinsic
+    parameters using OpenCV's calibrateCamera function. Designed as a workaround for issues
+    with ChArUco board detection in OpenCV 4.12+.
+
+    Args:
+        camera_index (int): Index of the camera device to use (default: 0)
+        duration (int): Duration in seconds to capture calibration frames (default: 30)
+        cols (int): Number of columns in the ChArUco board (default: 7)
+        rows (int): Number of rows in the ChArUco board (default: 5)
+        square_size (float): Size of each square on the board in meters (default: 0.030)
+        marker_size (float): Size of each ArUco marker in meters (default: 0.018)
+        output_file (str): Path to save the calibration results (default: "calibration.json")
+
+    Returns:
+        bool: True if calibration was successful, False otherwise
+
+    Raises:
+        None: All errors are handled internally and logged to console
+    """
     
     print("🎯 Direct ArUco Marker Calibration")
     print("=" * 60)
@@ -38,7 +75,7 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
     )
     
     # Open camera
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(camera_index)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     
@@ -230,3 +267,4 @@ if __name__ == '__main__':
     )
     
     exit(0 if success else 1)
+ 

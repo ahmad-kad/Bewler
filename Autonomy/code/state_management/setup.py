@@ -15,7 +15,7 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
     ],
-    install_requires=['setuptools', 'structlog'],
+    install_requires=['setuptools', 'structlog', 'transitions'],
     zip_safe=True,
     maintainer='URC 2026 Team',
     maintainer_email='team@urc2026.edu',

@@ -1,0 +1,45 @@
+{
+  "source": {
+    "include": [
+      "../frontend/src"
+    ],
+    "includePattern": "\\.(js|jsx|ts|tsx)$",
+    "exclude": [
+      "../frontend/node_modules",
+      "../frontend/src/assets",
+      "../frontend/public"
+    ]
+  },
+  "opts": {
+    "destination": "_build/jsdoc/",
+    "recurse": true,
+    "readme": "../frontend/README.md",
+    "tutorials": "../docs/tutorials"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true,
+    "default": {
+      "outputSourceFiles": true
+    },
+    "systemName": "URC 2026 Frontend",
+    "footer": "",
+    "copyright": "URC 2026 Team",
+    "navType": "vertical",
+    "theme": "default",
+    "linenums": true,
+    "collapseSymbols": false,
+    "inverseNav": true
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
+  },
+  "babel": {
+    "presets": ["@babel/preset-react", "@babel/preset-typescript"],
+    "plugins": ["@babel/plugin-proposal-class-properties"]
+  }
+}

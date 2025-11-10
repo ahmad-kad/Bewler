@@ -1,0 +1,35 @@
+# Timing Safety Check Service
+# Monitors timing constraints and deadlines for safety-critical operations
+
+# Request
+bool real_time_check        # Check real-time performance
+float64 time_window         # Time window to analyze (seconds)
+string[] monitored_components # Specific components to check timing for
+
+---
+# Response
+bool timing_safe            # Overall timing safety status
+string timing_status        # "NOMINAL", "WARNING", "CRITICAL", "FAILED"
+
+# Timing metrics
+float64 avg_response_time   # Average response time (ms)
+float64 max_response_time   # Maximum response time (ms)
+float64 min_response_time   # Minimum response time (ms)
+float64 jitter              # Response time jitter (ms)
+int32 deadline_misses       # Number of deadline misses in time window
+float64 deadline_miss_rate  # Rate of deadline misses (per second)
+
+# Component timing
+string[] components_checked # Components that were checked
+float64[] component_avg_times # Average response times per component
+int32[] component_deadlines_missed # Deadline misses per component
+
+# System health
+float64 cpu_utilization     # Current CPU utilization (0.0-1.0)
+float64 memory_utilization  # Current memory utilization (0.0-1.0)
+int32 thread_count          # Current number of active threads
+bool real_time_scheduling   # Whether real-time scheduling is active
+
+# Recommendations
+string[] timing_recommendations # Actions to improve timing if needed
+string timestamp            # When check was performed

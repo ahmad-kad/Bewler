@@ -18,7 +18,7 @@ int32[] detected_tag_ids  # IDs of detected tags
 geometry_msgs/Point[] tag_positions  # 3D positions of detected tags
 float32[] tag_distances  # Estimated distances to tags
 float32[] tag_angles  # Angles to tags (radians)
-builtin_interfaces/msg/Time detection_time  # When detection occurred
+builtin_interfaces/Time detection_time  # When detection occurred
 
 # Alignment information (only if calculate_alignment=true)
 bool alignment_available  # Whether alignment calculation is available

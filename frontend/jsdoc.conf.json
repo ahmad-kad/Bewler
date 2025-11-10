@@ -1,0 +1,36 @@
+{
+  "source": {
+    "include": ["src"],
+    "includePattern": "\\.(js|jsx|ts|tsx)$",
+    "exclude": ["node_modules", "dist", "build"]
+  },
+  "opts": {
+    "destination": "../docs/_build/jsdoc",
+    "recurse": true,
+    "readme": "README.md"
+  },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true,
+    "default": {
+      "outputSourceFiles": true
+    },
+    "applicationName": "URC 2026 Frontend",
+    "disallowUnknownTags": false,
+    "meta": {
+      "title": "URC 2026 Frontend API Documentation",
+      "description": "React-based visualization and control interface for URC 2026 robotics project",
+      "keyword": "URC, Robotics, React, Three.js, ROS2"
+    }
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
+  },
+  "tags": {
+    "allowUnknownTags": true
+  }
+}

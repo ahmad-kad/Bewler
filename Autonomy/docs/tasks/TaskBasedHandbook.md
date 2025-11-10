@@ -123,10 +123,10 @@ flowchart TD
 
 | **Subsystem** | **Subsystem TODO** | **Current Focus** |
 |---------------|---------------------|-------------------|
-| **Navigation** | [`../code/navigation/navigation_TODO.md`](../code/navigation/navigation_TODO.md) | Path planning algorithms, GPS integration |
+| **Navigation** | [`../code/navigation/navigation_TODO.md`](../code/navigation/navigation_TODO.md) | Navigation system status |
 | **SLAM** | [`../code/slam/slam_TODO.md`](../code/slam/slam_TODO.md) | Sensor fusion, pose estimation |
 | **Computer Vision** | [`../code/computer_vision/computer_vision_TODO.md`](../code/computer_vision/computer_vision_TODO.md) | Object detection, ArUco tracking |
-| **Autonomous Typing** | [`../code/autonomous_typing/autonomous_typing_TODO.md`](../code/autonomous_typing/autonomous_typing_TODO.md) | Keyboard interaction, arm control |
+| **Autonomous Typing** | [`../code/autonomous_typing/autonomous_typing_TODO.md`](../code/autonomous_typing/autonomous_typing_TODO.md) | Autonomous typing system status |
 | **State Management** | [`../code/state_management/state_management_TODO.md`](../code/state_management/state_management_TODO.md) | Mission coordination, system health |
 | **LED Status** | [`../code/led_status/led_status_TODO.md`](../code/led_status/led_status_TODO.md) | GPIO control, status signaling |
 

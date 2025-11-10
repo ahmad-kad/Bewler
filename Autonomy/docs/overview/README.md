@@ -199,10 +199,10 @@ All autonomy development must comply with **URC 2026 Competition Rules**. Key co
 ### **Quick Task Access - Jump to TODOs:**
 | **Subsystem** | **Subsystem TODO** | **Status** | **Key Deliverables** |
 |---------------|-------------|------------|-------------------|
-| **Navigation** | [`../code/navigation/navigation_TODO.md`](../code/navigation/navigation_TODO.md) | 🔄 Active | GPS waypoint navigation, AR tag precision, obstacle avoidance, terrain adaptation |
+| **Navigation** | [`../code/navigation/navigation_TODO.md`](../code/navigation/navigation_TODO.md) | ✅ Ready | Navigation system status |
 | **SLAM** | [`../code/slam/slam_TODO.md`](../code/slam/slam_TODO.md) | 🔄 Active | Pose estimation (<0.5m accuracy), 2D occupancy mapping, sensor fusion (LIDAR+IMU), loop closure detection |
 | **Computer Vision** | [`../code/computer_vision/computer_vision_TODO.md`](../code/computer_vision/computer_vision_TODO.md) | 🔄 Active | Mallet hammer/water bottle detection, AprilTag localization, depth sensing, real-time processing (10Hz) |
-| **Autonomous Typing** | [`../code/autonomous_typing/autonomous_typing_TODO.md`](../code/autonomous_typing/autonomous_typing_TODO.md) | 🔄 Active | Keyboard detection (markers + template), 6-DOF arm trajectory planning, precision key pressing (>95% accuracy) |
+| **Autonomous Typing** | [`../code/autonomous_typing/autonomous_typing_TODO.md`](../code/autonomous_typing/autonomous_typing_TODO.md) | ✅ Ready | Autonomous typing system status |
 | **State Management** | [`../code/state_management/state_management_TODO.md`](../code/state_management/state_management_TODO.md) | 🔄 Active | Teleop↔autonomous mode switching (<1s), subsystem health monitoring, mission sequencing, error handling |
 | **LED Status** | [`../code/led_status/led_status_TODO.md`](../code/led_status/led_status_TODO.md) | 🔄 Active | Judge-visible status signaling (50m), mode indication (red/green/blue), error pattern display, PWM brightness control |
 

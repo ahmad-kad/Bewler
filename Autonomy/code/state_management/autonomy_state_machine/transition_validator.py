@@ -6,7 +6,6 @@ and mission-specific requirements.
 """
 
 from typing import List, Tuple, Dict, Optional, Set
-import structlog
 
 from .states import (
     SystemState,
@@ -15,8 +14,6 @@ from .states import (
     is_valid_transition,
     get_required_subsystems,
 )
-
-logger = structlog.get_logger(__name__)
 
 
 class ValidationError(Exception):
@@ -33,62 +30,65 @@ class TransitionValidator:
     preconditions, subsystem readiness, and mission-specific requirements.
     """
 
-    def __init__(self):
+    def __init__(self, logger=None, state_machine_ref=None):
         """Initialize the transition validator."""
-        self._calibration_complete: bool = False
-        self._boot_complete: bool = False
-        self._communication_ok: bool = True
-        self._safety_cleared: bool = True
-        self._manual_verification: bool = False
-        self._active_subsystems: Set[str] = set()
-        self._gnss_available: bool = False
-        self._aruco_detection_available: bool = False
+        self.logger = logger  # Will be set by state machine director
+        self.state_machine_ref = state_machine_ref  # Reference to state machine for live state
 
     def set_calibration_complete(self, complete: bool) -> None:
         """Set calibration completion status."""
         self._calibration_complete = complete
-        logger.info("Calibration status updated", complete=complete)
+        if self.logger:
+            self.logger.info(f"Calibration status updated: {complete}")
 
     def set_boot_complete(self, complete: bool) -> None:
         """Set boot completion status."""
         self._boot_complete = complete
-        logger.info("Boot status updated", complete=complete)
+        if self.logger:
+            self.logger.info(f"Boot status updated: {complete}")
 
     def set_communication_status(self, ok: bool) -> None:
         """Set communication status."""
         self._communication_ok = ok
-        logger.info("Communication status updated", ok=ok)
+        if self.logger:
+            self.logger.info(f"Communication status updated: {ok}")
 
     def set_safety_status(self, cleared: bool, verified: bool = False) -> None:
         """Set safety clearance status."""
         self._safety_cleared = cleared
         self._manual_verification = verified
-        logger.info("Safety status updated", cleared=cleared, verified=verified)
+        if self.logger:
+            self.logger.info(f"Safety status updated: cleared={cleared}, verified={verified}")
 
     def update_active_subsystems(self, subsystems: List[str]) -> None:
         """Update the set of active subsystems."""
         self._active_subsystems = set(subsystems)
-        logger.debug("Active subsystems updated", subsystems=subsystems)
+        if self.logger:
+            self.logger.debug(f"Active subsystems updated: {subsystems}")
 
     def add_active_subsystem(self, subsystem: str) -> None:
         """Add a subsystem to active set."""
         self._active_subsystems.add(subsystem)
-        logger.debug("Subsystem activated", subsystem=subsystem)
+        if self.logger:
+            self.logger.debug(f"Subsystem activated: {subsystem}")
 
     def remove_active_subsystem(self, subsystem: str) -> None:
         """Remove a subsystem from active set."""
         self._active_subsystems.discard(subsystem)
-        logger.debug("Subsystem deactivated", subsystem=subsystem)
+        if self.logger:
+            self.logger.debug(f"Subsystem deactivated: {subsystem}")
 
     def set_gnss_available(self, available: bool) -> None:
         """Set GNSS availability status."""
         self._gnss_available = available
-        logger.info("GNSS availability updated", available=available)
+        if self.logger:
+            self.logger.info(f"GNSS availability updated: {available}")
 
     def set_aruco_detection_available(self, available: bool) -> None:
         """Set ArUco detection availability status."""
         self._aruco_detection_available = available
-        logger.info("ArUco detection availability updated", available=available)
+        if self.logger:
+            self.logger.info(f"ArUco detection availability updated: {available}")
 
     def validate_transition(
         self,
@@ -117,20 +117,18 @@ class TransitionValidator:
                 f"Transition from {from_state} to {to_state} not allowed by "
                 f"transition matrix"
             )
-            logger.warning(
-                "Invalid transition attempt",
-                from_state=str(from_state),
-                to_state=str(to_state),
-            )
+            if self.logger:
+                self.logger.warning(
+                    f"Invalid transition attempt: {from_state} -> {to_state}"
+                )
             return False, message, ["transition_not_allowed"]
 
         # If forcing, skip precondition checks
         if force:
-            logger.warning(
-                "Forcing transition, skipping preconditions",
-                from_state=str(from_state),
-                to_state=str(to_state),
-            )
+            if self.logger:
+                self.logger.warning(
+                    f"Forcing transition, skipping preconditions: {from_state} -> {to_state}"
+                )
             return True, "Transition forced", []
 
         # Check entry requirements for target state

@@ -1,26 +1,31 @@
 """
-Safety manager for context-aware safety handling.
+Context-aware safety management and recovery coordination.
 
-Manages safety triggers, determines appropriate responses based on context,
-and coordinates recovery procedures.
+Manages safety triggers, determines appropriate responses based on current
+system state and mission context, and coordinates recovery procedures.
 """
 
-from enum import Enum, auto
 from dataclasses import dataclass
-from typing import List, Optional, Dict
+from enum import Enum
+from typing import Dict, List, Optional
 
-from .states import SystemState, AutonomousSubstate
+from .states import AutonomousSubstate, SystemState
 
 
 class SafetyTriggerType(Enum):
     """Types of safety triggers."""
 
-    EMERGENCY_STOP = "EMERGENCY_STOP"  # Physical E-stop pressed
+    EMERGENCY_STOP = "EMERGENCY_STOP"  # Physical E-stop pressed (hardware power cut)
+    SOFTWARE_ESTOP = "SOFTWARE_ESTOP"  # Software-triggered emergency stop (full shutdown)
+    SAFESTOP_REQUEST = "SAFESTOP_REQUEST"  # Operator-requested safestop (toggle-able)
+    PROXIMITY_VIOLATION = "PROXIMITY_VIOLATION"  # Auto-safe: object too close
     COMMUNICATION_LOSS = "COMMUNICATION_LOSS"  # Lost communication link
     BATTERY_CRITICAL = "BATTERY_CRITICAL"  # Battery critically low
     THERMAL_WARNING = "THERMAL_WARNING"  # System overheating
     SENSOR_FAILURE = "SENSOR_FAILURE"  # Critical sensor failure
     OBSTACLE_CRITICAL = "OBSTACLE_CRITICAL"  # Imminent collision
+    NAV_INTEGRITY_LOSS = "NAV_INTEGRITY_LOSS"  # Navigation integrity compromised
+    TIMING_VIOLATION = "TIMING_VIOLATION"  # Timing safety constraint violated
     SYSTEM_FAULT = "SYSTEM_FAULT"  # General system fault
     MANUAL_INTERVENTION = "MANUAL_INTERVENTION"  # Manual safety trigger
 
@@ -62,15 +67,15 @@ class RecoveryBehavior:
 
 class SafetyManager:
     """
-    Manages safety triggers and recovery procedures.
+    Context-aware safety management with adaptive recovery procedures.
 
-    Provides context-aware safety handling that adjusts behavior based on
-    current state and mission phase.
+    Monitors safety triggers and determines appropriate responses based on
+    current system state, mission phase, and operational context.
     """
 
-    def __init__(self, logger=None):
-        """Initialize the safety manager."""
-        self.logger = logger  # Will be set by state machine director
+    def __init__(self, logger=None) -> None:
+        """Initialize safety manager with monitoring state."""
+        self._logger = logger  # Set by state machine director
         self._active_triggers: Dict[SafetyTriggerType, SafetySeverity] = {}
         self._trigger_history: List[Dict] = []
         self._battery_level: float = 100.0
@@ -169,7 +174,7 @@ class SafetyManager:
                 f"Determining recovery behavior for {trigger_type.value} in {current_state.value} state"
             )
 
-        # Emergency stop always requires manual intervention
+        # Emergency stop (ESTOP) - hardware power cut, requires full recovery
         if trigger_type == SafetyTriggerType.EMERGENCY_STOP:
             return RecoveryBehavior(
                 requires_manual_intervention=True,
@@ -178,8 +183,93 @@ class SafetyManager:
                     "Reset emergency stop button",
                     "Verify rover systems",
                     "Manually clear safety state",
+                    "Check power systems",
                 ],
                 estimated_recovery_time=60.0,
+            )
+
+        # Software emergency stop - behaves exactly like hardware ESTOP
+        if trigger_type == SafetyTriggerType.SOFTWARE_ESTOP:
+            return RecoveryBehavior(
+                requires_manual_intervention=True,
+                can_auto_recover=False,
+                recovery_steps=[
+                    "Verify software emergency stop trigger",
+                    "Reset software emergency stop",
+                    "Verify rover systems",
+                    "Manually clear safety state",
+                    "Check system integrity",
+                ],
+                estimated_recovery_time=60.0,
+            )
+
+        # Safestop request - operator-initiated, toggle-able
+        if trigger_type == SafetyTriggerType.SAFESTOP_REQUEST:
+            return RecoveryBehavior(
+                requires_manual_intervention=False,
+                can_auto_recover=True,
+                recovery_steps=[
+                    "Operator sends resume signal",
+                    "Verify area is clear",
+                    "Resume normal operation",
+                ],
+                estimated_recovery_time=5.0,  # Quick recovery
+            )
+
+        # Proximity violation - auto-safe triggered
+        if trigger_type == SafetyTriggerType.PROXIMITY_VIOLATION:
+            return RecoveryBehavior(
+                requires_manual_intervention=False,
+                can_auto_recover=True,
+                recovery_steps=[
+                    "Clear area around rover",
+                    "Verify proximity sensors",
+                    "Resume when safe distance maintained",
+                ],
+                safe_mode_config={"max_velocity": 0.1, "require_sensor_clearance": True},
+                estimated_recovery_time=30.0,
+            )
+
+        # Navigation integrity loss
+        if trigger_type == SafetyTriggerType.NAV_INTEGRITY_LOSS:
+            if current_state == SystemState.AUTONOMOUS:
+                return RecoveryBehavior(
+                    requires_manual_intervention=True,
+                    can_auto_recover=False,
+                    recovery_steps=[
+                        "Switch to teleoperation mode",
+                        "Recalibrate navigation sensors",
+                        "Verify GPS and localization",
+                        "Manually resume autonomous operation",
+                    ],
+                    estimated_recovery_time=300.0,
+                )
+            else:
+                return RecoveryBehavior(
+                    requires_manual_intervention=False,
+                    can_auto_recover=True,
+                    recovery_steps=[
+                        "Attempt sensor recalibration",
+                        "Use backup navigation sources",
+                        "Continue with degraded navigation",
+                    ],
+                    safe_mode_config={"use_backup_nav": True, "reduced_speed": True},
+                    estimated_recovery_time=60.0,
+                )
+
+        # Timing violation
+        if trigger_type == SafetyTriggerType.TIMING_VIOLATION:
+            return RecoveryBehavior(
+                requires_manual_intervention=False,
+                can_auto_recover=True,
+                recovery_steps=[
+                    "Check system timing constraints",
+                    "Adjust task priorities",
+                    "Monitor for timing violations",
+                    "Resume normal timing",
+                ],
+                safe_mode_config={"reduced_task_load": True, "timing_monitoring": True},
+                estimated_recovery_time=10.0,
             )
 
         # Communication loss - different behavior for teleoperation vs autonomous

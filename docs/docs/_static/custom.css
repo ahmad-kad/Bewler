@@ -1,0 +1,160 @@
+/* Custom styles for URC Machiato 2026 documentation */
+
+/* Header styling */
+.wy-nav-top {
+    background-color: #2980B9;
+}
+
+.wy-side-nav-search {
+    background-color: #2980B9;
+}
+
+/* Code block styling */
+.highlight {
+    background-color: #f8f9fa;
+    border-left: 4px solid #2980B9;
+}
+
+/* Table styling */
+table.docutils {
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+
+table.docutils th,
+table.docutils td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+}
+
+table.docutils th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+/* Admonition styling */
+.admonition {
+    border-radius: 4px;
+    margin: 1em 0;
+}
+
+.admonition.note {
+    border-color: #2980B9;
+}
+
+.admonition.warning {
+    border-color: #f39c12;
+}
+
+.admonition.error {
+    border-color: #e74c3c;
+}
+
+/* Custom colors for different sections */
+.autonomy-section {
+    border-left-color: #27ae60;
+}
+
+.simulation-section {
+    border-left-color: #9b59b6;
+}
+
+.frontend-section {
+    border-left-color: #e67e22;
+}
+
+/* Responsive design improvements */
+@media (max-width: 768px) {
+    .wy-nav-side {
+        width: 300px;
+    }
+
+    .wy-nav-content-wrap {
+        margin-left: 300px;
+    }
+}
+
+/* Logo styling */
+.logo {
+    max-height: 50px;
+    margin: 10px;
+}
+
+/* Navigation improvements */
+.wy-menu-vertical a:hover {
+    background-color: rgba(41, 128, 185, 0.1);
+}
+
+/* Footer styling */
+.footer {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 20px;
+    text-align: center;
+    margin-top: 50px;
+}
+
+/* Custom button styles */
+.btn-primary {
+    background-color: #2980B9;
+    border-color: #2980B9;
+}
+
+.btn-primary:hover {
+    background-color: #21618c;
+    border-color: #21618c;
+}
+
+/* Tab styling for tabbed content */
+.sphinx-tabs-tab {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.sphinx-tabs-tab[aria-selected="true"] {
+    background-color: #2980B9;
+    color: white;
+    border-color: #2980B9;
+}
+
+/* Graphviz diagram styling */
+.graphviz {
+    text-align: center;
+    margin: 2em 0;
+}
+
+/* Math equation styling */
+.math {
+    font-size: 1.1em;
+}
+
+/* API documentation improvements */
+.class dt {
+    background-color: #f8f9fa;
+    border-left: 4px solid #27ae60;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.function dt {
+    background-color: #f8f9fa;
+    border-left: 4px solid #3498db;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+/* Search improvements */
+.wy-side-nav-search input[type="text"] {
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+/* Version badge */
+.version-badge {
+    background-color: #2980B9;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin-left: 10px;
+}

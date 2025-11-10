@@ -1,10 +1,38 @@
 import { useState } from 'react';
 import { useROS } from './hooks/useROS';
 import { useStateMachine } from './hooks/useStateMachine';
+import { useSafetySystem } from './hooks/useSafetySystem';
 import { getStatusText } from './utils/rosbridge';
 import { StateTransitions, SystemState } from './config/stateDefinitions';
 import StateTree, { StateControls } from './components/StateTree';
+import { SafetyDashboard } from './components/SafetyDashboard';
+import { SafetyTestPanel } from './components/SafetyTestPanel';
 
+/**
+ * Main Application Component - URC 2026 Mars Rover Control Interface
+ *
+ * This is the root component of the React-based web interface for controlling
+ * and monitoring the URC 2026 Mars Rover. It provides real-time visualization,
+ * state machine control, and system monitoring capabilities.
+ *
+ * Features:
+ * - Real-time ROS2 communication via WebSocket
+ * - Hierarchical state machine visualization and control
+ * - 3D rover and environment visualization
+ * - System diagnostics and health monitoring
+ * - Mission execution monitoring and control
+ *
+ * The application maintains connection to the rover's ROS2 system through
+ * WebSocket bridge and provides both monitoring and control capabilities.
+ *
+ * @component
+ * @returns {JSX.Element} The main application interface
+ *
+ * @example
+ * // The App component is automatically rendered by React
+ * // No props required - all state is managed internally
+ * <App />
+ */
 function App() {
   const [activeTab, setActiveTab] = useState('state-machine');
   const [testRunning, setTestRunning] = useState(false);
@@ -36,6 +64,15 @@ function App() {
     requestStateTransition
   } = useStateMachine(ros);
 
+  // Safety system hook
+  const {
+    safetyStatus,
+    activeAlerts,
+    systemHealth,
+    emergencyStatus,
+    runSafetyTest
+  } = useSafetySystem(ros);
+
   // Simple state transition test function
   const testStateTransition = async (targetState) => {
     if (testRunning) return;
@@ -60,7 +97,7 @@ function App() {
       }
 
       // Attempt the transition
-      const result = await requestStateTransition(targetState, 'dashboard_test');
+      await requestStateTransition(targetState, 'dashboard_test');
 
       // Check if we're in demo mode
       const isDemoMode = !ros || !ros.isConnected;
@@ -212,7 +249,6 @@ function App() {
                 backgroundColor: activeTab === '3d-visualization' ? '#1a1a1a' : 'transparent',
                 color: activeTab === '3d-visualization' ? '#60a5fa' : '#9ca3af',
                 border: 'none',
-                borderRadius: activeTab === '3d-visualization' ? '0 0.5rem 0 0' : '0',
                 cursor: 'pointer',
                 fontSize: '1rem',
                 fontWeight: activeTab === '3d-visualization' ? '600' : '500',
@@ -221,6 +257,25 @@ function App() {
               }}
             >
               🌐 3D Visualization
+            </button>
+            <button
+              onClick={() => setActiveTab('safety')}
+              className={`tab-button ${activeTab === 'safety' ? 'active' : ''}`}
+              style={{
+                flex: 1,
+                padding: '1rem',
+                backgroundColor: activeTab === 'safety' ? '#1a1a1a' : 'transparent',
+                color: activeTab === 'safety' ? '#60a5fa' : '#9ca3af',
+                border: 'none',
+                borderRadius: activeTab === 'safety' ? '0 0.5rem 0 0' : '0',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: activeTab === 'safety' ? '600' : '500',
+                transition: 'all 0.2s ease',
+                borderBottom: activeTab === 'safety' ? '2px solid #60a5fa' : 'none'
+              }}
+            >
+              🛡️ Safety Testing
             </button>
           </div>
 
@@ -382,6 +437,32 @@ function App() {
                         <div className="viz-control-value">Map • Robot • Path • Obstacles</div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'safety' && (
+              <div style={{ padding: '1.5rem', height: '100%' }}>
+                <div className="safety-panels-container">
+                  {/* Safety Dashboard */}
+                  <div className="safety-dashboard-panel">
+                    <SafetyDashboard
+                      safetyStatus={safetyStatus}
+                      activeAlerts={activeAlerts}
+                      systemHealth={systemHealth}
+                      emergencyStatus={emergencyStatus}
+                      isConnected={isConnected}
+                    />
+                  </div>
+
+                  {/* Safety Test Panel */}
+                  <div className="safety-test-panel">
+                    <SafetyTestPanel
+                      onRunTest={runSafetyTest}
+                      isConnected={isConnected}
+                      currentState={currentState}
+                    />
                   </div>
                 </div>
               </div>

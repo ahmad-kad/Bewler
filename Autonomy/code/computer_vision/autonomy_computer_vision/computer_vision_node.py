@@ -1,35 +1,35 @@
-#!/usr/bin/env python3
 """
-🚀 Computer Vision Subsystem Node
+Computer Vision Subsystem Node.
 
-URC 2026 Computer Vision Subsystem subsystem implementation.
+URC 2026 Computer Vision implementation providing ArUco marker detection,
+competition object recognition, and real-time vision processing.
 """
 
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import String, Header
-from sensor_msgs.msg import Image, CameraInfo
-from geometry_msgs.msg import PoseStamped
-from autonomy_interfaces.msg import VisionDetection
+import math
+from typing import List, Optional, Tuple
+
 import cv2
 import numpy as np
+import rclpy
 from cv_bridge import CvBridge
-from typing import List, Optional, Tuple
-import math
+from rclpy.node import Node
+
+from autonomy_interfaces.msg import VisionDetection
+from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import CameraInfo, Image
+from std_msgs.msg import Header, String
 
 
 class ComputerVisionNode(Node):
     """
-    Computer Vision node for URC 2026 competition.
+    Computer vision processing for URC 2026 competition.
 
-    Provides:
-    - ArUco marker detection and pose estimation
-    - Competition object detection (mallet, water bottle)
-    - Real-time vision processing at 10+ FPS
-    - Vision-based navigation assistance
+    Provides ArUco marker detection, competition object recognition,
+    and real-time vision processing for navigation assistance.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Initialize computer vision node with camera interfaces."""
         super().__init__('computer_vision_node')
 
         # Publishers

@@ -30,7 +30,7 @@ Choose what interests you:
 cd code/navigation
 
 # Open TODO list to see what to implement
-cat navigation_TODO.md
+cat code/navigation/navigation_TODO.md  # Navigation system status
 
 # Edit your code (this is where you write and modify code)
 code autonomy_navigation/navigation_node.py

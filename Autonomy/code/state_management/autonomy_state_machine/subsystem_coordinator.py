@@ -123,21 +123,94 @@ class SubsystemCoordinator:
             "Autonomous mode enabled", active_subsystems=list(self._active_subsystems)
         )
 
-    def engage_safety(self) -> None:
-        """Engage safety mode - stop all motion."""
-        logger.warning("Engaging safety mode")
+    def engage_safety_mode(self) -> None:
+        """Set all systems to known safe values.
 
-        # In real implementation:
-        # - Send stop commands to navigation
-        # - Halt all manipulator movement
-        # - Disable autonomous operations
-        # - Keep camera and communication active
+        This unified safety implementation works for all safety states
+        (ESTOP, SAFESTOP, SAFETY) since 'safe' means the same thing.
+        """
+        logger.warning("Setting all systems to safe values")
+
+        # Set navigation to safe state (zero velocity)
+        self._set_navigation_safe()
+
+        # Set manipulation to safe state (hold position)
+        self._set_manipulation_safe()
+
+        # Set science to safe state (graceful stop)
+        self._set_science_safe()
+
+        # Set autonomous typing to safe state (controlled stop)
+        self._set_autonomous_typing_safe()
 
         # Keep minimal subsystems active for safety monitoring
-        safe_subsystems = {"camera"}
+        safe_subsystems = {"camera", "communication"}
         self._active_subsystems = safe_subsystems
 
-        logger.warning("Safety mode engaged", active_subsystems=list(self._active_subsystems))
+        logger.warning("All systems set to safe values", active_subsystems=list(self._active_subsystems))
+
+    def _set_navigation_safe(self) -> None:
+        """Set navigation system to safe state (zero velocity)."""
+        try:
+            # In real implementation: publish zero velocity command
+            logger.info("Navigation: Set to zero velocity (safe state)")
+            # self._navigation_client.call_zero_velocity()
+        except Exception as e:
+            logger.warning("Failed to set navigation safe", error=str(e))
+
+    def _set_manipulation_safe(self) -> None:
+        """Set manipulation system to safe state (hold position)."""
+        try:
+            # In real implementation: command arm to hold current position
+            logger.info("Manipulation: Holding current position (safe state)")
+            # self._manipulation_client.call_hold_position()
+        except Exception as e:
+            logger.warning("Failed to set manipulation safe (may not be present)", error=str(e))
+
+    def _set_science_safe(self) -> None:
+        """Set science system to safe state (graceful stop)."""
+        try:
+            # In real implementation: allow current operation to complete
+            logger.info("Science: Completing current operation gracefully (safe state)")
+            # self._science_client.call_safe_stop()
+        except Exception as e:
+            logger.warning("Failed to set science safe (may not be present)", error=str(e))
+
+    def _set_autonomous_typing_safe(self) -> None:
+        """Set autonomous typing system to safe state (controlled stop)."""
+        try:
+            # In real implementation: stop carousel and park servos
+            logger.info("Autonomous typing: Controlled stop and park (safe state)")
+            # self._typing_client.call_safe_stop()
+        except Exception as e:
+            logger.warning("Failed to set autonomous typing safe (may not be present)", error=str(e))
+
+    def disengage_safety_mode(self) -> None:
+        """Resume normal subsystem operation after safety mode."""
+        logger.info("Resuming normal subsystem operation")
+
+        # Restore previously active subsystems
+        # In real implementation, this would restart subsystems that were
+        # safely stopped, not just re-enable them
+        self._active_subsystems.update({"navigation", "camera"})
+
+        # Optional subsystems are re-enabled if they exist
+        if self._subsystem_exists("manipulation"):
+            self._active_subsystems.add("manipulation")
+
+        if self._subsystem_exists("science_instruments"):
+            self._active_subsystems.add("science_instruments")
+
+        if self._subsystem_exists("autonomous_typing"):
+            self._active_subsystems.add("autonomous_typing")
+
+        logger.info("Normal operation resumed", active_subsystems=list(self._active_subsystems))
+
+    def _subsystem_exists(self, subsystem: str) -> bool:
+        """Check if a subsystem is available in this configuration."""
+        # In real implementation: check ROS2 service availability
+        # For now, assume basic subsystems exist
+        return subsystem in ["navigation", "camera", "manipulation"]
 
     def shutdown_subsystems(self) -> None:
         """Shutdown all subsystems gracefully."""

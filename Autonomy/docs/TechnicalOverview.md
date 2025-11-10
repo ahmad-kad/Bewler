@@ -920,10 +920,10 @@ journey
 | **PID Control** | [`docs/PID_Control_Diagrams.md`](../PID_Control_Diagrams.md) | [`Robotics_Engineering_Concepts_Guide.md`](../Robotics_Engineering_Concepts_Guide.md) |
 | **ROS2 Topics/Services** | [`docs/InterfaceContract.md`](../InterfaceContract.md) | [`reference/LibrariesGuide.md`](../reference/LibrariesGuide.md) |
 | **Sensor Integration** | [`reference/SensorGuide.md`](../reference/SensorGuide.md) | [`reference/CalibrationGuide.md`](../reference/CalibrationGuide.md) |
-| **Navigation Algorithms** | [`subsystems/navigation/Navigation_PathPlanning.md`](../subsystems/navigation/Navigation_PathPlanning.md) | [`code/navigation/navigation_TODO.md`](../code/navigation/navigation_TODO.md) |
+| **Navigation Algorithms** | [`subsystems/navigation/Navigation_PathPlanning.md`](../subsystems/navigation/Navigation_PathPlanning.md) | [`code/navigation/navigation_TODO.md`](../code/navigation/navigation_TODO.md) - Status |
 | **Computer Vision** | [`subsystems/computer_vision/ComputerVision_ObjectClassification.md`](../subsystems/computer_vision/ComputerVision_ObjectClassification.md) | [`code/computer_vision/computer_vision_TODO.md`](../code/computer_vision/computer_vision_TODO.md) |
 | **SLAM** | [`subsystems/slam/SLAM.md`](../subsystems/slam/SLAM.md) | [`code/slam/slam_TODO.md`](../code/slam/slam_TODO.md) |
-| **Arm Control** | [`subsystems/autonomous_typing/AutonomousTyping.md`](../subsystems/autonomous_typing/AutonomousTyping.md) | [`code/autonomous_typing/autonomous_typing_TODO.md`](../code/autonomous_typing/autonomous_typing_TODO.md) |
+| **Arm Control** | [`subsystems/autonomous_typing/AutonomousTyping.md`](../subsystems/autonomous_typing/AutonomousTyping.md) | [`code/autonomous_typing/autonomous_typing_TODO.md`](../code/autonomous_typing/autonomous_typing_TODO.md) - Status |
 | **State Management** | [`subsystems/state_management/StateManagement_ModeControl.md`](../subsystems/state_management/StateManagement_ModeControl.md) | [`code/state_management/state_management_TODO.md`](../code/state_management/state_management_TODO.md) |
 | **LED Status** | [`subsystems/led_status/LED_StatusSignaling.md`](../subsystems/led_status/LED_StatusSignaling.md) | [`code/led_status/led_status_TODO.md`](../code/led_status/led_status_TODO.md) |
 

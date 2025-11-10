@@ -113,7 +113,19 @@ class RoverStateMachine:
         self.machine.add_transition('autonomous_to_safety', SystemState.AUTONOMOUS.value, SystemState.SAFETY.value)
         self.machine.add_transition('autonomous_to_shutdown', SystemState.AUTONOMOUS.value, SystemState.SHUTDOWN.value)
 
-        # SAFETY transitions
+        # ESTOP transitions (hardware emergency stop)
+        self.machine.add_transition('any_to_estop', '*', SystemState.ESTOP.value)  # Can enter from any state
+        self.machine.add_transition('estop_to_idle', SystemState.ESTOP.value, SystemState.IDLE.value)
+        self.machine.add_transition('estop_to_shutdown', SystemState.ESTOP.value, SystemState.SHUTDOWN.value)
+
+        # SAFESTOP transitions (software graceful pause)
+        self.machine.add_transition('any_to_safestop', '*', SystemState.SAFESTOP.value)  # Can enter from any state
+        self.machine.add_transition('safestop_to_idle', SystemState.SAFESTOP.value, SystemState.IDLE.value)
+        self.machine.add_transition('safestop_to_teleop', SystemState.SAFESTOP.value, SystemState.TELEOPERATION.value)
+        self.machine.add_transition('safestop_to_autonomous', SystemState.SAFESTOP.value, SystemState.AUTONOMOUS.value)
+        self.machine.add_transition('safestop_to_estop', SystemState.SAFESTOP.value, SystemState.ESTOP.value)  # Can escalate
+
+        # SAFETY transitions (legacy - deprecated)
         self.machine.add_transition('safety_to_idle', SystemState.SAFETY.value, SystemState.IDLE.value)
         self.machine.add_transition('safety_to_teleop', SystemState.SAFETY.value, SystemState.TELEOPERATION.value)
         self.machine.add_transition('safety_to_shutdown', SystemState.SAFETY.value, SystemState.SHUTDOWN.value)

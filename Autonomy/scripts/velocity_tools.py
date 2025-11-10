@@ -1,8 +1,26 @@
 #!/usr/bin/env python3
 """
-🚀 Velocity Acceleration Tools
+🚀 Velocity Acceleration Tools - URC 2026
 
-Scripts to maintain development velocity and prevent backtracking.
+This module provides tools for monitoring and maintaining development velocity
+in the URC 2026 Mars Rover Autonomy project. It helps prevent development
+slowdowns and ensures consistent progress toward project milestones.
+
+The tools include:
+- Development velocity monitoring and metrics calculation
+- Risk assessment for project delays
+- Automated reporting and trend analysis
+- Integration with project management workflows
+
+Typical usage involves:
+1. Monitoring daily development metrics
+2. Identifying potential bottlenecks
+3. Generating velocity reports
+4. Assessing project health and risks
+
+Attributes:
+    DEFAULT_MONITORING_DAYS (int): Default number of days for velocity monitoring
+    VELOCITY_THRESHOLDS (dict): Thresholds for velocity risk assessment
 """
 
 import os
@@ -10,16 +28,87 @@ import json
 import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional, Tuple
+
+# Default configuration constants
+DEFAULT_MONITORING_DAYS = 7
+VELOCITY_THRESHOLDS = {
+    'commits_per_day': {'low': 2, 'medium': 5, 'high': 10},
+    'lines_per_day': {'low': 50, 'medium': 200, 'high': 500},
+    'files_per_day': {'low': 3, 'medium': 10, 'high': 20}
+}
+
 
 class VelocityMonitor:
-    """Monitor development velocity and identify slowdowns."""
+    """Monitor development velocity and identify slowdowns in the project.
+
+    This class provides comprehensive monitoring of development velocity by analyzing
+    Git repository statistics, file changes, and development patterns. It helps
+    identify potential bottlenecks and ensures consistent project progress.
+
+    Attributes:
+        repo_path (Path): Path to the Git repository to monitor
+
+    Example:
+        >>> monitor = VelocityMonitor("/path/to/repo")
+        >>> metrics = monitor.get_velocity_metrics(days=7)
+        >>> print(f"Commits: {metrics['commits']}, Velocity: {metrics['velocity_score']}")
+    """
 
     def __init__(self, repo_path: str = "."):
-        self.repo_path = Path(repo_path)
+        """Initialize the velocity monitor.
 
-    def get_velocity_metrics(self, days: int = 7) -> Dict[str, Any]:
-        """Calculate velocity metrics for the last N days."""
+        Args:
+            repo_path (str, optional): Path to the Git repository. Defaults to current directory.
+
+        Raises:
+            ValueError: If the provided path is not a valid Git repository.
+        """
+        self.repo_path = Path(repo_path).resolve()
+
+        if not self._is_git_repo():
+            raise ValueError(f"Path {self.repo_path} is not a valid Git repository")
+
+    def _is_git_repo(self) -> bool:
+        """Check if the path is a valid Git repository.
+
+        Returns:
+            bool: True if the path contains a .git directory, False otherwise.
+        """
+        return (self.repo_path / '.git').exists()
+
+    def get_velocity_metrics(self, days: int = DEFAULT_MONITORING_DAYS) -> Dict[str, Any]:
+        """Calculate comprehensive velocity metrics for the last N days.
+
+        This method analyzes Git commit history, file changes, and development
+        patterns to provide detailed velocity metrics including commit frequency,
+        code changes, and risk assessments.
+
+        Args:
+            days (int, optional): Number of days to analyze. Defaults to 7.
+
+        Returns:
+            Dict[str, Any]: Dictionary containing velocity metrics with the following keys:
+                - commits (int): Total number of commits
+                - commits_per_day (float): Average commits per day
+                - lines_changed (int): Total lines added/modified
+                - lines_per_day (float): Average lines changed per day
+                - files_changed (int): Total files modified
+                - files_per_day (float): Average files changed per day
+                - authors (List[str]): List of contributing authors
+                - velocity_score (float): Overall velocity score (0-100)
+                - risk_level (str): Risk assessment ('low', 'medium', 'high')
+                - recommendations (List[str]): Suggested improvements
+
+        Raises:
+            subprocess.CalledProcessError: If Git commands fail to execute.
+            ValueError: If days parameter is invalid.
+
+        Example:
+            >>> metrics = monitor.get_velocity_metrics(days=14)
+            >>> print(f"Velocity Score: {metrics['velocity_score']:.1f}")
+            >>> print(f"Risk Level: {metrics['risk_level']}")
+        """
         try:
             # Get git stats
             since_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")

@@ -83,6 +83,29 @@ export const MISSION_TOPICS = {
   SERVICING_PROGRESS: '/servicing/progress'
 };
 
+// Safety System Topics
+export const SAFETY_TOPICS = {
+  // Safety status and monitoring
+  SAFETY_STATUS: '/state_machine/safety_status',
+  SAFETY_VIOLATIONS: '/safety/violations',
+  REDUNDANT_SAFETY_STATUS: '/safety/redundant_status',
+
+  // Safety dashboard topics
+  DASHBOARD_STATUS: '/safety/dashboard_status',
+  ACTIVE_ALERTS: '/safety/active_alerts',
+  SYSTEM_HEALTH: '/safety/system_health',
+
+  // Safety monitoring
+  WATCHDOG_STATUS: '/safety/watchdog_status',
+  SENSOR_HEALTH: '/safety/sensor_health',
+  EMERGENCY_STATUS: '/safety/emergency_status',
+
+  // Diagnostics
+  SAFETY_DIAGNOSTICS: '/safety/dashboard_diagnostics',
+  REDUNDANT_DIAGNOSTICS: '/safety/redundant_diagnostics',
+  EMERGENCY_DIAGNOSTICS: '/safety/emergency_diagnostics'
+};
+
 // Telemetry Topics
 export const TELEMETRY_TOPICS = {
   // GPS data
@@ -128,7 +151,8 @@ export const MESSAGE_TYPES = {
   SYSTEM_STATE: 'autonomy_interfaces/msg/SystemState',
   STATE_TRANSITION: 'autonomy_interfaces/msg/StateTransition',
   VISION_DETECTION: 'autonomy_interfaces/msg/VisionDetection',
-  LED_COMMAND: 'autonomy_interfaces/msg/LedCommand'
+  LED_COMMAND: 'autonomy_interfaces/msg/LedCommand',
+  SAFETY_STATUS: 'autonomy_interfaces/msg/SafetyStatus'
 };
 
 // Service types
@@ -136,7 +160,10 @@ export const SERVICE_TYPES = {
   CHANGE_STATE: 'autonomy_interfaces/srv/ChangeState',
   GET_SYSTEM_STATE: 'autonomy_interfaces/srv/GetSystemState',
   SET_GOAL: 'nav2_msgs/srv/SetGoal',
-  CANCEL_GOAL: 'nav2_msgs/srv/CancelGoal'
+  CANCEL_GOAL: 'nav2_msgs/srv/CancelGoal',
+  SOFTWARE_ESTOP: 'autonomy_interfaces/srv/SoftwareEstop',
+  RECOVER_FROM_SAFETY: 'autonomy_interfaces/srv/RecoverFromSafety',
+  SAFESTOP_CONTROL: 'autonomy_interfaces/srv/SafestopControl'
 };
 
 // Quality of Service (QoS) profiles for different data types

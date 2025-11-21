@@ -1,0 +1,17 @@
+# Submodules - prevent accidental commits
+submodules/** export-ignore
+submodules/** -diff
+submodules/** -merge
+submodules/** -text
+
+# Teleoperation submodule - readonly
+submodules/teleoperation/** export-ignore
+submodules/teleoperation/** -diff
+submodules/teleoperation/** -merge
+submodules/teleoperation/** -text
+
+# Control systems submodule - readonly
+submodules/control-systems/** export-ignore
+submodules/control-systems/** -diff
+submodules/control-systems/** -merge
+submodules/control-systems/** -text

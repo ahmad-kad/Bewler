@@ -84,3 +84,5 @@ These graphs are generated automatically using the following process:
 4. **Rendering**: Convert PlantUML to images during Sphinx build
 
 This ensures that the documentation always reflects the current system state and architecture.
+
+

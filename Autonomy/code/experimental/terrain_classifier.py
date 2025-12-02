@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Terrain Classifier - Terrain analysis and classification for adaptive navigation.
+Experimental Terrain Classifier - Terrain analysis and classification for adaptive navigation.
+
+NOTE: This module is currently experimental and not wired into the main
+navigation pipeline. The API is reserved for future terrain-aware navigation.
 
 Provides:
 - Terrain type classification
@@ -11,13 +14,13 @@ Provides:
 Author: URC 2026 Autonomy Team
 """
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
 
 
-
 class TerrainType(Enum):
-    """Terrain classification types"""
+    """Terrain classification types."""
 
     SAND = "sand"
     ROCK = "rock"
@@ -29,7 +32,7 @@ class TerrainType(Enum):
 
 @dataclass
 class TerrainProperties:
-    """Terrain physical properties"""
+    """Terrain physical properties."""
 
     type: TerrainType
     traversability: float  # 0.0 (impassable) to 1.0 (easy)
@@ -41,18 +44,20 @@ class TerrainProperties:
 
 class TerrainClassifier:
     """
-    Terrain classification and analysis system.
+    Terrain classification and analysis system (experimental).
 
     Analyzes sensor data to classify terrain and provide
     navigation guidance for adaptive behavior.
+
+    NOTE: Reserved API for future integration with navigation/path planning.
     """
 
-    def __init__(self):
-        # Terrain classification parameters
+    def __init__(self) -> None:
+        # Terrain classification parameters (reserved configuration)
         self.classification_window = 1.0  # meters ahead
         self.update_rate = 5.0  # Hz
 
-        # Terrain property definitions
+        # Terrain property definitions (experimental defaults)
         self.terrain_properties = {
             TerrainType.SAND: TerrainProperties(
                 type=TerrainType.SAND,
@@ -86,6 +91,14 @@ class TerrainClassifier:
                 roughness=0.1,
                 risk_level="medium",
             ),
+            TerrainType.UNKNOWN: TerrainProperties(
+                type=TerrainType.UNKNOWN,
+                traversability=0.5,
+                max_speed=1.0,
+                traction_coefficient=0.7,
+                roughness=0.5,
+                risk_level="medium",
+            ),
         }
 
         # TODO: Initialize classification parameters
@@ -93,14 +106,23 @@ class TerrainClassifier:
         # - Set up sensor interfaces
         # - Configure classification thresholds
 
-    def initialize(self):
-        """Initialize terrain classifier"""
+    def initialize(self) -> None:
+        """Initialize terrain classifier (reserved for future use)."""
         # TODO: Initialize sensor interfaces
         # Load classification models
         # Set up processing pipelines
+        ...
 
     def classify_terrain(self, sensor_data: dict) -> TerrainType:
-        """Classify terrain type from sensor data"""
+        """
+        Classify terrain type from sensor data (reserved API).
+
+        Args:
+            sensor_data: Raw sensor data dictionary
+
+        Returns:
+            TerrainType: Classified terrain type (UNKNOWN by default)
+        """
         # TODO: Implement terrain classification
         # - Process sensor inputs
         # - Apply classification algorithms
@@ -108,15 +130,25 @@ class TerrainClassifier:
         return TerrainType.UNKNOWN  # Placeholder
 
     def get_terrain_properties(self, terrain_type: TerrainType) -> TerrainProperties:
-        """Get properties for terrain type"""
+        """
+        Get properties for a given terrain type.
+
+        This method is part of the reserved API for costmap / planner integration.
+        """
         return self.terrain_properties.get(
             terrain_type, self.terrain_properties[TerrainType.UNKNOWN]
         )
 
     def assess_traversability(
-        self, position: Tuple[float, float], lookahead_distance: float = 2.0
+        self, position: Tuple[float, float], _lookahead_distance: float = 2.0
     ) -> float:
-        """Assess terrain traversability ahead"""
+        """
+        Assess terrain traversability ahead (reserved API).
+
+        Args:
+            position: Current rover position
+            _lookahead_distance: Lookahead distance in meters (unused for now)
+        """
         # TODO: Implement traversability assessment
         # - Analyze terrain ahead
         # - Consider multiple factors
@@ -124,7 +156,13 @@ class TerrainClassifier:
         return 0.8  # Placeholder
 
     def recommend_speed(self, terrain_type: TerrainType, current_speed: float) -> float:
-        """Recommend appropriate speed for terrain"""
+        """
+        Recommend appropriate speed for terrain (reserved API).
+
+        Args:
+            terrain_type: Classified terrain type
+            current_speed: Current commanded speed
+        """
         properties = self.get_terrain_properties(terrain_type)
         recommended_speed = min(current_speed, properties.max_speed)
 
@@ -138,7 +176,13 @@ class TerrainClassifier:
     def calculate_terrain_cost(
         self, terrain_type: TerrainType, distance: float
     ) -> float:
-        """Calculate path cost for terrain segment"""
+        """
+        Calculate path cost for terrain segment (reserved API).
+
+        Args:
+            terrain_type: Classified terrain type
+            distance: Segment distance in meters
+        """
         properties = self.get_terrain_properties(terrain_type)
         base_cost = 1.0 / properties.traversability
         distance_cost = distance * base_cost
@@ -151,7 +195,15 @@ class TerrainClassifier:
         return distance_cost
 
     def detect_hazards(self, sensor_data: dict) -> List[dict]:
-        """Detect terrain hazards"""
+        """
+        Detect terrain hazards (reserved API).
+
+        Args:
+            sensor_data: Raw sensor data dictionary
+
+        Returns:
+            List of hazard descriptions (empty list by default)
+        """
         # TODO: Implement hazard detection
         # - Identify dangerous terrain
         # - Assess risk levels
@@ -160,21 +212,26 @@ class TerrainClassifier:
 
     def update_terrain_map(
         self, position: Tuple[float, float], terrain_type: TerrainType
-    ):
-        """Update internal terrain map"""
+    ) -> None:
+        """Update internal terrain map (reserved API)."""
         # TODO: Implement terrain map updates
         # - Store terrain classifications
         # - Maintain spatial database
         # - Update with new information
+        ...
 
-    def reset_classifier(self):
-        """Reset classifier state"""
+    def reset_classifier(self) -> None:
+        """Reset classifier state (reserved API)."""
         # TODO: Clear internal state
         # Reset classification models
         # Clear cached data
+        ...
 
-    def shutdown(self):
-        """Shutdown terrain classifier"""
+    def shutdown(self) -> None:
+        """Shutdown terrain classifier (reserved API)."""
         # TODO: Clean shutdown
         # Save state if needed
         # Release resources
+        ...
+
+

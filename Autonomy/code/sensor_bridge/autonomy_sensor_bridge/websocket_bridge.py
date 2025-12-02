@@ -32,6 +32,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, Optional
 
 import rclpy
+from autonomy.utilities import safe_execute, NodeLogger
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from nav_msgs.msg import Odometry
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
@@ -92,6 +93,9 @@ class WebSocketSensorBridgeNode(Node):
 
     def __init__(self):
         super().__init__("websocket_sensor_bridge")
+
+        # Initialize utilities
+        self.logger = NodeLogger(self, "sensor_bridge")
 
         # Declare parameters with validation
         self._declare_parameters()
@@ -461,28 +465,31 @@ class WebSocketSensorBridgeNode(Node):
         except Exception as e:
             self.get_logger().error(f"Error handling connection failure: {e}")
 
-    def _handle_websocket_message(self, message: str):
-        """Process incoming WebSocket message with comprehensive validation and error handling."""
+    def _handle_websocket_message(self, message: str) -> None:
+        """Process incoming WebSocket message with type-safe error handling."""
         processing_start = time.time()
 
         try:
             self.metrics.messages_received += 1
 
-            # Validate input
+            # Validate input using safe_execute pattern
             if not isinstance(message, str) or not message.strip():
-                self.get_logger().warn("Received empty or invalid message")
+                self.logger.warn("Received empty or invalid message", message_length=len(message) if message else 0)
                 self.metrics.messages_failed += 1
                 return
 
-            # Parse JSON with error handling
-            try:
-                data = json.loads(message)
-            except json.JSONDecodeError as e:
-                self.get_logger().error(
-                    f"Invalid JSON message: {e} - Message: {message[:100]}..."
+            # Parse JSON with safe_execute
+            result, error = safe_execute(json.loads, message)
+            if error:
+                self.logger.error(
+                    "Invalid JSON message received",
+                    error=error,
+                    message_preview=message[:100] if len(message) > 100 else message
                 )
                 self.metrics.messages_failed += 1
                 return
+
+            data = result
 
             # Validate message structure
             validation_result = self._validate_message_structure(data)

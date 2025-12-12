@@ -5,12 +5,13 @@ Configuration Validation Script
 Validates configuration files for production readiness and environment consistency.
 """
 
+import json
 import os
 import sys
-import yaml
-import json
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any, Dict, List, Tuple
+
+import yaml
 
 
 class ConfigValidator:

@@ -60,4 +60,3 @@ Rtabmap/PublishStats: true      # Publish statistics for monitoring
 
 # Constraint Parameters for GPS Integration
 LoopClosure/Variance: 0.5       # Variance of loop closures (affects GPS weight)
-

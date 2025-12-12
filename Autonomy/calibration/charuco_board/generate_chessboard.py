@@ -5,10 +5,12 @@ ChArUco Board Generator for Camera Calibration
 Generates a ChArUco board and saves it as a PDF formatted for a US Letter page.
 """
 
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
 import argparse
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 def generate_charuco_board(rows=7, cols=5, checker_size_mm=30.0, marker_size_mm=18.0,
                           aruco_dict_name="DICT_4X4_50", output_filename="charuco_board.pdf"):

@@ -10,7 +10,7 @@ If it is not available in the current environment, the entire module is skipped.
 import os
 import sys
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -20,7 +20,10 @@ STATE_MGMT_ROOT = os.path.join(PROJECT_ROOT, "Autonomy", "code", "state_manageme
 sys.path.insert(0, STATE_MGMT_ROOT)
 
 try:
-    from autonomy_state_machine.states import SystemState, AutonomousMode  # type: ignore  # noqa: E402
+    from autonomy_state_machine.states import (  # type: ignore  # noqa: E402
+        AutonomousMode,
+        SystemState,
+    )
 except Exception:
     SystemState = None
     AutonomousMode = None
@@ -278,7 +281,10 @@ class TestSafetyIntegration(unittest.TestCase):
 
     def test_emergency_stop_integration(self):
         """Test emergency stop integration."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Trigger emergency stop
         self.safety_manager.trigger_safety(
@@ -297,7 +303,10 @@ class TestSafetyIntegration(unittest.TestCase):
 
     def test_software_estop_integration(self):
         """Test software ESTOP integration."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Trigger software ESTOP
         self.safety_manager.trigger_safety(
@@ -316,7 +325,10 @@ class TestSafetyIntegration(unittest.TestCase):
 
     def test_safestop_integration(self):
         """Test safestop integration."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Trigger safestop
         self.safety_manager.trigger_safety(
@@ -335,7 +347,10 @@ class TestSafetyIntegration(unittest.TestCase):
 
     def test_proximity_violation_integration(self):
         """Test proximity violation integration."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Trigger proximity violation
         self.safety_manager.trigger_safety(
@@ -372,7 +387,3 @@ class TestSafetyIntegration(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-

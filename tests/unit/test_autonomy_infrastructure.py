@@ -4,9 +4,10 @@ Simple Autonomy Infrastructure Test
 Tests that the autonomy code can load and initialize properly
 """
 
-import sys
-import os
 import importlib.util
+import os
+import sys
+
 
 def test_mission_executor_import():
     """Test that mission executor can be imported and initialized"""

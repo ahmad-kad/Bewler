@@ -311,15 +311,15 @@ class FrontendNode(Node):
     def __init__(self):
         super().__init__('frontend_node')
         self.interface = FrontendInterface(self)
-        
+
         # Register callback for state updates
         self.interface.register_state_callback(self.on_state_update)
-    
+
     def on_state_update(self, msg):
         # Update UI based on state
         print(f"State: {msg.current_state}, Substate: {msg.substate}")
         self.update_ui(msg.current_state, msg.substate)
-    
+
     def request_autonomous_mode(self):
         # Request state change to autonomous
         future = self.interface.request_state_change(
@@ -328,16 +328,16 @@ class FrontendNode(Node):
             reason="Starting autonomous navigation mission",
             operator_id="operator_1"
         )
-        
+
         # Can wait for result or use callback
         rclpy.spin_until_future_complete(self, future)
         response = future.result()
-        
+
         if response.success:
             print("Successfully transitioned to autonomous mode")
         else:
             print(f"Failed: {response.message}")
-    
+
     def update_ui(self, state, substate):
         # Update your UI here
         pass

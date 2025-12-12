@@ -6,17 +6,17 @@ Tests SLAM performance and waypoint navigation accuracy in desert terrain.
 Validates sensor data quality and simulation adequacy for real hardware.
 """
 
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-import numpy as np
-import time
 import json
+import time
 from datetime import datetime
 
+import numpy as np
+import rclpy
 from geometry_msgs.msg import PoseStamped, Twist
-from nav_msgs.msg import Path, Odometry
-from sensor_msgs.msg import NavSatFix, Imu, LaserScan
+from nav_msgs.msg import Odometry, Path
+from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
+from sensor_msgs.msg import Imu, LaserScan, NavSatFix
 from std_msgs.msg import String
 
 
@@ -25,7 +25,7 @@ class WaypointNavigationTester(Node):
 
     def __init__(self):
         super().__init__('waypoint_navigation_tester')
-        
+
         # Test parameters
         self.waypoints = [
             [0.0, 0.0, 0.0],      # Start
@@ -34,25 +34,25 @@ class WaypointNavigationTester(Node):
             [-200.0, 150.0, 0.0], # Waypoint 3
             [0.0, 0.0, 0.0],      # Return to start
         ]
-        
+
         self.current_waypoint = 0
         self.waypoint_tolerance = 2.0  # meters
         self.max_test_time = 1800.0    # 30 minutes
         self.start_time = None
-        
+
         # Test data collection
         self.slam_poses = []
         self.gps_poses = []
         self.odom_poses = []
         self.test_results = {}
-        
+
         # QoS profiles
         qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
             depth=10
         )
-        
+
         # Subscribers
         self.slam_pose_sub = self.create_subscription(
             PoseStamped, '/slam/pose/fused', self.slam_pose_callback, qos_profile)
@@ -62,14 +62,14 @@ class WaypointNavigationTester(Node):
             Odometry, '/odom', self.odom_callback, qos_profile)
         self.laser_sub = self.create_subscription(
             LaserScan, '/scan', self.laser_callback, qos_profile)
-        
+
         # Publishers
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.goal_pub = self.create_publisher(PoseStamped, '/goal_pose', 10)
-        
+
         # Test timer
         self.test_timer = self.create_timer(1.0, self.run_test)
-        
+
         self.get_logger().info('Waypoint Navigation Tester initialized')
         self.get_logger().info(f'Testing {len(self.waypoints)} waypoints over {self.max_test_time/60:.1f} minutes')
 
@@ -89,7 +89,7 @@ class WaypointNavigationTester(Node):
         # This is a placeholder - real implementation would use proper projection
         x = (lon - -4.5895) * 111320 * np.cos(np.radians(lat))
         y = (lat - 137.4417) * 111320
-        
+
         self.gps_poses.append({
             'pose': [x, y, alt],
             'timestamp': time.time(),
@@ -125,27 +125,27 @@ class WaypointNavigationTester(Node):
             self.start_time = time.time()
             self.publish_next_waypoint()
             return
-        
+
         current_time = time.time()
         elapsed_time = current_time - self.start_time
-        
+
         # Check timeout
         if elapsed_time > self.max_test_time:
             self.get_logger().warn('Test timeout reached')
             self.complete_test()
             return
-        
+
         # Check if current waypoint reached
         if self.check_waypoint_reached():
             self.get_logger().info(f'Waypoint {self.current_waypoint} reached!')
             self.current_waypoint += 1
-            
+
             if self.current_waypoint >= len(self.waypoints):
                 self.get_logger().info('All waypoints completed!')
                 self.complete_test()
             else:
                 self.publish_next_waypoint()
-        
+
         # Publish test status
         self.publish_test_status(elapsed_time)
 
@@ -153,7 +153,7 @@ class WaypointNavigationTester(Node):
         """Publish next waypoint goal."""
         if self.current_waypoint < len(self.waypoints):
             wp = self.waypoints[self.current_waypoint]
-            
+
             goal = PoseStamped()
             goal.header.stamp = self.get_clock().now().to_msg()
             goal.header.frame_id = 'map'
@@ -161,7 +161,7 @@ class WaypointNavigationTester(Node):
             goal.pose.position.y = wp[1]
             goal.pose.position.z = wp[2]
             goal.pose.orientation.w = 1.0
-            
+
             self.goal_pub.publish(goal)
             self.get_logger().info(f'Published waypoint {self.current_waypoint}: {wp}')
 
@@ -169,15 +169,15 @@ class WaypointNavigationTester(Node):
         """Check if current waypoint has been reached."""
         if not self.slam_poses:
             return False
-        
+
         current_pose = self.slam_poses[-1]['pose']
         target_waypoint = self.waypoints[self.current_waypoint]
-        
+
         distance = np.sqrt(
             (current_pose[0] - target_waypoint[0])**2 +
             (current_pose[1] - target_waypoint[1])**2
         )
-        
+
         return distance < self.waypoint_tolerance
 
     def publish_test_status(self, elapsed_time):
@@ -191,7 +191,7 @@ class WaypointNavigationTester(Node):
             'gps_poses_count': len(self.gps_poses),
             'odom_poses_count': len(self.odom_poses)
         }
-        
+
         status_msg = String()
         status_msg.data = json.dumps(status)
         # Would publish to status topic in real implementation
@@ -199,16 +199,16 @@ class WaypointNavigationTester(Node):
     def complete_test(self):
         """Complete test and generate results."""
         self.get_logger().info('Completing waypoint navigation test...')
-        
+
         # Calculate test results
         self.test_results = self.calculate_test_results()
-        
+
         # Log results
         self.log_test_results()
-        
+
         # Stop test
         self.test_timer.cancel()
-        
+
         # Stop robot
         stop_cmd = Twist()
         self.cmd_vel_pub.publish(stop_cmd)
@@ -216,7 +216,7 @@ class WaypointNavigationTester(Node):
     def calculate_test_results(self):
         """Calculate test performance metrics."""
         results = {}
-        
+
         # Waypoint accuracy
         if len(self.slam_poses) > 0:
             final_pose = self.slam_poses[-1]['pose']
@@ -226,12 +226,12 @@ class WaypointNavigationTester(Node):
                 (final_pose[1] - start_pose[1])**2
             )
             results['loop_closure_error'] = loop_closure_error
-        
+
         # SLAM performance
         results['slam_poses_count'] = len(self.slam_poses)
         results['gps_poses_count'] = len(self.gps_poses)
         results['odom_poses_count'] = len(self.odom_poses)
-        
+
         # Data quality metrics
         if len(self.slam_poses) > 1:
             slam_distances = []
@@ -240,29 +240,29 @@ class WaypointNavigationTester(Node):
                 p2 = self.slam_poses[i]['pose']
                 dist = np.sqrt((p2[0]-p1[0])**2 + (p2[1]-p1[1])**2)
                 slam_distances.append(dist)
-            
+
             results['slam_distance_traveled'] = sum(slam_distances)
             results['slam_pose_frequency'] = len(self.slam_poses) / (time.time() - self.start_time)
-        
+
         return results
 
     def log_test_results(self):
         """Log test results."""
         self.get_logger().info('=== WAYPOINT NAVIGATION TEST RESULTS ===')
-        
+
         for key, value in self.test_results.items():
             self.get_logger().info(f'{key}: {value}')
-        
+
         # Validation criteria
         self.get_logger().info('=== VALIDATION CRITERIA ===')
-        
+
         if 'loop_closure_error' in self.test_results:
             lce = self.test_results['loop_closure_error']
             if lce < 1.0:
                 self.get_logger().info(f'✅ Loop closure error: {lce:.3f}m (< 1m required)')
             else:
                 self.get_logger().warn(f'❌ Loop closure error: {lce:.3f}m (>= 1m)')
-        
+
         if 'slam_pose_frequency' in self.test_results:
             freq = self.test_results['slam_pose_frequency']
             if freq > 5.0:
@@ -274,7 +274,7 @@ class WaypointNavigationTester(Node):
 def main(args=None):
     """Main function."""
     rclpy.init(args=args)
-    
+
     try:
         tester = WaypointNavigationTester()
         rclpy.spin(tester)

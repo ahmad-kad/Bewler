@@ -6,10 +6,10 @@ state_machine_director:
     # Boot configuration
     auto_transition_boot: true
     boot_timeout: 30.0  # seconds
-    
+
     # State update rate
     update_rate: 10.0  # Hz - frequency of state updates
-    
+
     # Safety configuration
     enable_safety_checks: true
     safety_check_rate: 1.0  # Hz
@@ -33,7 +33,7 @@ state_machine_director:
     timing_check_rate: 2.0  # Hz
     max_response_time: 100.0  # ms
     timing_violation_threshold: 50  # violations per minute
-    
+
     # Timeout configuration (seconds, 0.0 = no timeout)
     state_timeouts:
       boot: 30.0
@@ -45,29 +45,29 @@ state_machine_director:
       safestop: 300.0  # 5 minutes - auto-resume if no operator response
       safety: 0.0  # Legacy safety state - requires manual clearance
       shutdown: 10.0
-    
+
     # Mission timeouts (seconds)
     mission_timeouts:
       science: 1800.0  # 30 minutes
       delivery: 3600.0  # 60 minutes
       equipment_servicing: 1800.0  # 30 minutes
       autonomous_navigation: 1800.0  # 30 minutes
-    
+
     # Transition constraints
     allow_forced_transitions: true  # Allow forced transitions (use with caution)
     require_manual_safety_clearance: true
-    
+
     # Battery thresholds
     battery_critical_threshold: 10.0  # percent
     battery_warning_threshold: 20.0  # percent
-    
+
     # Temperature thresholds (Celsius)
     temperature_warning: 70.0
     temperature_critical: 85.0
-    
+
     # Communication timeout
     communication_timeout: 5.0  # seconds
-    
+
     # Subsystem configuration
     required_subsystems:
       boot: []
@@ -77,13 +77,13 @@ state_machine_director:
       autonomous: ["navigation", "computer_vision", "slam"]
       safety: []
       shutdown: []
-    
+
     # Logging configuration
     log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
     log_state_transitions: true
     log_subsystem_changes: true
     transition_history_length: 100
-    
+
     # Topic names (can be remapped)
     topics:
       state_updates: "/state_machine/current_state"
@@ -91,10 +91,9 @@ state_machine_director:
       safety_status: "/state_machine/safety_status"
       led_info: "/state_machine/led_info"
       frontend_ack: "/state_machine/frontend_ack"
-    
+
     # Service names
     services:
       change_state: "/state_machine/change_state"
       get_state: "/state_machine/get_system_state"
       recover_safety: "/state_machine/recover_from_safety"
-

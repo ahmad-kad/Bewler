@@ -164,5 +164,3 @@ def validate_data_range(
                 "max": max_val,
             },
         )
-
-

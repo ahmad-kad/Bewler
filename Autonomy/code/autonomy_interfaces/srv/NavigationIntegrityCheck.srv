@@ -26,10 +26,3 @@ float64 hdop                # Horizontal dilution of precision
 # Recommendations
 string[] recommendations    # Recommended actions if integrity is compromised
 string timestamp            # When check was performed
-
-
-
-
-
-
-

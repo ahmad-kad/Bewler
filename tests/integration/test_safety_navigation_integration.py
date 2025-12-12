@@ -5,9 +5,9 @@ Integration Tests for Safety and Navigation Systems
 Tests interaction between safety system and navigation system.
 """
 
-import unittest
 import time
-from unittest.mock import Mock, patch, MagicMock
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 
 class TestSafetyNavigationIntegration(unittest.TestCase):
@@ -41,7 +41,10 @@ class TestSafetyNavigationIntegration(unittest.TestCase):
 
     def test_emergency_stop_halts_navigation(self):
         """Test that emergency stop immediately halts navigation."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Start navigation
         self.navigation.get_navigation_status.return_value = {
@@ -87,7 +90,10 @@ class TestSafetyNavigationIntegration(unittest.TestCase):
 
     def test_safestop_pauses_navigation(self):
         """Test that safestop pauses navigation (not halts)."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Start navigation
         self.navigation.get_navigation_status.return_value = {
@@ -120,7 +126,10 @@ class TestSafetyNavigationIntegration(unittest.TestCase):
 
     def test_safestop_resume_navigation(self):
         """Test resuming navigation after safestop."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Clear any active triggers
         self.safety_manager.clear_trigger(SafetyTriggerType.SAFESTOP_REQUEST)
@@ -140,7 +149,10 @@ class TestSafetyNavigationIntegration(unittest.TestCase):
 
     def test_proximity_violation_navigation_response(self):
         """Test navigation response to proximity violations."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Navigation active
         self.navigation.get_navigation_status.return_value = {
@@ -171,8 +183,11 @@ class TestSafetyNavigationIntegration(unittest.TestCase):
 
     def test_state_machine_safety_transitions(self):
         """Test state machine transitions due to safety events."""
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
         from autonomy_state_machine.states import SystemState
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
 
         # Test ESTOP transition
         self.safety_manager.trigger_safety(
@@ -230,7 +245,10 @@ class TestSafetyNavigationIntegration(unittest.TestCase):
 
     def test_multiple_safety_events_handling(self):
         """Test handling multiple simultaneous safety events."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # Multiple safety events
         events = [
@@ -256,8 +274,11 @@ class TestSafetyNavigationIntegration(unittest.TestCase):
 
     def test_safety_event_recovery_flow(self):
         """Test complete safety event recovery flow."""
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
         from autonomy_state_machine.states import SystemState
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
 
         # 1. Trigger safety event
         self.safety_manager.trigger_safety(
@@ -338,10 +359,3 @@ class TestNavigationVisionIntegration(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-
-
-

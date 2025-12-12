@@ -7,20 +7,21 @@ This test validates visual-inertial SLAM performance during GPS-denied operation
 in an indoor warehouse environment with feature-rich walls and obstacles.
 """
 
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
-from geometry_msgs.msg import PoseStamped, Twist, PoseWithCovariance
-from nav_msgs.msg import Odometry, OccupancyGrid
-from sensor_msgs.msg import Imu, NavSatFix, LaserScan, Image, PointCloud2
-from std_msgs.msg import String, Bool
-import numpy as np
-import time
 import json
 import math
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass, asdict
+import time
+from dataclasses import asdict, dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+import rclpy
+from geometry_msgs.msg import PoseStamped, PoseWithCovariance, Twist
+from nav_msgs.msg import OccupancyGrid, Odometry
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+from sensor_msgs.msg import Image, Imu, LaserScan, NavSatFix, PointCloud2
+from std_msgs.msg import Bool, String
 
 
 class TestStatus(Enum):
@@ -68,21 +69,21 @@ class GPSDeniedSLAMTest(Node):
 
     def __init__(self):
         super().__init__('gps_denied_slam_test')
-        
+
         # Test configuration
         self.test_name = "gps_denied_slam"
         self.start_time = time.time()
         self.status = TestStatus.INITIALIZING
-        
+
         # Test phases
         self.gps_available_phase_duration = 30.0  # seconds
         self.gps_denied_phase_duration = 120.0  # seconds
         self.gps_recovery_phase_duration = 30.0  # seconds
-        
+
         self.phase_start_time = None
         self.gps_disabled_time = None
         self.gps_recovery_start_time = None
-        
+
         # Data collection
         self.ground_truth_poses = []
         self.slam_poses = []
@@ -91,33 +92,33 @@ class GPSDeniedSLAMTest(Node):
         self.lidar_data = []
         self.camera_data = []
         self.visual_features_data = []
-        
+
         # GPS transition tracking
         self.gps_transitions = []
         self.gps_available = True
-        
+
         # SLAM drift tracking
         self.slam_drift_metrics = SLAMDriftMetrics()
         self.gps_denied_start_pose = None
         self.gps_denied_end_pose = None
-        
+
         # Test state
         self.test_results = None
         self.errors = []
         self.warnings = []
-        
+
         # QoS profiles
         qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             durability=DurabilityPolicy.VOLATILE,
             depth=10
         )
-        
+
         # Publishers
         self.cmd_vel_pub = self.create_publisher(Twist, '/rover/cmd_vel', 10)
         self.gps_enable_pub = self.create_publisher(Bool, '/rover/gps/enable', 10)
         self.test_status_pub = self.create_publisher(String, '/test/status', 10)
-        
+
         # Subscribers
         self.odom_sub = self.create_subscription(
             Odometry, '/rover/odom', self.odom_callback, qos_profile
@@ -143,16 +144,16 @@ class GPSDeniedSLAMTest(Node):
         self.points_sub = self.create_subscription(
             PointCloud2, '/rover/camera/depth/points', self.points_callback, qos_profile
         )
-        
+
         # Timers
         self.test_timer = self.create_timer(0.1, self.test_loop)
         self.metrics_timer = self.create_timer(1.0, self.update_metrics)
         self.status_timer = self.create_timer(5.0, self.publish_status)
-        
+
         # Initialize test
         self.get_logger().info(f"Starting {self.test_name} test")
         self.start_navigation()
-        
+
     def odom_callback(self, msg: Odometry):
         """Record ground truth pose from odometry."""
         pose = msg.pose.pose
@@ -166,7 +167,7 @@ class GPSDeniedSLAMTest(Node):
             'qz': pose.orientation.z,
             'qw': pose.orientation.w
         })
-        
+
     def slam_pose_callback(self, msg: PoseWithCovariance):
         """Record SLAM estimated pose."""
         pose = msg.pose
@@ -181,7 +182,7 @@ class GPSDeniedSLAMTest(Node):
             'qw': pose.orientation.w,
             'covariance': msg.covariance
         })
-        
+
     def imu_callback(self, msg: Imu):
         """Record IMU data."""
         self.imu_data.append({
@@ -190,7 +191,7 @@ class GPSDeniedSLAMTest(Node):
             'angular_velocity': [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z],
             'orientation': [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
         })
-        
+
     def gps_callback(self, msg: NavSatFix):
         """Record GPS data and track availability."""
         self.gps_data.append({
@@ -201,7 +202,7 @@ class GPSDeniedSLAMTest(Node):
             'position_covariance': msg.position_covariance.tolist(),
             'status': msg.status.status
         })
-        
+
         # Track GPS transitions
         if msg.status.status >= 0 and not self.gps_available:
             # GPS recovered
@@ -213,7 +214,7 @@ class GPSDeniedSLAMTest(Node):
                 'status': msg.status.status
             })
             self.get_logger().info("GPS signal recovered")
-            
+
         elif msg.status.status < 0 and self.gps_available:
             # GPS lost
             self.gps_available = False
@@ -223,7 +224,7 @@ class GPSDeniedSLAMTest(Node):
                 'status': msg.status.status
             })
             self.get_logger().warn("GPS signal lost")
-            
+
     def lidar_callback(self, msg: LaserScan):
         """Record LiDAR data."""
         self.lidar_data.append({
@@ -235,7 +236,7 @@ class GPSDeniedSLAMTest(Node):
             'range_min': msg.range_min,
             'range_max': msg.range_max
         })
-        
+
     def camera_callback(self, msg: Image):
         """Record camera data and estimate visual features."""
         self.camera_data.append({
@@ -245,7 +246,7 @@ class GPSDeniedSLAMTest(Node):
             'encoding': msg.encoding,
             'step': msg.step
         })
-        
+
         # Estimate visual features (simplified)
         # In real implementation, this would use OpenCV feature detection
         estimated_features = self.estimate_visual_features(msg)
@@ -254,7 +255,7 @@ class GPSDeniedSLAMTest(Node):
             'feature_count': estimated_features,
             'gps_available': self.gps_available
         })
-        
+
     def depth_callback(self, msg: Image):
         """Record depth camera data."""
         # Analyze depth data quality
@@ -263,12 +264,12 @@ class GPSDeniedSLAMTest(Node):
             self.depth_quality_samples.append(depth_quality)
         else:
             self.depth_quality_samples = [depth_quality]
-            
+
     def points_callback(self, msg: PointCloud2):
         """Record point cloud data."""
         # This would be used for more detailed 3D analysis
         pass
-        
+
     def estimate_visual_features(self, image_msg: Image) -> int:
         """Estimate number of visual features in image (simplified)."""
         # Simplified feature estimation based on image properties
@@ -278,11 +279,11 @@ class GPSDeniedSLAMTest(Node):
             base_features = 150
         elif image_msg.encoding == 'bgr8':
             base_features = 150
-            
+
         # Add some variation based on image size
         size_factor = (image_msg.width * image_msg.height) / (640 * 480)
         return int(base_features * size_factor)
-        
+
     def analyze_depth_quality(self, depth_msg: Image) -> float:
         """Analyze depth data quality (0-1, higher is better)."""
         # Simplified depth quality analysis
@@ -293,7 +294,7 @@ class GPSDeniedSLAMTest(Node):
             return 0.7  # Decent depth format
         else:
             return 0.3  # Poor depth format
-            
+
     def start_navigation(self):
         """Start autonomous navigation for the test."""
         # Publish a simple forward movement command
@@ -301,11 +302,11 @@ class GPSDeniedSLAMTest(Node):
         cmd.linear.x = 0.5  # 0.5 m/s forward
         cmd.angular.z = 0.1  # Slight turn for testing
         self.cmd_vel_pub.publish(cmd)
-        
+
         self.phase_start_time = time.time()
         self.status = TestStatus.GPS_AVAILABLE
         self.get_logger().info("Started navigation with GPS available")
-        
+
     def test_loop(self):
         """Main test execution loop."""
         if self.status == TestStatus.INITIALIZING:
@@ -314,10 +315,10 @@ class GPSDeniedSLAMTest(Node):
                 self.phase_start_time = time.time()
                 self.get_logger().info("Test started - SLAM data received")
             return
-            
+
         current_time = time.time()
         phase_duration = current_time - self.phase_start_time
-        
+
         if self.status == TestStatus.GPS_AVAILABLE:
             if phase_duration >= self.gps_available_phase_duration:
                 # Transition to GPS-denied phase
@@ -327,7 +328,7 @@ class GPSDeniedSLAMTest(Node):
                 self.gps_disabled_time = current_time
                 self.gps_denied_start_pose = self.slam_poses[-1] if self.slam_poses else None
                 self.get_logger().info("Transitioned to GPS-denied phase")
-                
+
         elif self.status == TestStatus.GPS_DENIED:
             if phase_duration >= self.gps_denied_phase_duration:
                 # Transition to GPS recovery phase
@@ -336,63 +337,63 @@ class GPSDeniedSLAMTest(Node):
                 self.phase_start_time = current_time
                 self.gps_denied_end_pose = self.slam_poses[-1] if self.slam_poses else None
                 self.get_logger().info("Transitioned to GPS recovery phase")
-                
+
         elif self.status == TestStatus.GPS_RECOVERY:
             if phase_duration >= self.gps_recovery_phase_duration:
                 # Test completed
                 self.status = TestStatus.COMPLETED
                 self.complete_test()
-                
+
     def disable_gps(self):
         """Disable GPS sensor."""
         gps_enable_msg = Bool()
         gps_enable_msg.data = False
         self.gps_enable_pub.publish(gps_enable_msg)
-        
+
     def enable_gps(self):
         """Enable GPS sensor."""
         gps_enable_msg = Bool()
         gps_enable_msg.data = True
         self.gps_enable_pub.publish(gps_enable_msg)
-        
+
     def update_metrics(self):
         """Update SLAM drift metrics during GPS-denied operation."""
         if self.status != TestStatus.GPS_DENIED or not self.slam_poses:
             return
-            
+
         # Calculate drift during GPS-denied period
         if self.gps_denied_start_pose and len(self.slam_poses) > 0:
             start_pose = self.gps_denied_start_pose
             current_pose = self.slam_poses[-1]
-            
+
             dx = current_pose['x'] - start_pose['x']
             dy = current_pose['y'] - start_pose['y']
             total_drift = math.sqrt(dx*dx + dy*dy)
-            
+
             # Calculate drift per minute
             gps_denied_duration = time.time() - self.gps_disabled_time
             drift_per_minute = total_drift / (gps_denied_duration / 60.0) if gps_denied_duration > 0 else 0.0
-            
+
             self.slam_drift_metrics.total_drift = total_drift
             self.slam_drift_metrics.drift_per_minute = drift_per_minute
-            
+
         # Update visual features count
         if self.visual_features_data:
             recent_features = [f['feature_count'] for f in self.visual_features_data[-10:]]
             self.slam_drift_metrics.visual_features_count = int(np.mean(recent_features))
-            
+
         # Update depth quality
         if hasattr(self, 'depth_quality_samples') and self.depth_quality_samples:
             self.slam_drift_metrics.depth_quality = np.mean(self.depth_quality_samples[-10:])
-            
+
     def complete_test(self):
         """Complete the test and generate results."""
         self.end_time = time.time()
         duration = self.end_time - self.start_time
-        
+
         # Calculate final metrics
         self.calculate_final_metrics()
-        
+
         # Create test results
         self.test_results = TestResults(
             test_name=self.test_name,
@@ -407,10 +408,10 @@ class GPSDeniedSLAMTest(Node):
             errors=self.errors,
             warnings=self.warnings
         )
-        
+
         # Save results
         self.save_results()
-        
+
         # Log completion
         self.get_logger().info(f"Test completed in {duration:.2f}s")
         self.get_logger().info(f"GPS-denied duration: {self.gps_denied_phase_duration:.2f}s")
@@ -418,13 +419,13 @@ class GPSDeniedSLAMTest(Node):
         self.get_logger().info(f"Drift per minute: {self.slam_drift_metrics.drift_per_minute:.3f}m/min")
         self.get_logger().info(f"Visual features: {self.slam_drift_metrics.visual_features_count}")
         self.get_logger().info(f"Depth quality: {self.slam_drift_metrics.depth_quality:.2f}")
-        
+
     def calculate_final_metrics(self):
         """Calculate final test metrics."""
         # Calculate GPS reacquisition time
         if self.gps_recovery_start_time and self.gps_available:
             self.slam_drift_metrics.gps_reacquisition_time = time.time() - self.gps_recovery_start_time
-            
+
         # Calculate navigation continuity
         # Check if SLAM poses were continuous during GPS-denied period
         if len(self.slam_poses) > 10:
@@ -432,11 +433,11 @@ class GPSDeniedSLAMTest(Node):
             for i in range(1, len(self.slam_poses)):
                 interval = self.slam_poses[i]['timestamp'] - self.slam_poses[i-1]['timestamp']
                 pose_intervals.append(interval)
-                
+
             # Check for large gaps in pose updates
             max_interval = max(pose_intervals) if pose_intervals else 0
             self.slam_drift_metrics.navigation_continuity = max_interval < 2.0  # Less than 2s gap
-            
+
         # Store initial and final positions
         if self.gps_denied_start_pose:
             self.slam_drift_metrics.initial_position = [
@@ -444,30 +445,30 @@ class GPSDeniedSLAMTest(Node):
                 self.gps_denied_start_pose['y'],
                 self.gps_denied_start_pose['z']
             ]
-            
+
         if self.gps_denied_end_pose:
             self.slam_drift_metrics.final_position = [
                 self.gps_denied_end_pose['x'],
                 self.gps_denied_end_pose['y'],
                 self.gps_denied_end_pose['z']
             ]
-            
+
     def save_results(self):
         """Save test results to file."""
         if not self.test_results:
             return
-            
+
         results_file = f"/tmp/{self.test_name}_results_{int(self.start_time)}.json"
-        
+
         # Convert to serializable format
         results_dict = asdict(self.test_results)
         results_dict['status'] = self.test_results.status.value
-        
+
         with open(results_file, 'w') as f:
             json.dump(results_dict, f, indent=2)
-            
+
         self.get_logger().info(f"Results saved to {results_file}")
-        
+
     def publish_status(self):
         """Publish current test status."""
         status_msg = String()
@@ -478,7 +479,7 @@ class GPSDeniedSLAMTest(Node):
 def main(args=None):
     """Main function."""
     rclpy.init(args=args)
-    
+
     try:
         test_node = GPSDeniedSLAMTest()
         rclpy.spin(test_node)

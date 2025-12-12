@@ -4,7 +4,7 @@ import { AlertTriangle, TestTube, Bug, BarChart3, Settings, LayoutDashboard, Tar
 
 /**
  * Tab Navigation Component
- * 
+ *
  * Context-aware tab navigation with indicators for active missions, errors, and tests.
  */
 export const TabNavigation = ({ activeTab, setActiveTab }) => {
@@ -28,15 +28,15 @@ export const TabNavigation = ({ activeTab, setActiveTab }) => {
       {tabs.map(tab => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
-        
+
         return (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
               relative flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t transition-colors
-              ${isActive 
-                ? 'bg-zinc-900 text-zinc-100 border-t border-x border-zinc-700' 
+              ${isActive
+                ? 'bg-zinc-900 text-zinc-100 border-t border-x border-zinc-700'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
               }
             `}
@@ -46,8 +46,8 @@ export const TabNavigation = ({ activeTab, setActiveTab }) => {
             {tab.badge && (
               <span className={`
                 px-1.5 py-0.5 text-xs rounded
-                ${isActive 
-                  ? 'bg-zinc-700 text-zinc-200' 
+                ${isActive
+                  ? 'bg-zinc-700 text-zinc-200'
                   : 'bg-zinc-700/50 text-zinc-400'
                 }
               `}>
@@ -60,7 +60,3 @@ export const TabNavigation = ({ activeTab, setActiveTab }) => {
     </div>
   );
 };
-
-
-
-

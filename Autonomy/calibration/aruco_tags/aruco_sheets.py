@@ -293,7 +293,10 @@ def create_page_with_tags_large_format(tag_specs, start_id, dpi=300):
 
             # Check if we're exceeding the page height
             if y + tag_size_px > page_height_px - margin:
-                print(f"  ⚠️  WARNING: Insufficient vertical space for all tags. {count - tag_idx} tags will be omitted.")
+                print(
+                    f"  ⚠️  WARNING: Insufficient vertical space for all tags. "
+                    f"{count - tag_idx} tags will be omitted."
+                )
                 break
 
             # Generate tag
@@ -500,7 +503,11 @@ def create_merged_template_with_tags(tag_specs, start_id, template_image_path, d
     return Image.fromarray(canvas, mode='RGB'), current_id
 
 
-def generate_merged_template_pdf(tag_specs, output_filename="aruco_template_merged.pdf", template_path="template_silhouette.png"):
+def generate_merged_template_pdf(
+    tag_specs,
+    output_filename="aruco_template_merged.pdf",
+    template_path="template_silhouette.png"
+):
     """
     Generate PDF with ArUco tags merged onto template_silhouette.png.
 

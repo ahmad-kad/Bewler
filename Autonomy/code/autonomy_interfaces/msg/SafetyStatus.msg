@@ -31,4 +31,3 @@ float64 temperature              # System temperature (Celsius)
 bool communication_ok            # Communication link status
 bool sensors_ok                  # Sensor system status
 string[] degraded_capabilities   # List of capabilities that are degraded
-

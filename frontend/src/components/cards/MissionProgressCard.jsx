@@ -3,7 +3,7 @@ import { Target, Pause, Square } from 'lucide-react';
 
 /**
  * MissionProgressCard Component
- * 
+ *
  * Displays active mission progress with controls.
  * Only shows when a mission is active.
  */
@@ -80,4 +80,3 @@ export const MissionProgressCard = ({ mission, onPause, onAbort, onViewDetails }
     </div>
   );
 };
-

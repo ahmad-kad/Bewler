@@ -5,15 +5,23 @@ Pytest Configuration and Shared Fixtures
 Provides shared test fixtures and configuration for the autonomy test suite.
 """
 
-import pytest
-import numpy as np
 import time
 from unittest.mock import Mock
 
+import numpy as np
+import pytest
+
 # Import mock sensors
 from tests.fixtures.mock_sensors import (
-    MockGPS, MockIMU, MockCamera, MockLiDAR, MockEncoder,
-    MockActuator, MockBattery, SensorFusionMock, create_mock_sensor_suite
+    MockActuator,
+    MockBattery,
+    MockCamera,
+    MockEncoder,
+    MockGPS,
+    MockIMU,
+    MockLiDAR,
+    SensorFusionMock,
+    create_mock_sensor_suite,
 )
 
 
@@ -270,10 +278,3 @@ def simulate_time_passing(seconds):
             return time.time() - self.start_time
 
     return TimeSimulator()
-
-
-
-
-
-
-

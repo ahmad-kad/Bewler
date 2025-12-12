@@ -21,10 +21,10 @@ sys.path.insert(0, STATE_MGMT_ROOT)
 
 try:
     from autonomy_state_machine.safety_manager import (  # type: ignore  # noqa: E402
-        SafetyManager,
-        SafetyTriggerType,
-        SafetySeverity,
         RecoveryBehavior,
+        SafetyManager,
+        SafetySeverity,
+        SafetyTriggerType,
     )
 except Exception:
     SafetyManager = None
@@ -187,7 +187,3 @@ class TestSafetyManager(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-

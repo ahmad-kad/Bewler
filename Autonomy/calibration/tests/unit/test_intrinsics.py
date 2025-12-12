@@ -3,19 +3,20 @@
 Unit Tests for Camera Intrinsics Calibration
 """
 
-import unittest
-import numpy as np
-import tempfile
 import os
+import tempfile
+import unittest
 from pathlib import Path
+
+import numpy as np
 
 # Imports from intrinsics module
 from intrinsics import (
-    CameraConfig,
-    CharUcoBoardConfig,
-    CameraIntrinsicsCalibrator,
     CalibrationResult,
-    CaptureMode
+    CameraConfig,
+    CameraIntrinsicsCalibrator,
+    CaptureMode,
+    CharUcoBoardConfig,
 )
 
 
@@ -29,7 +30,7 @@ class TestCameraConfig(unittest.TestCase):
             camera_index=0,
             resolution=(1920, 1080)
         )
-        
+
         self.assertEqual(cfg.name, "Test Camera")
         self.assertEqual(cfg.camera_index, 0)
         self.assertEqual(cfg.resolution, (1920, 1080))
@@ -42,7 +43,7 @@ class TestCameraConfig(unittest.TestCase):
             camera_index=0,
             resolution=(640, 480)
         )
-        
+
         self.assertEqual(cfg.sensor_type, "rgb")
         self.assertEqual(cfg.focal_length_estimate_mm, 4.0)
 
@@ -59,7 +60,7 @@ class TestCharUcoBoardConfig(unittest.TestCase):
             checker_size_mm=30.0,
             marker_size_mm=18.0
         )
-        
+
         self.assertEqual(cfg.name, "test_board")
         self.assertEqual(cfg.size, (5, 7))
 
@@ -74,7 +75,7 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
             camera_index=0,
             resolution=(1920, 1080)
         )
-        
+
         self.board_cfg = CharUcoBoardConfig(
             name="board_5x7",
             aruco_dict_name="DICT_4X4_50",
@@ -86,7 +87,7 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
     def test_calibrator_initialization(self):
         """Test calibrator initialization"""
         calibrator = CameraIntrinsicsCalibrator(self.camera_cfg, self.board_cfg)
-        
+
         self.assertIsNotNone(calibrator.detector)
         self.assertIsNotNone(calibrator.board)
         self.assertEqual(calibrator.camera_config.name, "Test Camera")
@@ -94,9 +95,9 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
     def test_get_dataset_dir(self):
         """Test dataset directory generation"""
         calibrator = CameraIntrinsicsCalibrator(self.camera_cfg, self.board_cfg)
-        
+
         dataset_dir = calibrator._get_dataset_dir("manual")
-        
+
         self.assertIn("manual", dataset_dir)
         self.assertIn("test_camera", dataset_dir.lower())
         self.assertIn("calibration_images", dataset_dir)
@@ -104,9 +105,9 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
     def test_get_artifacts_dir(self):
         """Test artifacts directory"""
         calibrator = CameraIntrinsicsCalibrator(self.camera_cfg, self.board_cfg)
-        
+
         artifacts_dir = calibrator._get_artifacts_dir()
-        
+
         self.assertIn("artifacts", artifacts_dir)
         self.assertIn("intrinsics", artifacts_dir)
 
@@ -114,7 +115,7 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
         """Test creating calibration result"""
         K = np.eye(3)
         dist = np.zeros(5)
-        
+
         result = CalibrationResult(
             camera_matrix=K,
             dist_coeffs=dist,
@@ -129,7 +130,7 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
             images_used=[],
             quality_metrics={'fx': 800.0}
         )
-        
+
         self.assertEqual(result.capture_mode, "manual")
         self.assertEqual(result.reprojection_error, 0.5)
         self.assertEqual(result.num_images, 50)
@@ -138,10 +139,10 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
         """Test that save_calibration creates output directory"""
         with tempfile.TemporaryDirectory() as tmpdir:
             calibrator = CameraIntrinsicsCalibrator(self.camera_cfg, self.board_cfg)
-            
+
             K = np.eye(3)
             dist = np.zeros(5)
-            
+
             result = CalibrationResult(
                 camera_matrix=K,
                 dist_coeffs=dist,
@@ -156,13 +157,13 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
                 images_used=[],
                 quality_metrics={'fx': 800.0}
             )
-            
+
             files_saved = calibrator.save_calibration(result, tmpdir)
-            
+
             self.assertIn('pkl', files_saved)
             self.assertIn('json', files_saved)
             self.assertIn('yaml', files_saved)
-            
+
             # Check files exist
             self.assertTrue(os.path.exists(files_saved['pkl']))
             self.assertTrue(os.path.exists(files_saved['json']))

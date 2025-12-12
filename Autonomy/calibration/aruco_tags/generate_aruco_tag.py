@@ -16,10 +16,12 @@ Usage:
     python generate_aruco_tag.py --id 42 --size 10 --output navigation_marker_42.pdf
 """
 
+import argparse
+
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-import argparse
+
 
 def generate_aruco_tag(marker_id=0, size_cm=20.0, aruco_dict_name="DICT_4X4_50",
                        output_filename="aruco_tag.pdf"):
@@ -74,26 +76,26 @@ def generate_aruco_tag(marker_id=0, size_cm=20.0, aruco_dict_name="DICT_4X4_50",
     # --- PDF Creation (using PIL) ---
     # Convert numpy array to PIL Image
     pil_image = Image.fromarray(canvas, mode='RGB')
-    
+
     # Add footer text using ImageDraw
     draw = ImageDraw.Draw(pil_image)
     footer_text = (
         f"ArUco Tag | ID: {marker_id} | Dict: {aruco_dict_name} | "
         f"Size: {size_cm:.1f}x{size_cm:.1f} cm | Print @ 100% Scale"
     )
-    
+
     # Position footer near bottom (20 pixels from bottom)
     footer_y = page_height_px - 30
-    
+
     # Try to use a monospace font; fallback to default if not available
     try:
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 16)
     except (IOError, OSError):
         # Fallback to default font if system font not found
         font = ImageFont.load_default()
-    
+
     draw.text((10, footer_y), footer_text, fill=(0, 0, 0), font=font)
-    
+
     try:
         pil_image.save(output_filename, format='PDF')
         print(f"\n✅ Successfully generated tag: '{output_filename}'")
@@ -102,11 +104,25 @@ def generate_aruco_tag(marker_id=0, size_cm=20.0, aruco_dict_name="DICT_4X4_50",
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Generate a single, to-scale ArUco tag for printing.')
-    parser.add_argument('-i', '--id', type=int, required=True, help='The ID of the ArUco marker to generate.')
-    parser.add_argument('-s', '--size-cm', type=float, required=True, help='The physical size (width and height) of the tag in centimeters.')
-    parser.add_argument('-d', '--dict', default='DICT_4X4_50', help='ArUco dictionary name (default: DICT_4X4_50).')
-    parser.add_argument('-o', '--output', default=None, help='Output PDF filename. If not set, a name is generated automatically.')
+    parser = argparse.ArgumentParser(
+        description='Generate a single, to-scale ArUco tag for printing.'
+    )
+    parser.add_argument(
+        '-i', '--id', type=int, required=True,
+        help='The ID of the ArUco marker to generate.'
+    )
+    parser.add_argument(
+        '-s', '--size-cm', type=float, required=True,
+        help='The physical size (width and height) of the tag in centimeters.'
+    )
+    parser.add_argument(
+        '-d', '--dict', default='DICT_4X4_50',
+        help='ArUco dictionary name (default: DICT_4X4_50).'
+    )
+    parser.add_argument(
+        '-o', '--output', default=None,
+        help='Output PDF filename. If not set, a name is generated automatically.'
+    )
     args = parser.parse_args()
 
     output_filename = args.output

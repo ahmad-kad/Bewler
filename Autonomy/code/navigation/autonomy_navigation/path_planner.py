@@ -16,7 +16,6 @@ from enum import Enum
 from typing import List, Optional, Tuple
 
 
-
 class PathPlanningAlgorithm(Enum):
     """Available path planning algorithms"""
 

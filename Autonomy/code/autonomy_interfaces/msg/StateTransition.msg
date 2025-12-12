@@ -20,4 +20,3 @@ string failure_reason            # If failed, why it failed
 string[] preconditions_checked   # List of preconditions that were validated
 string[] entry_actions_executed  # Actions executed on entering new state
 string[] exit_actions_executed   # Actions executed on leaving old state
-

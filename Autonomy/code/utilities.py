@@ -10,13 +10,12 @@ Author: URC 2026 Autonomy Team
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-
 
 # ===== ERROR HANDLING =====
 

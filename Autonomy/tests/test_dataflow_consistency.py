@@ -6,7 +6,7 @@ Tests data flow consistency across the entire system.
 """
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 
 class TestDataFlowConsistency(unittest.TestCase):

@@ -13,6 +13,7 @@ Author: URC 2026 Autonomy Team
 
 # Standard Library
 import math
+import threading
 import time
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
@@ -227,7 +228,11 @@ class WaypointNavigationMission(Node):
             and self.current_waypoint_index / len(self.waypoints)
             or 0.0
         )
-        response.message = f"State: {self.state.value}, Waypoint: {self.current_waypoint_index}/{len(self.waypoints)}, Progress: {progress:.1f}"
+        response.message = (
+            f"State: {self.state.value}, "
+            f"Waypoint: {self.current_waypoint_index}/{len(self.waypoints)}, "
+            f"Progress: {progress:.1f}"
+        )
         return response
 
     # Mission execution

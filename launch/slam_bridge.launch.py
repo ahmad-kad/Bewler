@@ -9,9 +9,10 @@ Launches all components needed for SLAM data routing:
 - Mission Executor (for waypoint missions)
 """
 
+from launch_ros.actions import Node
+
 import launch
 from launch import LaunchDescription
-from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -73,5 +74,3 @@ def generate_launch_description():
         #     ]
         # ),
     ])
-
-

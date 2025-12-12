@@ -8,7 +8,8 @@ Prevent backtracking by making fast, good-enough decisions.
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
 
 class DecisionFramework:
     """Framework for fast, reversible decisions."""

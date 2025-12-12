@@ -36,4 +36,3 @@ float64 congestion_factor  # Current congestion multiplier (1.0 = no congestion)
 # Predictive metrics
 float64 predicted_aoi      # Predicted AOI for next sample
 float64 aoi_trend          # AOI trend (-1 decreasing, 0 stable, 1 increasing)
-

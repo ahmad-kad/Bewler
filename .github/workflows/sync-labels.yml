@@ -33,4 +33,3 @@ jobs:
           dry-run: false
       - name: Log label sync result
         run: echo "✅ Labels synced successfully from .github/labels.yml"
-

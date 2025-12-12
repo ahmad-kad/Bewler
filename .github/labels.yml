@@ -79,4 +79,3 @@ labels:
   - name: "status:done"
     color: "0e8a16"
     description: "Completed"
-

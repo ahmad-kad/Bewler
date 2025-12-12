@@ -5,9 +5,9 @@ Full System Integration Tests
 Tests complete rover autonomy system integration.
 """
 
-import unittest
-from unittest.mock import Mock, patch, MagicMock
 import time
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 
 class TestFullSystemIntegration(unittest.TestCase):
@@ -99,7 +99,10 @@ class TestFullSystemIntegration(unittest.TestCase):
 
     def test_emergency_stop_full_system_response(self):
         """Test emergency stop response across all subsystems."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         # System operating normally
         self.assertTrue(self.safety.get_safety_status()['system_safe'])
@@ -165,7 +168,10 @@ class TestFullSystemIntegration(unittest.TestCase):
 
     def test_safety_system_integration(self):
         """Test safety system integration with all subsystems."""
-        from autonomy_state_machine.safety_manager import SafetyTriggerType, SafetySeverity
+        from autonomy_state_machine.safety_manager import (
+            SafetySeverity,
+            SafetyTriggerType,
+        )
 
         safety_scenarios = [
             (SafetyTriggerType.EMERGENCY_STOP, "Hardware ESTOP", "operator"),
@@ -315,10 +321,3 @@ class TestFullSystemIntegration(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-
-
-

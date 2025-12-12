@@ -73,5 +73,3 @@ teleoperation:
 
 # Environment Settings
 environment: production  # Options: development, production
-
-

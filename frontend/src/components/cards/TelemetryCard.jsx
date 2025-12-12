@@ -2,7 +2,7 @@ import React from 'react';
 
 /**
  * TelemetryCard Component
- * 
+ *
  * Displays critical telemetry data in a compact format.
  */
 export const TelemetryCard = ({ telemetry, title = 'Telemetry' }) => {
@@ -20,28 +20,28 @@ export const TelemetryCard = ({ telemetry, title = 'Telemetry' }) => {
             {Math.round(telemetry.battery)}%
           </span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <span className="text-sm text-zinc-400">Position</span>
           <span className="text-sm font-medium text-zinc-200">
             {telemetry.gps.position.lat.toFixed(3)}°, {telemetry.gps.position.lon.toFixed(3)}°
           </span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <span className="text-sm text-zinc-400">Speed</span>
           <span className="text-sm font-medium text-zinc-200">
             {telemetry.speed.toFixed(1)} m/s
           </span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <span className="text-sm text-zinc-400">Temperature</span>
           <span className="text-sm font-medium text-zinc-200">
             {Math.round(telemetry.temperature)}°C
           </span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <span className="text-sm text-zinc-400">GPS Satellites</span>
           <span className="text-sm font-medium text-zinc-200">
@@ -52,7 +52,3 @@ export const TelemetryCard = ({ telemetry, title = 'Telemetry' }) => {
     </div>
   );
 };
-
-
-
-

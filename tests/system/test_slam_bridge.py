@@ -8,16 +8,17 @@ Tests the complete data flow:
 - Coordinate transformations and TF frames
 """
 
+import json
+import math
+import threading
+import time
+
 import rclpy
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, NavSatFix
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import String, Float32
-import json
-import time
-import threading
-import math
+from std_msgs.msg import Float32, String
 
 
 class SLAMBridgeTester(Node):
@@ -293,5 +294,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

@@ -10,7 +10,9 @@ Provides live camera feed with overlay showing:
 - FPS and detection statistics
 
 Usage:
-    python aruco_validator.py --calibration ../camera/camera_calibration.json --tag-size 10.0
+    python aruco_validator.py \\
+        --calibration ../camera/camera_calibration.json \\
+        --tag-size 10.0
 
 Author: URC 2026 Autonomy Team
 """
@@ -21,21 +23,29 @@ import logging
 import os
 import sys
 import time
-from typing import Tuple
+from typing import Optional, Tuple
 
 import cv2
 import numpy as np
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 
 class ArucoValidator:
     """Real-time ArUco tag validation system for Raspberry Pi."""
 
-    def __init__(self, calibration_file: str = None, tag_size_cm: float = 10.0,
-                 aruco_dict: str = "DICT_4X4_50", camera_index: int = 0):
+    def __init__(
+        self,
+        calibration_file: Optional[str] = None,
+        tag_size_cm: float = 10.0,
+        aruco_dict: str = "DICT_4X4_50",
+        camera_index: int = 0
+    ):
         """
         Initialize the ArUco validator.
 
@@ -77,7 +87,8 @@ class ArucoValidator:
     def _setup_aruco_detector(self):
         """Setup ArUco detector with optimized parameters."""
         try:
-            self.aruco_dict = cv2.aruco.getPredefinedDictionary(getattr(cv2.aruco, self.aruco_dict_name))
+            dict_attr = getattr(cv2.aruco, self.aruco_dict_name)
+            self.aruco_dict = cv2.aruco.getPredefinedDictionary(dict_attr)
             logger.info(f"✅ ArUco dictionary loaded: {self.aruco_dict_name}")
         except AttributeError:
             logger.error(f"❌ Invalid ArUco dictionary: {self.aruco_dict_name}")
@@ -85,23 +96,29 @@ class ArucoValidator:
 
         # Optimize detection parameters for real-time performance
         self.parameters = cv2.aruco.DetectorParameters()
-        self.parameters.adaptiveThreshWinSizeMin = 3
-        self.parameters.adaptiveThreshWinSizeMax = 23
-        self.parameters.adaptiveThreshWinSizeStep = 10
-        self.parameters.minMarkerPerimeterRate = 0.03
-        self.parameters.maxMarkerPerimeterRate = 4.0
-        self.parameters.polygonalApproxAccuracyRate = 0.05
-        self.parameters.minCornerDistanceRate = 0.05
-        self.parameters.minDistanceToBorder = 3
-        self.parameters.minMarkerDistanceRate = 0.05
+        # Type ignore: OpenCV types not fully understood by mypy
+        self.parameters.adaptiveThreshWinSizeMin = 3  # type: ignore[attr-defined]
+        self.parameters.adaptiveThreshWinSizeMax = 23  # type: ignore[attr-defined]
+        self.parameters.adaptiveThreshWinSizeStep = 10  # type: ignore[attr-defined]
+        self.parameters.minMarkerPerimeterRate = 0.03  # type: ignore[attr-defined]
+        self.parameters.maxMarkerPerimeterRate = 4.0  # type: ignore[attr-defined]
+        self.parameters.polygonalApproxAccuracyRate = 0.05  # type: ignore[attr-defined]
+        self.parameters.minCornerDistanceRate = 0.05  # type: ignore[attr-defined]
+        self.parameters.minDistanceToBorder = 3  # type: ignore[attr-defined]
+        self.parameters.minMarkerDistanceRate = 0.05  # type: ignore[attr-defined]
 
         # Create detector (OpenCV 4.7+ API)
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
+        if self.detector is None:
+            raise RuntimeError("Failed to create ArucoDetector")
 
     def _load_calibration(self):
         """Load camera calibration parameters from JSON file."""
         if not self.calibration_file:
-            logger.warning("⚠️  No calibration file provided - distance calculation will be unavailable")
+            logger.warning(
+                "⚠️  No calibration file provided - "
+                "distance calculation will be unavailable"
+            )
             return
 
         try:
@@ -111,32 +128,61 @@ class ArucoValidator:
             # Extract camera matrix and distortion coefficients
             if 'camera_matrix' in calib_data:
                 camera_matrix_data = calib_data['camera_matrix']
-                if isinstance(camera_matrix_data, dict) and 'data' in camera_matrix_data:
-                    self.camera_matrix = np.array(camera_matrix_data['data'], dtype=np.float32).reshape(3, 3)
+                is_dict_with_data = (
+                    isinstance(camera_matrix_data, dict) and
+                    'data' in camera_matrix_data
+                )
+                if is_dict_with_data:
+                    matrix_data = camera_matrix_data['data']
+                    self.camera_matrix = np.array(
+                        matrix_data, dtype=np.float32
+                    ).reshape(3, 3)
                 else:
-                    self.camera_matrix = np.array(camera_matrix_data, dtype=np.float32).reshape(3, 3)
+                    self.camera_matrix = np.array(
+                        camera_matrix_data, dtype=np.float32
+                    ).reshape(3, 3)
             elif 'K' in calib_data:  # Alternative key
                 self.camera_matrix = np.array(calib_data['K'], dtype=np.float32)
 
+            # Load distortion coefficients
             if 'distortion_coefficients' in calib_data:
                 dist_data = calib_data['distortion_coefficients']
                 if isinstance(dist_data, dict) and 'data' in dist_data:
-                    self.dist_coeffs = np.array(dist_data['data'], dtype=np.float32).flatten()
+                    self.dist_coeffs = np.array(
+                        dist_data['data'], dtype=np.float32
+                    ).flatten()
                 else:
-                    self.dist_coeffs = np.array(dist_data, dtype=np.float32).flatten()
-            elif 'D' in calib_data:  # Alternative key
-                self.dist_coeffs = np.array(calib_data['D'], dtype=np.float32).flatten()
+                    self.dist_coeffs = np.array(
+                        dist_data, dtype=np.float32
+                    ).flatten()
+            elif 'D' in calib_data:
+                # Alternative key for distortion coefficients
+                self.dist_coeffs = np.array(
+                    calib_data['D'], dtype=np.float32
+                ).flatten()
 
-            if self.camera_matrix is not None and self.dist_coeffs is not None:
+            # Check if both camera matrix and distortion coefficients are loaded
+            has_matrix = self.camera_matrix is not None
+            has_dist_coeffs = self.dist_coeffs is not None
+            if has_matrix and has_dist_coeffs:
                 self.calibration_loaded = True
-                logger.info(f"✅ Camera calibration loaded from {self.calibration_file}")
-                logger.info(f"   Camera matrix shape: {self.camera_matrix.shape}")
-                logger.info(f"   Distortion coeffs shape: {self.dist_coeffs.shape}")
+                logger.info(
+                    f"✅ Camera calibration loaded from {self.calibration_file}"
+                )
+                # Type ignore: mypy doesn't understand the None check above
+                logger.info(f"   Camera matrix shape: {self.camera_matrix.shape}")  # type: ignore[attr-defined]
+                logger.info(f"   Distortion coeffs shape: {self.dist_coeffs.shape}")  # type: ignore[attr-defined]
             else:
-                logger.warning("⚠️  Camera calibration data incomplete - distance calculation unavailable")
+                logger.warning(
+                    "⚠️  Camera calibration data incomplete - "
+                    "distance calculation unavailable"
+                )
 
         except Exception as e:
-            logger.error(f"❌ Failed to load calibration file {self.calibration_file}: {e}")
+            logger.error(
+                f"❌ Failed to load calibration file "
+                f"{self.calibration_file}: {e}"
+            )
 
     def calculate_distance_to_tag(self, corners: np.ndarray) -> Tuple[float, float]:
         """
@@ -160,7 +206,7 @@ class ArucoValidator:
                 [-tag_size_m/2, tag_size_m/2, 0],   # Top-left
                 [tag_size_m/2, tag_size_m/2, 0],    # Top-right
                 [tag_size_m/2, -tag_size_m/2, 0],   # Bottom-right
-                [-tag_size_m/2, -tag_size_m/2, 0]   # Bottom-left
+                [-tag_size_m/2, -tag_size_m/2, 0]  # Bottom-left
             ], dtype=np.float32)
 
             # Solve PnP to get rotation and translation vectors
@@ -179,11 +225,15 @@ class ArucoValidator:
                 distance_cm = distance_m * 100.0
 
                 # Calculate confidence based on reprojection error
-                projected_points, _ = cv2.projectPoints(obj_points, rvec, tvec,
-                                                         self.camera_matrix, self.dist_coeffs)
-                reprojection_error = np.mean(np.linalg.norm(corners - projected_points.squeeze(), axis=1))
+                projected_points, _ = cv2.projectPoints(
+                    obj_points, rvec, tvec,
+                    self.camera_matrix, self.dist_coeffs
+                )
+                diff = corners - projected_points.squeeze()
+                reprojection_error = np.mean(np.linalg.norm(diff, axis=1))
 
-                # Confidence decreases with reprojection error (lower error = higher confidence)
+                # Confidence decreases with reprojection error
+                # (lower error = higher confidence)
                 confidence = max(0.0, min(1.0, 1.0 - (reprojection_error / 10.0)))
 
                 return distance_cm, confidence
@@ -194,7 +244,12 @@ class ArucoValidator:
             logger.warning(f"Distance calculation failed: {e}")
             return 0.0, 0.0
 
-    def draw_detection_overlay(self, frame: np.ndarray, corners: np.ndarray, ids: np.ndarray) -> np.ndarray:
+    def draw_detection_overlay(
+        self,
+        frame: np.ndarray,
+        corners: np.ndarray,
+        ids: np.ndarray
+    ) -> np.ndarray:
         """
         Draw detection overlay on frame with tag info and distance.
 
@@ -221,7 +276,9 @@ class ArucoValidator:
             center_y = int(np.mean(corner[0][:, 1]))
 
             # Calculate distance if calibration available
-            distance_cm, confidence = self.calculate_distance_to_tag(corner[0])
+            distance_cm, confidence = self.calculate_distance_to_tag(
+                corner[0]
+            )
 
             # Choose color based on confidence/distance
             if confidence > 0.8:
@@ -243,7 +300,10 @@ class ArucoValidator:
             font = cv2.FONT_HERSHEY_SIMPLEX
             font_scale = 0.6
             thickness = 2
-            (text_width, text_height), baseline = cv2.getTextSize(info_text, font, font_scale, thickness)
+            text_size_result = cv2.getTextSize(
+                info_text, font, font_scale, thickness
+            )
+            (text_width, text_height), baseline = text_size_result
 
             # Draw background rectangle
             bg_x1 = center_x - text_width // 2 - 5
@@ -257,18 +317,23 @@ class ArucoValidator:
             # Draw text
             text_x = center_x - text_width // 2
             text_y = center_y - 5
-            cv2.putText(frame, info_text, (text_x, text_y), font, font_scale, color, thickness)
+            cv2.putText(
+                frame, info_text, (text_x, text_y),
+                font, font_scale, color, thickness
+            )
 
             # Draw status indicator
-            cv2.putText(frame, status, (center_x - 10, center_y - text_height - 15),
-                       font, 0.8, color, 2)
+            status_pos = (center_x - 10, center_y - text_height - 15)
+            cv2.putText(frame, status, status_pos, font, 0.8, color, 2)
 
             # Update statistics
             self.detection_stats['tags_detected'] += 1
             if distance_cm > 0:
+                prev_avg = self.detection_stats['avg_distance']
+                prev_count = self.detection_stats['tags_detected'] - 1
                 self.detection_stats['avg_distance'] = (
-                    (self.detection_stats['avg_distance'] * (self.detection_stats['tags_detected'] - 1)) +
-                    distance_cm) / self.detection_stats['tags_detected']
+                    (prev_avg * prev_count) + distance_cm
+                ) / self.detection_stats['tags_detected']
 
         return frame
 
@@ -287,8 +352,10 @@ class ArucoValidator:
 
         # Status bar background
         status_height = 120
-        cv2.rectangle(frame, (0, height - status_height), (width, height), (0, 0, 0), -1)
-        cv2.rectangle(frame, (0, height - status_height), (width, height), (255, 255, 255), 2)
+        rect_start = (0, height - status_height)
+        rect_end = (width, height)
+        cv2.rectangle(frame, rect_start, rect_end, (0, 0, 0), -1)
+        cv2.rectangle(frame, rect_start, rect_end, (255, 255, 255), 2)
 
         # Status text
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -297,43 +364,75 @@ class ArucoValidator:
         y_offset = height - status_height + 25
 
         # Title
-        cv2.putText(frame, "ArUco Tag Validator - URC 2026", (10, y_offset),
-                   font, font_scale, (255, 255, 255), thickness)
+        title_text = "ArUco Tag Validator - URC 2026"
+        cv2.putText(
+            frame, title_text, (10, y_offset),
+            font, font_scale, (255, 255, 255), thickness
+        )
 
         # Calibration status
         y_offset += 25
-        calib_status = "Calibrated" if self.calibration_loaded else "No Calibration"
-        calib_color = (0, 255, 0) if self.calibration_loaded else (0, 0, 255)
+        if self.calibration_loaded:
+            calib_status = "Calibrated"
+            calib_color = (0, 255, 0)
+        else:
+            calib_status = "No Calibration"
+            calib_color = (0, 0, 255)
         cv2.putText(frame, f"Camera: {calib_status}", (10, y_offset),
                      font, font_scale, calib_color, thickness)
 
         # Performance stats
         y_offset += 20
         fps_text = f"FPS: {self.detection_stats.get('fps', 0):.1f}"
-        cv2.putText(frame, fps_text, (10, y_offset), font, font_scale, (255, 255, 0), thickness)
+        cv2.putText(
+            frame, fps_text, (10, y_offset),
+            font, font_scale, (255, 255, 0), thickness
+        )
 
         y_offset += 20
         frames_text = f"Frames: {self.detection_stats['frames_processed']}"
-        cv2.putText(frame, frames_text, (10, y_offset), font, font_scale, (255, 255, 0), thickness)
+        cv2.putText(
+            frame, frames_text, (10, y_offset),
+            font, font_scale, (255, 255, 0), thickness
+        )
 
         # Detection stats
         y_offset += 20
         detections_text = f"Detections: {self.detection_stats['tags_detected']}"
-        cv2.putText(frame, detections_text, (10, y_offset), font, font_scale, (0, 255, 0), thickness)
+        cv2.putText(
+            frame, detections_text, (10, y_offset),
+            font, font_scale, (0, 255, 0), thickness
+        )
 
-        if self.calibration_loaded and self.detection_stats['avg_distance'] > 0:
+        has_calib_and_distance = (
+            self.calibration_loaded and
+            self.detection_stats['avg_distance'] > 0
+        )
+        if has_calib_and_distance:
             y_offset += 20
-            avg_dist_text = f"Avg Distance: {self.detection_stats['avg_distance']:.1f}cm"
-            cv2.putText(frame, avg_dist_text, (10, y_offset), font, font_scale, (0, 255, 255), thickness)
+            avg_dist = self.detection_stats['avg_distance']
+            avg_dist_text = f"Avg Distance: {avg_dist:.1f}cm"
+            cv2.putText(
+                frame, avg_dist_text, (10, y_offset),
+                font, font_scale, (0, 255, 255), thickness
+            )
 
         # Instructions
         y_offset += 25
-        cv2.putText(frame, "Press 'q' to quit, 'c' to clear stats", (10, y_offset),
-                     font, 0.5, (200, 200, 200), 1)
+        instructions = "Press 'q' to quit, 'c' to clear stats"
+        cv2.putText(
+            frame, instructions, (10, y_offset),
+            font, 0.5, (200, 200, 200), 1
+        )
 
         return frame
 
-    def run_validation(self, display: bool = True, save_video: str = None, test_duration: int = None) -> bool:
+    def run_validation(
+        self,
+        display: bool = True,
+        save_video: Optional[str] = None,
+        test_duration: Optional[int] = None
+    ) -> bool:
         """
         Run real-time ArUco tag validation.
 
@@ -349,7 +448,8 @@ class ArucoValidator:
         logger.info(f"   Camera index: {self.camera_index}")
         logger.info(f"   Tag size: {self.tag_size_cm}cm")
         logger.info(f"   Dictionary: {self.aruco_dict_name}")
-        logger.info(f"   Calibration: {'Loaded' if self.calibration_loaded else 'None'}")
+        calib_status = 'Loaded' if self.calibration_loaded else 'None'
+        logger.info(f"   Calibration: {calib_status}")
 
         # Open camera with fallback backends
         cap = None
@@ -362,7 +462,10 @@ class ArucoValidator:
             cap.release()
 
         if not cap or not cap.isOpened():
-            logger.error(f"❌ Failed to open camera {self.camera_index} with any backend")
+            logger.error(
+                f"❌ Failed to open camera {self.camera_index} "
+                f"with any backend"
+            )
             return False
 
         # Configure camera for better performance
@@ -387,7 +490,10 @@ class ArucoValidator:
 
         try:
             if test_duration:
-                logger.info(f"🎯 Starting detection loop... (Will run for {test_duration} seconds)")
+                logger.info(
+                    f"🎯 Starting detection loop... "
+                    f"(Will run for {test_duration} seconds)"
+                )
                 start_time = time.time()
             else:
                 logger.info("🎯 Starting detection loop... (Press 'q' to quit)")
@@ -402,7 +508,11 @@ class ArucoValidator:
                 self.detection_stats['frames_processed'] += 1
 
                 # Detect ArUco tags (OpenCV 4.7+ API)
-                corners, ids, rejected = self.detector.detectMarkers(frame)
+                # Detector is guaranteed to be set in __init__ or RuntimeError is raised
+                if self.detector is None:
+                    raise RuntimeError("Detector not initialized")
+                # Type ignore: mypy control flow analysis doesn't understand the None check
+                corners, ids, rejected = self.detector.detectMarkers(frame)  # type: ignore[unreachable]
 
                 # Draw detection overlay
                 frame = self.draw_detection_overlay(frame, corners, ids)
@@ -453,7 +563,9 @@ class ArucoValidator:
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Real-time ArUco tag validation with distance measurement',
+        description=(
+            'Real-time ArUco tag validation with distance measurement'
+        ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -461,21 +573,31 @@ Examples:
   python aruco_validator.py
 
   # With camera calibration for distance measurement
-  python aruco_validator.py --calibration ../camera/camera_calibration.json --tag-size 10.0
+  python aruco_validator.py \\
+      --calibration ../camera/camera_calibration.json \\
+      --tag-size 10.0
 
   # Custom settings
-  python aruco_validator.py --camera 1 --dict DICT_5X5_100 --tag-size 15.0 --save-video validation.avi
+  python aruco_validator.py \\
+      --camera 1 --dict DICT_5X5_100 \\
+      --tag-size 15.0 --save-video validation.avi
 
   # No display mode (for headless operation)
-  python aruco_validator.py --no-display --save-video output.avi
+  python aruco_validator.py \\
+      --no-display --save-video output.avi
         """
     )
 
-    parser.add_argument('--calibration', '-c', default='../camera/camera_calibration.json',
-                       help='Path to camera calibration JSON file (default: ../camera/camera_calibration.json)')
+    default_calib = '../camera/camera_calibration.json'
+    parser.add_argument(
+        '--calibration', '-c', default=default_calib,
+        help=f'Path to camera calibration JSON file (default: {default_calib})'
+    )
 
-    parser.add_argument('--tag-size', '-s', type=float, default=10.0,
-                         help='Physical size of ArUco tags in millimeters (default: 10.0)')
+    parser.add_argument(
+        '--tag-size', '-s', type=float, default=10.0,
+        help='Physical size of ArUco tags in millimeters (default: 10.0)'
+    )
 
     parser.add_argument('--camera', type=int, default=0,
                          help='Camera device index (default: 0)')
@@ -485,11 +607,15 @@ Examples:
 
     parser.add_argument('--save-video', help='Save output to video file')
 
-    parser.add_argument('--no-display', action='store_true',
-                         help='Run without display (useful for headless operation)')
+    parser.add_argument(
+        '--no-display', action='store_true',
+        help='Run without display (useful for headless operation)'
+    )
 
-    parser.add_argument('--test-mode', type=int, metavar='SECONDS',
-                         help='Test mode: run for N seconds and exit (useful for CI/testing)')
+    parser.add_argument(
+        '--test-mode', type=int, metavar='SECONDS',
+        help='Test mode: run for N seconds and exit (useful for CI/testing)'
+    )
 
     args = parser.parse_args()
 

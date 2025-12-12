@@ -4,7 +4,7 @@ import { Save, RefreshCw } from 'lucide-react';
 
 /**
  * ConfigTab Component
- * 
+ *
  * System configuration interface.
  * Simple, clean configuration management.
  */
@@ -30,7 +30,7 @@ export const ConfigTab = () => {
     <div className="p-4 space-y-4">
       <div className="bg-zinc-900 border border-zinc-800 rounded p-4">
         <h2 className="text-base font-semibold text-zinc-200 mb-4">System Configuration</h2>
-        
+
         <div className="space-y-4">
           <div>
             <label className="block text-xs text-zinc-400 mb-1">ROS Bridge URL</label>
@@ -94,7 +94,3 @@ export const ConfigTab = () => {
     </div>
   );
 };
-
-
-
-

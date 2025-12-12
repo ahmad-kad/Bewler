@@ -43,10 +43,10 @@ install(PROGRAMS
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_cmake_pytest REQUIRED)
-  
+
   # Linting
   ament_lint_auto_find_test_dependencies()
-  
+
   # Python tests
   ament_add_pytest_test(state_management_tests tests/
     TIMEOUT 60

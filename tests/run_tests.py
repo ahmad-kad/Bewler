@@ -5,11 +5,11 @@ Test Runner Script for Autonomy System
 Provides convenient commands to run different types of tests and generate reports.
 """
 
+import argparse
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
-import argparse
 
 
 class TestRunner:

@@ -10,19 +10,20 @@ Usage: Commands come from WebSocket clients and get published to /mission/comman
 CAN mock data requests are served from the integrated simulator.
 """
 
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import String
-import json
 import asyncio
-import websockets
+import json
 import threading
 import time
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
+import rclpy
+import websockets
+from rclpy.node import Node
+from std_msgs.msg import String
 
 # Import our new components
 from .can_mock_simulator import CANBusMockSimulator
-from .priority_message_router import PriorityMessageRouter, MessagePriority
+from .priority_message_router import MessagePriority, PriorityMessageRouter
 
 
 class WebSocketMissionBridge(Node):
@@ -218,5 +219,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

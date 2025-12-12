@@ -223,5 +223,3 @@ class BootValidator:
 
 # Import asyncio for the BootValidator
 import asyncio
-
-

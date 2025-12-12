@@ -13,19 +13,20 @@ Tests the entire rover simulation stack:
 This simulates the production rover environment for comprehensive testing.
 """
 
+import json
+import signal
+import subprocess
+import sys
+import threading
+import time
+from typing import Any, Dict, List, Optional
+
 import rclpy
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry, Path
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, NavSatFix
-from nav_msgs.msg import Odometry, Path
-from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import String, Float32
-import json
-import time
-import threading
-import subprocess
-import signal
-import sys
-from typing import Dict, List, Optional, Any
+from std_msgs.msg import Float32, String
 
 
 class RoverSimulationTester(Node):
@@ -304,5 +305,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

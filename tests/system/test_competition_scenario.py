@@ -5,9 +5,9 @@ System Test for Competition Scenarios
 Tests complete competition mission scenarios end-to-end.
 """
 
-import unittest
-from unittest.mock import Mock, patch, MagicMock
 import time
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 
 class TestCompetitionScenario(unittest.TestCase):
@@ -223,10 +223,3 @@ class TestCompetitionScenario(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-
-
-

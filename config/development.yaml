@@ -33,8 +33,3 @@ testing:
 
 # Environment Settings
 environment: development  # Options: development, production
-
-
-
-
-

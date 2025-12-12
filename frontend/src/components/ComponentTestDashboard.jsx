@@ -524,6 +524,3 @@ export const ComponentTestDashboard = ({
 };
 
 export default ComponentTestDashboard;
-
-
-

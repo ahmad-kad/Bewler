@@ -53,20 +53,20 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `📝 **Python Linting Report**
-              
+
               Checked files in \`Autonomy/code/\` using:
               - **black** - code formatting
               - **isort** - import sorting
               - **flake8** - style violations
-              
+
               ℹ️ Linting is informational and doesn't block merging.
-              
+
               To fix issues locally:
               \`\`\`bash
               black Autonomy/code/
               isort Autonomy/code/
               \`\`\`
-              
+
               [View full job logs](../actions/runs/${{ github.run_id }})`
             })
       - name: Log linting complete

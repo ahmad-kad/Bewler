@@ -8,9 +8,10 @@ Run this every morning to stay on track for the 40-day timeline.
 
 import json
 import subprocess
-from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Dict, List, Any
+from pathlib import Path
+from typing import Any, Dict, List
+
 
 class DailyVelocityCheck:
     """Daily velocity and risk assessment."""

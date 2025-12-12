@@ -9,25 +9,21 @@ Tests system performance under various conditions:
 - Network stress testing
 """
 
-import asyncio
-import json
 import os
 import statistics
 import sys
-import threading
 import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Optional
 
 import psutil
+
+from bridges.can_mock_simulator import CANBusMockSimulator
+from bridges.priority_message_router import PriorityMessageRouter
 
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'bridges'))
-
-from bridges.can_mock_simulator import CANBusMockSimulator
-from bridges.priority_message_router import PriorityMessageRouter
 
 
 class PerformanceLoadTest(unittest.TestCase):
@@ -271,7 +267,7 @@ class PerformanceLoadTest(unittest.TestCase):
             'memory_readings': memory_readings
         }
 
-        print(f"✅ Memory leak test completed")
+        print("✅ Memory leak test completed")
         print(".2f")
         print(".2f")
         print(".4f")
@@ -346,7 +342,7 @@ class PerformanceLoadTest(unittest.TestCase):
             'max_queue_size': max_queue_size
         }
 
-        print(f"✅ Network stress test completed")
+        print("✅ Network stress test completed")
         print(".1f")
         print(".3f")
         print(".3f")
@@ -402,14 +398,14 @@ class PerformanceLoadTest(unittest.TestCase):
             'memory_variance': memory_variance
         }
 
-        print(f"✅ Resource monitoring completed")
+        print("✅ Resource monitoring completed")
         print(f"   CPU Usage: {avg_cpu:.1f}% avg, {max_cpu:.1f}% max")
         print(f"   Memory Usage: {avg_memory:.1f}MB avg, {max_memory:.1f}MB max")
 
         # Resource usage requirements
         self.assertLess(avg_cpu, 50.0)     # < 50% average CPU
         self.assertLess(max_cpu, 80.0)     # < 80% max CPU
-        self.assertLess(max_memory, 500.0) # < 500MB max memory
+        self.assertLess(max_memory, 500.0)  # < 500MB max memory
 
     def generate_performance_report(self):
         """Generate comprehensive performance report."""
@@ -427,10 +423,11 @@ class PerformanceLoadTest(unittest.TestCase):
                     print(f"   {key}: {value}")
 
         # Overall assessment
-        passed_tests = len([r for r in self.results.values() if all(isinstance(v, (int, float)) and v >= 0 for v in r.values())])
+        passed_tests = len([r for r in self.results.values() if all(
+            isinstance(v, (int, float)) and v >= 0 for v in r.values())])
         total_tests = len(self.results)
 
-        print(f"\n🎯 Overall Performance Assessment:")
+        print("\n🎯 Overall Performance Assessment:")
         print(f"   Tests Passed: {passed_tests}/{total_tests}")
         print(".1f")
 

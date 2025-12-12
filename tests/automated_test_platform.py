@@ -7,7 +7,6 @@ Spin-up → Test → Validate → Report → Spin-down
 
 import json
 import os
-import signal
 import subprocess
 import tempfile
 import threading
@@ -15,7 +14,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 import psutil
 
@@ -194,7 +193,7 @@ class AutomatedTestPlatform:
         }
 
     def run_automated_test_suite(self, suite_name: str,
-                               output_dir: Path = None) -> Dict[str, Any]:
+                                 output_dir: Path = None) -> Dict[str, Any]:
         """
         Run complete automated test suite with full lifecycle management.
 
@@ -262,7 +261,7 @@ class AutomatedTestPlatform:
         return test_results
 
     def _run_phase(self, phase_name: str, commands: List[str],
-                  environment: TestEnvironment, output_dir: Path) -> Dict[str, Any]:
+                   environment: TestEnvironment, output_dir: Path) -> Dict[str, Any]:
         """Execute a test phase with monitoring."""
         phase_start = time.time()
         phase_results = {
@@ -310,7 +309,7 @@ class AutomatedTestPlatform:
             )
             validation_results['ros2_available'] = result.returncode == 0
             validation_results['active_nodes'] = len(result.stdout.strip().split('\n'))
-        except:
+        except BaseException:
             validation_results['ros2_available'] = False
 
         # Check required services
@@ -322,7 +321,7 @@ class AutomatedTestPlatform:
                     text=True
                 )
                 validation_results['services_status'][service] = result.returncode == 0
-            except:
+            except BaseException:
                 validation_results['services_status'][service] = False
 
         # Overall validation
@@ -359,7 +358,7 @@ class AutomatedTestPlatform:
         return analysis
 
     def _execute_command(self, command: str, environment: TestEnvironment,
-                        log_file: Path) -> subprocess.CompletedProcess:
+                         log_file: Path) -> subprocess.CompletedProcess:
         """Execute command with logging and resource monitoring."""
 
         # Set up environment
@@ -414,7 +413,7 @@ class AutomatedTestPlatform:
                 'errors': int(root.attrib.get('errors', 0)),
                 'skipped': int(root.attrib.get('skipped', 0))
             }
-        except:
+        except BaseException:
             return {'parse_error': True}
 
     def _parse_coverage_data(self, coverage_file: Path) -> Dict[str, Any]:
@@ -430,7 +429,7 @@ class AutomatedTestPlatform:
                 'lines_covered': int(root.attrib.get('lines-covered', 0)),
                 'lines_valid': int(root.attrib.get('lines-valid', 0))
             }
-        except:
+        except BaseException:
             return {'parse_error': True}
 
 
@@ -514,7 +513,7 @@ class FailureRecovery:
             # Reset ROS environment
             os.environ.pop('ROS_DOMAIN_ID', None)
             return True
-        except:
+        except BaseException:
             return False
 
     def _recover_memory(self) -> bool:
@@ -525,7 +524,7 @@ class FailureRecovery:
             subprocess.run(['pkill', '-f', 'gzserver'], check=False)
             time.sleep(1)
             return True
-        except:
+        except BaseException:
             return False
 
     def _recover_hung_process(self) -> bool:
@@ -536,7 +535,7 @@ class FailureRecovery:
             subprocess.run(['pkill', '-9', '-f', 'ros2'], check=False)
             time.sleep(2)
             return True
-        except:
+        except BaseException:
             return False
 
 

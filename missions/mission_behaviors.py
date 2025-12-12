@@ -14,13 +14,11 @@ Author: URC 2026 Autonomy Team
 
 import math
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import rclpy
 from autonomy_interfaces.msg import VisionDetection
-from geometry_msgs.msg import PointStamped, PoseStamped, Twist
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import NavSatFix
+from geometry_msgs.msg import PoseStamped, Twist
 
 
 class WaypointNavigation:

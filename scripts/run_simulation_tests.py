@@ -26,7 +26,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 # Add project paths
 project_root = Path(__file__).parent.parent
@@ -74,7 +74,7 @@ class SimulationTestRunner:
         # Check ROS2
         try:
             result = subprocess.run(['ros2', '--version'],
-                                  capture_output=True, text=True, timeout=10)
+                                    capture_output=True, text=True, timeout=10)
             if result.returncode != 0:
                 self.log("ROS2 not found or not properly configured", "ERROR")
                 return False
@@ -86,7 +86,7 @@ class SimulationTestRunner:
         # Check Gazebo
         try:
             result = subprocess.run(['gz', '--version'],
-                                  capture_output=True, text=True, timeout=10)
+                                    capture_output=True, text=True, timeout=10)
             if result.returncode != 0:
                 self.log("Gazebo not found", "ERROR")
                 return False
@@ -459,15 +459,15 @@ class SimulationTestRunner:
         self.log(f"Test report saved to: {report_path}")
 
         # Print summary to console
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("SIMULATION TEST REPORT SUMMARY")
-        print("="*60)
+        print("=" * 60)
         print(f"Timestamp: {results['timestamp']}")
         print(f"World: {results['world']}")
         print(f"Overall Status: {results.get('status', 'unknown').upper()}")
 
         summary = results.get('summary', {})
-        print(f"\nTest Results:")
+        print("\nTest Results:")
         print(f"  Total Tests: {summary.get('total_tests', 0)}")
         print(f"  Passed: {summary.get('passed_tests', 0)}")
         print(f"  Failed: {summary.get('failed_tests', 0)}")
@@ -477,16 +477,16 @@ class SimulationTestRunner:
         for test in results.get('tests', []):
             status_icon = "✅" if test['status'] == 'passed' else "❌" if test['status'] == 'failed' else "⚠️"
             print(f"   {status_icon} {test['test']}: {test['status'].upper()} ({test['duration']:.1f}s)")
-        print("="*60)
+        print("=" * 60)
 
 
 def main():
     parser = argparse.ArgumentParser(description='URC 2026 Simulation Testing Runner')
     parser.add_argument('--world', default='urc_desert_terrain',
-                       choices=['urc_desert_terrain', 'gps_denied_area', 'urc_obstacles'],
-                       help='Gazebo world to use for testing')
+                        choices=['urc_desert_terrain', 'gps_denied_area', 'urc_obstacles'],
+                        help='Gazebo world to use for testing')
     parser.add_argument('--test', choices=['gazebo', 'mission', 'performance', 'all'],
-                       default='all', help='Specific test to run')
+                        default='all', help='Specific test to run')
     parser.add_argument('--gui', action='store_true', help='Enable Gazebo GUI')
     parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
     parser.add_argument('--report', action='store_true', help='Generate detailed report')

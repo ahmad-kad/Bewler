@@ -20,24 +20,19 @@ TODO: CONNECT INPUT STREAMS
 import json
 import logging
 import pickle
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import cv2
 import numpy as np
-import yaml
 
 # ============================================================================
 # LOGGING
 # ============================================================================
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -45,9 +40,11 @@ logger = logging.getLogger(__name__)
 # DATA CLASSES
 # ============================================================================
 
+
 @dataclass
 class HandEyePose:
     """Robot pose during hand-eye calibration capture"""
+
     pose_id: int
     robot_base_to_hand: np.ndarray  # 4x4 transformation matrix
     timestamp: str
@@ -57,6 +54,7 @@ class HandEyePose:
 @dataclass
 class HandEyeResult:
     """Hand-eye calibration result"""
+
     setup_type: str  # "eye_on_hand" or "eye_to_hand"
     hand_eye_transform: np.ndarray  # 4x4 transformation matrix
     reprojection_error: float
@@ -70,6 +68,7 @@ class HandEyeResult:
 @dataclass
 class MultiCameraCalibration:
     """Multi-camera stereo calibration result"""
+
     camera1_id: str
     camera2_id: str
     relative_rotation: np.ndarray  # 3x3
@@ -84,6 +83,7 @@ class MultiCameraCalibration:
 @dataclass
 class IMUCalibrationData:
     """IMU calibration parameters"""
+
     imu_id: str
     # Accelerometer
     accel_bias: np.ndarray = field(default_factory=lambda: np.zeros(3))
@@ -108,6 +108,7 @@ class IMUCalibrationData:
 # HAND-EYE CALIBRATION
 # ============================================================================
 
+
 class HandEyeCalibrator:
     """Hand-eye calibration for camera-to-arm transformation"""
 
@@ -130,7 +131,7 @@ class HandEyeCalibrator:
         robot_base_to_hand: np.ndarray,
         board_corners: np.ndarray,
         board_ids: np.ndarray,
-        timestamp: Optional[str] = None
+        timestamp: Optional[str] = None,
     ):
         """
         Add a pose observation for hand-eye calibration
@@ -146,47 +147,30 @@ class HandEyeCalibrator:
             timestamp = datetime.now().isoformat()
 
         # Estimate board pose from image
-        K = np.array(self.camera_intrinsics['camera_matrix'])
-        dist = np.array(self.camera_intrinsics['dist_coeffs'])
+        K = np.array(self.camera_intrinsics["camera_matrix"])
+        dist = np.array(self.camera_intrinsics["dist_coeffs"])
 
         # TODO: Board 3D points from config
         board_3d_points = self._get_board_3d_points()
 
-        success, rvec, tvec = cv2.solvePnP(
-            board_3d_points,
-            board_corners,
-            K,
-            dist
-        )
+        success, rvec, tvec = cv2.solvePnP(board_3d_points, board_corners, K, dist)
 
         if not success:
             logger.warning(f"Failed to estimate pose for observation {pose_id}")
             return
 
         # Store pose
-        pose = HandEyePose(
-            pose_id=pose_id,
-            robot_base_to_hand=robot_base_to_hand,
-            timestamp=timestamp
-        )
+        pose = HandEyePose(pose_id=pose_id, robot_base_to_hand=robot_base_to_hand, timestamp=timestamp)
         self.poses_collected.append(pose)
 
         # Store detection
-        self.image_detections.append({
-            'pose_id': pose_id,
-            'rvec': rvec,
-            'tvec': tvec,
-            'board_corners': board_corners,
-            'board_ids': board_ids
-        })
+        self.image_detections.append(
+            {"pose_id": pose_id, "rvec": rvec, "tvec": tvec, "board_corners": board_corners, "board_ids": board_ids}
+        )
 
         logger.info(f"Added pose observation {pose_id} (total: {len(self.poses_collected)})")
 
-    def calibrate(
-        self,
-        setup_type: str = "eye_on_hand",
-        method: str = cv2.CALIB_HAND_EYE_TSAI
-    ) -> HandEyeResult:
+    def calibrate(self, setup_type: str = "eye_on_hand", method: str = cv2.CALIB_HAND_EYE_TSAI) -> HandEyeResult:
         """
         Compute hand-eye transformation
 
@@ -207,8 +191,8 @@ class HandEyeCalibrator:
         camera_poses = []
 
         for i, detection in enumerate(self.image_detections):
-            rvec = detection['rvec']
-            tvec = detection['tvec']
+            rvec = detection["rvec"]
+            tvec = detection["tvec"]
 
             # Camera to board transformation
             R_camera_to_board, _ = cv2.Rodrigues(rvec)
@@ -228,7 +212,7 @@ class HandEyeCalibrator:
                 [t[:3, 3:] for t in robot_poses],
                 [R[:3, :3] for R in camera_poses],
                 [t[:3, 3:] for t in camera_poses],
-                method=method
+                method=method,
             )
 
             # Create 4x4 transformation
@@ -245,7 +229,7 @@ class HandEyeCalibrator:
                 timestamp=datetime.now().isoformat(),
                 method=method,
                 board_config=self.board_config,
-                camera_intrinsics=self.camera_intrinsics
+                camera_intrinsics=self.camera_intrinsics,
             )
 
             logger.info(f"Hand-eye calibration complete. Error: {error:.6f}")
@@ -255,11 +239,7 @@ class HandEyeCalibrator:
             logger.error(f"Hand-eye calibration failed: {e}")
             raise
 
-    def save_calibration(
-        self,
-        result: HandEyeResult,
-        output_dir: str = "artifacts/extrinsics"
-    ) -> Dict[str, str]:
+    def save_calibration(self, result: HandEyeResult, output_dir: str = "artifacts/extrinsics") -> Dict[str, str]:
         """Save hand-eye calibration"""
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -268,23 +248,23 @@ class HandEyeCalibrator:
 
         # PKL
         pkl_file = f"{output_dir}/{base_name}.pkl"
-        with open(pkl_file, 'wb') as f:
+        with open(pkl_file, "wb") as f:
             pickle.dump(result, f)
-        files_saved['pkl'] = pkl_file
+        files_saved["pkl"] = pkl_file
 
         # JSON
         json_file = f"{output_dir}/{base_name}.json"
         json_data = {
-            'setup_type': result.setup_type,
-            'hand_eye_transform': result.hand_eye_transform.tolist(),
-            'reprojection_error': float(result.reprojection_error),
-            'num_poses': result.num_poses,
-            'method': result.method,
-            'timestamp': result.timestamp
+            "setup_type": result.setup_type,
+            "hand_eye_transform": result.hand_eye_transform.tolist(),
+            "reprojection_error": float(result.reprojection_error),
+            "num_poses": result.num_poses,
+            "method": result.method,
+            "timestamp": result.timestamp,
         }
-        with open(json_file, 'w') as f:
+        with open(json_file, "w") as f:
             json.dump(json_data, f, indent=2)
-        files_saved['json'] = json_file
+        files_saved["json"] = json_file
 
         logger.info(f"Saved hand-eye calibration: {pkl_file}")
         return files_saved
@@ -306,16 +286,12 @@ class HandEyeCalibrator:
 
     @staticmethod
     def _calculate_reprojection_error(
-        robot_poses: List[np.ndarray],
-        camera_poses: List[np.ndarray],
-        T_hand_eye: np.ndarray
+        robot_poses: List[np.ndarray], camera_poses: List[np.ndarray], T_hand_eye: np.ndarray
     ) -> float:
         """Calculate hand-eye reprojection error"""
         errors = []
         for R_robot, R_camera in zip(robot_poses, camera_poses):
-            error = np.linalg.norm(
-                R_robot @ T_hand_eye - R_camera @ R_robot
-            )
+            error = np.linalg.norm(R_robot @ T_hand_eye - R_camera @ R_robot)
             errors.append(error)
         return float(np.mean(errors))
 
@@ -324,34 +300,19 @@ class HandEyeCalibrator:
 # MULTI-CAMERA CALIBRATION
 # ============================================================================
 
+
 class MultiCameraCalibrator:
     """Calibrate relative poses between multiple cameras"""
 
-    def __init__(
-        self,
-        camera1_intrinsics: Dict,
-        camera2_intrinsics: Dict,
-        board_config: Dict
-    ):
+    def __init__(self, camera1_intrinsics: Dict, camera2_intrinsics: Dict, board_config: Dict):
         self.camera1_intrinsics = camera1_intrinsics
         self.camera2_intrinsics = camera2_intrinsics
         self.board_config = board_config
         self.pose_pairs = []
 
-    def add_observation(
-        self,
-        corners1: np.ndarray,
-        ids1: np.ndarray,
-        corners2: np.ndarray,
-        ids2: np.ndarray
-    ):
+    def add_observation(self, corners1: np.ndarray, ids1: np.ndarray, corners2: np.ndarray, ids2: np.ndarray):
         """Add synchronized observation from both cameras"""
-        self.pose_pairs.append({
-            'corners1': corners1,
-            'ids1': ids1,
-            'corners2': corners2,
-            'ids2': ids2
-        })
+        self.pose_pairs.append({"corners1": corners1, "ids1": ids1, "corners2": corners2, "ids2": ids2})
         logger.info(f"Added observation pair (total: {len(self.pose_pairs)})")
 
     def calibrate(self) -> MultiCameraCalibration:
@@ -372,15 +333,13 @@ class MultiCameraCalibrator:
             stereo_error=0.5,
             essential_matrix=np.eye(3),
             fundamental_matrix=np.eye(3),
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
         )
 
         return result
 
     def save_calibration(
-        self,
-        result: MultiCameraCalibration,
-        output_dir: str = "artifacts/extrinsics"
+        self, result: MultiCameraCalibration, output_dir: str = "artifacts/extrinsics"
     ) -> Dict[str, str]:
         """Save multi-camera calibration"""
         Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -391,17 +350,17 @@ class MultiCameraCalibrator:
         # JSON
         json_file = f"{output_dir}/{base_name}.json"
         json_data = {
-            'camera1_id': result.camera1_id,
-            'camera2_id': result.camera2_id,
-            'baseline_mm': float(result.baseline_distance_mm),
-            'stereo_error': float(result.stereo_error),
-            'relative_rotation': result.relative_rotation.tolist(),
-            'relative_translation': result.relative_translation.tolist(),
-            'timestamp': result.timestamp
+            "camera1_id": result.camera1_id,
+            "camera2_id": result.camera2_id,
+            "baseline_mm": float(result.baseline_distance_mm),
+            "stereo_error": float(result.stereo_error),
+            "relative_rotation": result.relative_rotation.tolist(),
+            "relative_translation": result.relative_translation.tolist(),
+            "timestamp": result.timestamp,
         }
-        with open(json_file, 'w') as f:
+        with open(json_file, "w") as f:
             json.dump(json_data, f, indent=2)
-        files_saved['json'] = json_file
+        files_saved["json"] = json_file
 
         logger.info(f"Saved multi-camera calibration: {json_file}")
         return files_saved
@@ -410,6 +369,7 @@ class MultiCameraCalibrator:
 # ============================================================================
 # IMU CALIBRATION
 # ============================================================================
+
 
 class IMUCalibrator:
     """Calibrate IMU biases, scales, and alignment"""
@@ -420,13 +380,7 @@ class IMUCalibrator:
         self.gyro_samples = []
         self.calibration = IMUCalibrationData(imu_id=imu_id)
 
-    def add_accel_sample(
-        self,
-        x: float,
-        y: float,
-        z: float,
-        gravity_magnitude: float = 9.81
-    ):
+    def add_accel_sample(self, x: float, y: float, z: float, gravity_magnitude: float = 9.81):
         """
         Add accelerometer sample during static pose
 
@@ -478,10 +432,7 @@ class IMUCalibrator:
         logger.info(f"Gyroscope bias: {self.calibration.gyro_bias}")
         logger.info(f"Gyroscope noise std: {self.calibration.gyro_noise_std}")
 
-    def set_camera_to_imu_alignment(
-        self,
-        rotation_matrix: np.ndarray
-    ):
+    def set_camera_to_imu_alignment(self, rotation_matrix: np.ndarray):
         """
         Set camera-to-IMU rotation alignment
 
@@ -490,10 +441,7 @@ class IMUCalibrator:
         self.calibration.camera_to_imu_rotation = rotation_matrix
         logger.info("Camera-to-IMU alignment set")
 
-    def save_calibration(
-        self,
-        output_dir: str = "artifacts/extrinsics"
-    ) -> str:
+    def save_calibration(self, output_dir: str = "artifacts/extrinsics") -> str:
         """Save IMU calibration"""
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -503,23 +451,23 @@ class IMUCalibrator:
         # JSON
         json_file = f"{output_dir}/imu_{self.imu_id}_calibration.json"
         json_data = {
-            'imu_id': self.calibration.imu_id,
-            'accelerometer': {
-                'bias': self.calibration.accel_bias.tolist(),
-                'scale': self.calibration.accel_scale.tolist(),
-                'noise_std': float(self.calibration.accel_noise_std)
+            "imu_id": self.calibration.imu_id,
+            "accelerometer": {
+                "bias": self.calibration.accel_bias.tolist(),
+                "scale": self.calibration.accel_scale.tolist(),
+                "noise_std": float(self.calibration.accel_noise_std),
             },
-            'gyroscope': {
-                'bias': self.calibration.gyro_bias.tolist(),
-                'scale': self.calibration.gyro_scale.tolist(),
-                'noise_std': float(self.calibration.gyro_noise_std)
+            "gyroscope": {
+                "bias": self.calibration.gyro_bias.tolist(),
+                "scale": self.calibration.gyro_scale.tolist(),
+                "noise_std": float(self.calibration.gyro_noise_std),
             },
-            'camera_to_imu_rotation': self.calibration.camera_to_imu_rotation.tolist(),
-            'num_samples': self.calibration.num_samples,
-            'temperature_c': self.calibration.temperature_c,
-            'timestamp': self.calibration.timestamp
+            "camera_to_imu_rotation": self.calibration.camera_to_imu_rotation.tolist(),
+            "num_samples": self.calibration.num_samples,
+            "temperature_c": self.calibration.temperature_c,
+            "timestamp": self.calibration.timestamp,
         }
-        with open(json_file, 'w') as f:
+        with open(json_file, "w") as f:
             json.dump(json_data, f, indent=2)
 
         logger.info(f"Saved IMU calibration: {json_file}")
@@ -562,15 +510,11 @@ TODO: Implement ROS2 integration for state machine calibration mode
 if __name__ == "__main__":
     # Example: Hand-eye calibration setup
     camera_intrinsics = {
-        'camera_matrix': np.array([[800, 0, 320], [0, 800, 240], [0, 0, 1]]),
-        'dist_coeffs': np.array([0.1, -0.1, 0, 0, 0])
+        "camera_matrix": np.array([[800, 0, 320], [0, 800, 240], [0, 0, 1]]),
+        "dist_coeffs": np.array([0.1, -0.1, 0, 0, 0]),
     }
 
-    board_config = {
-        'size': (5, 7),
-        'checker_size_mm': 30.0,
-        'marker_size_mm': 18.0
-    }
+    board_config = {"size": (5, 7), "checker_size_mm": 30.0, "marker_size_mm": 18.0}
 
     calibrator = HandEyeCalibrator(camera_intrinsics, board_config)
     print("Hand-eye calibrator ready for pose observations")

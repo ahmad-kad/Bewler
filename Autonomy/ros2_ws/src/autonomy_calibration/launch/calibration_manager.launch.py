@@ -13,27 +13,28 @@ def generate_launch_description():
     """Generate launch description for calibration nodes."""
 
     # Get package share directory
-    pkg_dir = get_package_share_directory('autonomy_calibration')
+    pkg_dir = get_package_share_directory("autonomy_calibration")
 
     # Configuration file path
-    config_file = os.path.join(pkg_dir, 'config', 'calibration.yaml')
+    config_file = os.path.join(pkg_dir, "config", "calibration.yaml")
 
-    return LaunchDescription([
-        # Calibration Manager Node
-        Node(
-            package='autonomy_calibration',
-            executable='calibration_manager',
-            name='calibration_manager',
-            parameters=[config_file],
-            output='screen',
-        ),
-
-        # Optional: Add calibration service node if needed
-        # Node(
-        #     package='autonomy_calibration',
-        #     executable='calibration_service',
-        #     name='calibration_service',
-        #     parameters=[config_file],
-        #     output='screen',
-        # ),
-    ])
+    return LaunchDescription(
+        [
+            # Calibration Manager Node
+            Node(
+                package="autonomy_calibration",
+                executable="calibration_manager",
+                name="calibration_manager",
+                parameters=[config_file],
+                output="screen",
+            ),
+            # Optional: Add calibration service node if needed
+            # Node(
+            #     package='autonomy_calibration',
+            #     executable='calibration_service',
+            #     name='calibration_service',
+            #     parameters=[config_file],
+            #     output='screen',
+            # ),
+        ]
+    )

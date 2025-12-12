@@ -260,10 +260,12 @@ def main():
 
     print("\n⚡ PERFORMANCE IMPROVEMENTS:")
     if intra_results['avg_latency_ms'] > 0 and inter_results['avg_latency_ms'] > 0:
-        latency_improvement = ((inter_results['avg_latency_ms'] - intra_results['avg_latency_ms']) / inter_results['avg_latency_ms']) * 100
+        latency_improvement = ((inter_results['avg_latency_ms'] -
+                               intra_results['avg_latency_ms']) / inter_results['avg_latency_ms']) * 100
         print(".1f")
 
-    throughput_improvement = ((intra_results['throughput_msg_per_sec'] - inter_results['throughput_msg_per_sec']) / inter_results['throughput_msg_per_sec']) * 100 if inter_results['throughput_msg_per_sec'] > 0 else 0
+    throughput_improvement = ((intra_results['throughput_msg_per_sec'] - inter_results['throughput_msg_per_sec']) /
+                              inter_results['throughput_msg_per_sec']) * 100 if inter_results['throughput_msg_per_sec'] > 0 else 0
     print(".1f")
 
     cpu_savings = inter_results['final_cpu'] - intra_results['final_cpu']

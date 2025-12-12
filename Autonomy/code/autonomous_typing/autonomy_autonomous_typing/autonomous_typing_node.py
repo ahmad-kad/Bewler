@@ -38,12 +38,8 @@ class AutonomousTypingNode(Node):
         self.aruco_detector = TypingArUcoDetector(self)
 
         # Publishers
-        self.status_publisher = self.create_publisher(
-            String, "autonomous_typing/status", 10
-        )
-        self.typing_result_publisher = self.create_publisher(
-            String, "typing_result", 10
-        )
+        self.status_publisher = self.create_publisher(String, "autonomous_typing/status", 10)
+        self.typing_result_publisher = self.create_publisher(String, "typing_result", 10)
 
         # Subscribers
         self.keyboard_pose_sub = self.create_subscription(
@@ -51,9 +47,7 @@ class AutonomousTypingNode(Node):
         )
 
         # Action server for typing tasks
-        self.typing_action_server = ActionServer(
-            self, PerformTyping, "perform_typing", self.execute_typing_callback
-        )
+        self.typing_action_server = ActionServer(self, PerformTyping, "perform_typing", self.execute_typing_callback)
 
         # Status tracking
         self.keyboard_pose_received = False
@@ -82,9 +76,7 @@ class AutonomousTypingNode(Node):
             # Update typing executor with keyboard pose
             self.typing_executor.set_keyboard_pose(position, orientation)
 
-            self.get_logger().debug(
-                f"Keyboard pose updated: pos={position}, ori={orientation}"
-            )
+            self.get_logger().debug(f"Keyboard pose updated: pos={position}, ori={orientation}")
 
         except Exception as e:
             self.get_logger().error(f"Error processing keyboard pose: {e}")
@@ -120,9 +112,7 @@ class AutonomousTypingNode(Node):
                     target_ori = result["alignment_orientation"]
 
                     position = np.array([target_pos.x, target_pos.y, target_pos.z])
-                    orientation = np.array(
-                        [target_ori.x, target_ori.y, target_ori.z, target_ori.w]
-                    )
+                    orientation = np.array([target_ori.x, target_ori.y, target_ori.z, target_ori.w])
 
                     self.typing_executor.set_keyboard_pose(position, orientation)
                     self.keyboard_pose_received = True
@@ -143,9 +133,7 @@ class AutonomousTypingNode(Node):
 
                     return True
                 else:
-                    self.get_logger().warn(
-                        "ArUco detection successful but alignment not available"
-                    )
+                    self.get_logger().warn("ArUco detection successful but alignment not available")
                     return False
             else:
                 self.get_logger().warn(f"ArUco detection failed: {result['message']}")
@@ -180,9 +168,7 @@ class AutonomousTypingNode(Node):
 
             # Validate preconditions - try ArUco detection if keyboard not detected
             if not self.keyboard_pose_received:
-                self.get_logger().info(
-                    "Keyboard pose not available, attempting ArUco detection..."
-                )
+                self.get_logger().info("Keyboard pose not available, attempting ArUco detection...")
 
                 # Try ArUco detection
                 if not self.detect_keyboard_with_aruco(min_tags=3):
@@ -217,17 +203,14 @@ class AutonomousTypingNode(Node):
                 goal_handle.publish_feedback(feedback_msg)
 
             # Execute typing sequence
-            exec_result = self.typing_executor.execute_sequence(
-                typing_sequence, feedback_callback=feedback_callback
-            )
+            exec_result = self.typing_executor.execute_sequence(typing_sequence, feedback_callback=feedback_callback)
 
             # Prepare result message
             result = PerformTyping.Result()
             result.success = exec_result["success"]
             result.characters_typed = exec_result["characters_typed"]
             result.message = (
-                f'Successfully typed {exec_result["characters_typed"]}'
-                f'/{exec_result["total_characters"]} characters'
+                f'Successfully typed {exec_result["characters_typed"]}' f'/{exec_result["total_characters"]} characters'
             )
 
             # Handle result
@@ -257,9 +240,7 @@ class AutonomousTypingNode(Node):
         try:
             status_msg = String()
 
-            keyboard_status = (
-                "detected" if self.keyboard_pose_received else "not detected"
-            )
+            keyboard_status = "detected" if self.keyboard_pose_received else "not detected"
             arm_status = "ready" if self.arm_controller.is_ready() else "not ready"
             exec_status = self.typing_executor.get_status()["status"]
 

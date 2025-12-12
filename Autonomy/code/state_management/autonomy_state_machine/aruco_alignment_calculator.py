@@ -86,9 +86,7 @@ class ArUcoAlignmentCalculator:
 
         # Check minimum tag requirements
         if len(detected_tags) < config["min_tags"]:
-            return self._create_error_result(
-                f"Insufficient tags detected: {len(detected_tags)} < {config['min_tags']}"
-            )
+            return self._create_error_result(f"Insufficient tags detected: {len(detected_tags)} < {config['min_tags']}")
 
         # Use mission-specific target depth if not provided
         if target_depth is None:
@@ -97,27 +95,17 @@ class ArUcoAlignmentCalculator:
         try:
             # Calculate alignment based on mission type
             if config["tag_layout"] == "rectangular":
-                result = self._calculate_rectangular_alignment(
-                    detected_tags, target_depth, config
-                )
+                result = self._calculate_rectangular_alignment(detected_tags, target_depth, config)
             elif config["tag_layout"] == "linear":
-                result = self._calculate_linear_alignment(
-                    detected_tags, target_depth, config
-                )
+                result = self._calculate_linear_alignment(detected_tags, target_depth, config)
             else:
-                return self._create_error_result(
-                    f"Unknown tag layout: {config['tag_layout']}"
-                )
+                return self._create_error_result(f"Unknown tag layout: {config['tag_layout']}")
 
             # Add mission-specific information
             result["mission_type"] = mission_type
             result["mission_ready"] = self._evaluate_mission_readiness(result, config)
-            result["alignment_warnings"] = self._generate_alignment_warnings(
-                result, config
-            )
-            result["mission_recommendations"] = self._generate_mission_recommendations(
-                result, config
-            )
+            result["alignment_warnings"] = self._generate_alignment_warnings(result, config)
+            result["mission_recommendations"] = self._generate_mission_recommendations(result, config)
 
             return result
 
@@ -133,9 +121,7 @@ class ArUcoAlignmentCalculator:
     ) -> Dict[str, Any]:
         """Calculate alignment for rectangular tag layout (typing, panels)."""
         if len(detected_tags) < 3:
-            return self._create_error_result(
-                "Need at least 3 tags for rectangular alignment"
-            )
+            return self._create_error_result("Need at least 3 tags for rectangular alignment")
 
         # Extract positions
         positions = [tag["position"] for tag in detected_tags]
@@ -178,9 +164,7 @@ class ArUcoAlignmentCalculator:
     ) -> Dict[str, Any]:
         """Calculate alignment for linear tag layout (USB connection)."""
         if len(detected_tags) < 2:
-            return self._create_error_result(
-                "Need at least 2 tags for linear alignment"
-            )
+            return self._create_error_result("Need at least 2 tags for linear alignment")
 
         # Extract positions
         positions = [tag["position"] for tag in detected_tags]
@@ -204,9 +188,7 @@ class ArUcoAlignmentCalculator:
         target_position.z = center.z + direction[2] * target_depth
 
         # Calculate alignment quality
-        quality = self._calculate_linear_alignment_quality(
-            positions, center, direction, config
-        )
+        quality = self._calculate_linear_alignment_quality(positions, center, direction, config)
 
         # Calculate individual tag errors
         tag_errors = self._calculate_linear_tag_errors(positions, center, direction)
@@ -231,9 +213,7 @@ class ArUcoAlignmentCalculator:
         center.z = sum(pos.z for pos in positions) / len(positions)
         return center
 
-    def _calculate_plane_normal(
-        self, positions: List[Point]
-    ) -> Tuple[np.ndarray, Quaternion]:
+    def _calculate_plane_normal(self, positions: List[Point]) -> Tuple[np.ndarray, Quaternion]:
         """Calculate plane normal using Principal Component Analysis."""
         # Convert to numpy array
         points = np.array([[pos.x, pos.y, pos.z] for pos in positions])
@@ -368,9 +348,7 @@ class ArUcoAlignmentCalculator:
 
         return min(1.0, max(0.0, quality))
 
-    def _calculate_tag_errors(
-        self, positions: List[Point], center: Point, normal: np.ndarray
-    ) -> List[float]:
+    def _calculate_tag_errors(self, positions: List[Point], center: Point, normal: np.ndarray) -> List[float]:
         """Calculate individual tag alignment errors."""
         errors = []
         for pos in positions:
@@ -379,9 +357,7 @@ class ArUcoAlignmentCalculator:
             errors.append(distance)
         return errors
 
-    def _calculate_linear_tag_errors(
-        self, positions: List[Point], center: Point, direction: np.ndarray
-    ) -> List[float]:
+    def _calculate_linear_tag_errors(self, positions: List[Point], center: Point, direction: np.ndarray) -> List[float]:
         """Calculate individual tag errors for linear alignment."""
         errors = []
         for pos in positions:
@@ -391,9 +367,7 @@ class ArUcoAlignmentCalculator:
             errors.append(distance)
         return errors
 
-    def _evaluate_mission_readiness(
-        self, result: Dict[str, Any], config: Dict[str, Any]
-    ) -> bool:
+    def _evaluate_mission_readiness(self, result: Dict[str, Any], config: Dict[str, Any]) -> bool:
         """Evaluate if mission can proceed based on alignment results."""
         if not result.get("success", False):
             return False
@@ -412,9 +386,7 @@ class ArUcoAlignmentCalculator:
 
         return True
 
-    def _generate_alignment_warnings(
-        self, result: Dict[str, Any], config: Dict[str, Any]
-    ) -> List[str]:
+    def _generate_alignment_warnings(self, result: Dict[str, Any], config: Dict[str, Any]) -> List[str]:
         """Generate warnings about alignment quality."""
         warnings = []
 
@@ -434,23 +406,17 @@ class ArUcoAlignmentCalculator:
             max_error = max(errors)
             tolerance = config["alignment_tolerance"]
             if max_error > tolerance:
-                warnings.append(
-                    f"High alignment error: {max_error:.3f}m > {tolerance:.3f}m"
-                )
+                warnings.append(f"High alignment error: {max_error:.3f}m > {tolerance:.3f}m")
 
         return warnings
 
-    def _generate_mission_recommendations(
-        self, result: Dict[str, Any], config: Dict[str, Any]
-    ) -> List[str]:
+    def _generate_mission_recommendations(self, result: Dict[str, Any], config: Dict[str, Any]) -> List[str]:
         """Generate recommendations for improving mission success."""
         recommendations = []
 
         quality = result.get("alignment_quality", 0.0)
         if quality < 0.9:
-            recommendations.append(
-                "Improve camera positioning for better tag visibility"
-            )
+            recommendations.append("Improve camera positioning for better tag visibility")
             recommendations.append("Ensure adequate lighting on ArUco tags")
 
         detected_tags = len(result.get("detected_tag_ids", []))
@@ -482,9 +448,7 @@ class ArUcoAlignmentCalculator:
             "mission_recommendations": [],
         }
 
-    def create_arm_alignment_command(
-        self, alignment_result: Dict[str, Any], mission_type: str
-    ) -> ArmAlignmentCommand:
+    def create_arm_alignment_command(self, alignment_result: Dict[str, Any], mission_type: str) -> ArmAlignmentCommand:
         """Create arm alignment command from alignment result."""
         cmd = ArmAlignmentCommand()
 
@@ -516,9 +480,7 @@ class ArUcoAlignmentCalculator:
         cmd.feedback_rate = 10.0  # 10Hz
 
         # Set mission-specific parameters
-        cmd.required_aruco_tags = [
-            str(tag_id) for tag_id in alignment_result.get("detected_tag_ids", [])
-        ]
+        cmd.required_aruco_tags = [str(tag_id) for tag_id in alignment_result.get("detected_tag_ids", [])]
         cmd.tag_visibility_timeout = 5.0  # 5 seconds
         cmd.allow_realignment = True
 

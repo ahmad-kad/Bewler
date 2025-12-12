@@ -21,16 +21,12 @@ def generate_launch_description():
     """Generate launch description for digital twin system."""
 
     # Package directories
-    pkg_digital_twin = get_package_share_directory(
-        "autonomy_simulation"
-    )  # PLACEHOLDER: Would be separate package
+    pkg_digital_twin = get_package_share_directory("autonomy_simulation")  # PLACEHOLDER: Would be separate package
     pkg_simulation = get_package_share_directory("autonomy_simulation")
 
     # Launch arguments with PLACEHOLDER values
     sync_rate = LaunchConfiguration("sync_rate", default="10.0")  # PLACEHOLDER
-    prediction_horizon = LaunchConfiguration(
-        "prediction_horizon", default="5.0"
-    )  # PLACEHOLDER
+    prediction_horizon = LaunchConfiguration("prediction_horizon", default="5.0")  # PLACEHOLDER
     twin_fidelity = LaunchConfiguration("twin_fidelity", default="0.85")  # PLACEHOLDER
 
     declare_sync_rate = DeclareLaunchArgument(
@@ -95,9 +91,7 @@ def generate_launch_description():
         executable="rviz2",
         name="rviz2_digital_twin",
         arguments=["-d", rviz_config],
-        parameters=[
-            {"use_sim_time": LaunchConfiguration("use_sim_time", default="true")}
-        ],
+        parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time", default="true")}],
         output="screen",
     )
 

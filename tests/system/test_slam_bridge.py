@@ -18,7 +18,7 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, NavSatFix
-from std_msgs.msg import Float32, String
+from std_msgs.msg import String
 
 
 class SLAMBridgeTester(Node):
@@ -60,7 +60,8 @@ class SLAMBridgeTester(Node):
         try:
             self.received_map_data = json.loads(msg.data)
             self.map_count += 1
-            self.get_logger().info(f'Map data received: robot at ({self.received_map_data["robot"]["x"]:.2f}, {self.received_map_data["robot"]["y"]:.2f})')
+            self.get_logger().info(
+                f'Map data received: robot at ({self.received_map_data["robot"]["x"]:.2f}, {self.received_map_data["robot"]["y"]:.2f})')
         except json.JSONDecodeError:
             self.get_logger().error('Invalid map data JSON')
 
@@ -227,7 +228,8 @@ class SLAMBridgeTester(Node):
             robot = self.received_map_data.get('robot')
             if robot and 'x' in robot and 'y' in robot and 'heading' in robot:
                 self.get_logger().info('✅ Map data structure valid')
-                self.get_logger().info(f'   Robot position: ({robot["x"]:.2f}, {robot["y"]:.2f}), heading: {robot["heading"]:.1f}°')
+                self.get_logger().info(
+                    f'   Robot position: ({robot["x"]:.2f}, {robot["y"]:.2f}), heading: {robot["heading"]:.1f}°')
             else:
                 self.get_logger().error('❌ Map data structure invalid')
                 success = False
@@ -250,7 +252,8 @@ class SLAMBridgeTester(Node):
         # Check coordinate transformations
         if self.received_pose:
             pose = self.received_pose
-            self.get_logger().info(f'✅ TF transformations working: pose at ({pose.pose.position.x:.2f}, {pose.pose.position.y:.2f})')
+            self.get_logger().info(
+                f'✅ TF transformations working: pose at ({pose.pose.position.x:.2f}, {pose.pose.position.y:.2f})')
         else:
             self.get_logger().error('❌ TF transformations not working')
             success = False

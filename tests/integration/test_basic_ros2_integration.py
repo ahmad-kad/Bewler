@@ -4,7 +4,6 @@ Basic ROS2 Integration Test
 Tests ROS2 topic publishing and subscribing without full mission executor
 """
 
-import threading
 import time
 
 import rclpy
@@ -67,6 +66,7 @@ class TestSubscriber(Node):
         """Check if we've received data on all topics"""
         counts = self.get_message_counts()
         return all(count > 0 for count in counts.values())
+
 
 class BasicROS2IntegrationTest:
     """Basic ROS2 integration test"""
@@ -160,6 +160,7 @@ class BasicROS2IntegrationTest:
 
         return self.success
 
+
 def main():
     """Main test function"""
     print("Testing basic ROS2 teleoperation integration...")
@@ -169,6 +170,7 @@ def main():
 
     print(f"\n🏁 Final Result: {'SUCCESS' if success else 'FAILURE'}")
     return success
+
 
 if __name__ == '__main__':
     success = main()

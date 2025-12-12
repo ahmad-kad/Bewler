@@ -190,11 +190,11 @@ class CANMessageRouter(PriorityMessageRouter):
     CAN_PRIORITY_MAPPINGS = {
         # CAN message IDs to priority mapping
         0x100: MessagePriority.HIGH,   # Motor commands
-        0x101: MessagePriority.NORMAL, # Motor feedback
-        0x200: MessagePriority.NORMAL, # IMU data
-        0x201: MessagePriority.NORMAL, # GPS data
+        0x101: MessagePriority.NORMAL,  # Motor feedback
+        0x200: MessagePriority.NORMAL,  # IMU data
+        0x201: MessagePriority.NORMAL,  # GPS data
         0x300: MessagePriority.LOW,    # Battery status
-        0x400: MessagePriority.CRITICAL, # Safety triggers
+        0x400: MessagePriority.CRITICAL,  # Safety triggers
         0x500: MessagePriority.HIGH,   # Calibration data
     }
 

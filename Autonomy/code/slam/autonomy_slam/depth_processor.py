@@ -69,12 +69,8 @@ class DepthProcessor(Node):
         self.depth_history: deque = deque(maxlen=self.temporal_window)
 
         # Message filter subscribers for synchronization
-        rgb_sub = Subscriber(
-            self, Image, "camera/rgb/image_raw", callback_group=self.callback_group
-        )
-        depth_sub = Subscriber(
-            self, Image, "camera/depth/image_raw", callback_group=self.callback_group
-        )
+        rgb_sub = Subscriber(self, Image, "camera/rgb/image_raw", callback_group=self.callback_group)
+        depth_sub = Subscriber(self, Image, "camera/depth/image_raw", callback_group=self.callback_group)
         info_sub = Subscriber(
             self,
             CameraInfo,
@@ -83,18 +79,14 @@ class DepthProcessor(Node):
         )
 
         # Synchronize RGB, depth, and camera info
-        self.time_synchronizer = ApproximateTimeSynchronizer(
-            [rgb_sub, depth_sub, info_sub], queue_size=10, slop=0.1
-        )
+        self.time_synchronizer = ApproximateTimeSynchronizer([rgb_sub, depth_sub, info_sub], queue_size=10, slop=0.1)
         self.time_synchronizer.registerCallback(self.on_synchronized_data)
 
         # Publishers for processed data
         self.depth_processed_pub = self.create_publisher(
             Image, "slam/depth/processed", 10, callback_group=self.callback_group
         )
-        self.rgb_pub = self.create_publisher(
-            Image, "slam/rgb/image", 10, callback_group=self.callback_group
-        )
+        self.rgb_pub = self.create_publisher(Image, "slam/rgb/image", 10, callback_group=self.callback_group)
         self.info_pub = self.create_publisher(
             CameraInfo, "slam/depth/camera_info", 10, callback_group=self.callback_group
         )
@@ -106,9 +98,7 @@ class DepthProcessor(Node):
             f"depth_range=[{self.min_depth}, {self.max_depth}]mm"
         )
 
-    def on_synchronized_data(
-        self, rgb_msg: Image, depth_msg: Image, info_msg: CameraInfo
-    ) -> None:
+    def on_synchronized_data(self, rgb_msg: Image, depth_msg: Image, info_msg: CameraInfo) -> None:
         """
         Callback for synchronized RGB, depth, and camera info.
 
@@ -117,17 +107,13 @@ class DepthProcessor(Node):
         try:
             # Convert ROS messages to OpenCV format
             rgb_cv = self.bridge.imgmsg_to_cv2(rgb_msg, desired_encoding="bgr8")
-            depth_cv = self.bridge.imgmsg_to_cv2(
-                depth_msg, desired_encoding="passthrough"
-            )
+            depth_cv = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding="passthrough")
 
             # Process depth through pipeline
             processed_depth = self._process_depth(depth_cv, rgb_cv)
 
             # Publish processed depth
-            processed_msg = self.bridge.cv2_to_imgmsg(
-                processed_depth, encoding="passthrough"
-            )
+            processed_msg = self.bridge.cv2_to_imgmsg(processed_depth, encoding="passthrough")
             processed_msg.header = depth_msg.header
             self.depth_processed_pub.publish(processed_msg)
 
@@ -194,9 +180,7 @@ class DepthProcessor(Node):
         """
         # Apply bilateral filter (slower but better edge preservation)
         # Use RGB as guidance for filtering
-        filtered = cv2.bilateralFilter(
-            rgb, self.depth_diameter, self.depth_sigma_color, self.depth_sigma_space
-        )
+        filtered = cv2.bilateralFilter(rgb, self.depth_diameter, self.depth_sigma_color, self.depth_sigma_space)
 
         # Apply morphological closing to fill small holes from sand particles
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))

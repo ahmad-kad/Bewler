@@ -10,16 +10,15 @@ import json
 import math
 import time
 from dataclasses import asdict, dataclass
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import rclpy
-from geometry_msgs.msg import PoseStamped, Twist
-from nav_msgs.msg import OccupancyGrid, Odometry, Path
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry, Path
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
-from sensor_msgs.msg import LaserScan, PointCloud2
-from std_msgs.msg import Bool, String
+from sensor_msgs.msg import LaserScan
+from std_msgs.msg import String
 from visualization_msgs.msg import Marker, MarkerArray
 
 
@@ -79,29 +78,19 @@ class DynamicObstacleAvoidanceTester(Node):
 
         # QoS profiles
         self.qos_reliable = QoSProfile(
-            reliability=ReliabilityPolicy.RELIABLE,
-            history=HistoryPolicy.KEEP_LAST,
-            depth=10
+            reliability=ReliabilityPolicy.RELIABLE, history=HistoryPolicy.KEEP_LAST, depth=10
         )
 
         self.qos_best_effort = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
-            history=HistoryPolicy.KEEP_LAST,
-            depth=20
+            reliability=ReliabilityPolicy.BEST_EFFORT, history=HistoryPolicy.KEEP_LAST, depth=20
         )
 
         # Subscribers
-        self.odom_sub = self.create_subscription(
-            Odometry, "/odom", self.odom_callback, self.qos_reliable
-        )
+        self.odom_sub = self.create_subscription(Odometry, "/odom", self.odom_callback, self.qos_reliable)
 
-        self.laser_sub = self.create_subscription(
-            LaserScan, "/scan", self.laser_callback, self.qos_best_effort
-        )
+        self.laser_sub = self.create_subscription(LaserScan, "/scan", self.laser_callback, self.qos_best_effort)
 
-        self.path_sub = self.create_subscription(
-            Path, "/plan", self.path_callback, self.qos_reliable
-        )
+        self.path_sub = self.create_subscription(Path, "/plan", self.path_callback, self.qos_reliable)
 
         # Publishers
         self.cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
@@ -118,11 +107,7 @@ class DynamicObstacleAvoidanceTester(Node):
 
     def odom_callback(self, msg):
         """Handle odometry updates."""
-        self.current_position = (
-            msg.pose.pose.position.x,
-            msg.pose.pose.position.y,
-            msg.pose.pose.position.z
-        )
+        self.current_position = (msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z)
 
     def laser_callback(self, msg):
         """Process LiDAR scan data for obstacle detection."""
@@ -152,10 +137,10 @@ class DynamicObstacleAvoidanceTester(Node):
 
             # Record obstacle detection
             obstacle = {
-                'range': min_range,
-                'angle': min_angle,
-                'timestamp': obstacle_time,
-                'position': self.current_position
+                "range": min_range,
+                "angle": min_angle,
+                "timestamp": obstacle_time,
+                "position": self.current_position,
             }
 
             self.obstacles_detected.append(obstacle)
@@ -164,11 +149,9 @@ class DynamicObstacleAvoidanceTester(Node):
 
             # Check for collision risk
             if min_range < self.collision_threshold:
-                self.collision_events.append({
-                    'timestamp': obstacle_time,
-                    'range': min_range,
-                    'position': self.current_position
-                })
+                self.collision_events.append(
+                    {"timestamp": obstacle_time, "range": min_range, "position": self.current_position}
+                )
                 self.get_logger().warn(
                     f"COLLISION RISK DETECTED: range={min_range:.2f}m, "
                     f"position=({self.current_position.x:.2f}, {self.current_position.y:.2f})"
@@ -258,7 +241,7 @@ class DynamicObstacleAvoidanceTester(Node):
             average_clearance=avg_clearance,
             lidar_fidelity=0.85,  # Placeholder - would be calculated
             navigation_success=len(self.collision_events) == 0,
-            timestamp=time.strftime("%Y-%m-%d %H:%M:%S")
+            timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
         )
 
         # Save results
@@ -274,15 +257,15 @@ class DynamicObstacleAvoidanceTester(Node):
         self.get_logger().info(f"Results saved to /tmp/dynamic_obstacle_test_results.json")
 
         # Print summary
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("DYNAMIC OBSTACLE AVOIDANCE TEST RESULTS")
-        print("="*60)
+        print("=" * 60)
         print(f"Obstacles Encountered: {obstacles_encountered}")
         print(f"Obstacles Avoided: {obstacles_avoided}")
         print(f"Collisions: {len(self.collision_events)}")
         print(f"Path Replans: {self.path_replans}")
         print(f"Navigation Success: {' YES' if result.navigation_success else ' NO'}")
-        print("="*60)
+        print("=" * 60)
 
 
 def main():
@@ -298,5 +281,5 @@ def main():
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

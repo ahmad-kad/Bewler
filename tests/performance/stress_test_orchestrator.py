@@ -13,7 +13,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -509,7 +509,8 @@ class StressTestOrchestrator:
             for i, rec in enumerate(recommendations, 1):
                 f.write(f"{i}. {rec}\n")
 
-            f.write(f"\nDetailed results available in: stress_test_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json\n")
+            f.write(
+                f"\nDetailed results available in: stress_test_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json\n")
 
         print(f"📄 Summary report saved to: {output_file}")
 

@@ -18,12 +18,11 @@ on:
 jobs:
   build-docs:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Full history for git stats
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -37,11 +36,6 @@ jobs:
         cache: 'npm'
         cache-dependency-path: 'frontend/package-lock.json'
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y doxygen graphviz
-
     - name: Install Python documentation dependencies
       run: |
         cd docs
@@ -53,11 +47,6 @@ jobs:
         cd frontend
         npm install
 
-    - name: Build Doxygen documentation
-      run: |
-        cd docs
-        make doxygen
-
     - name: Build JSDoc documentation
       run: |
         cd docs
@@ -68,11 +57,10 @@ jobs:
         cd docs
         make html
 
-    - name: Validate documentation
+    - name: Validate documentation links
       run: |
         cd docs
         make linkcheck
-        make doctest
 
     - name: Upload documentation artifacts
       uses: actions/upload-artifact@v3

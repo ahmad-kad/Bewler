@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 
 PACKAGE_TEMPLATE = {
-    'package.xml': '''<?xml version="1.0"?>
+    "package.xml": """<?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>{package_name}</name>
@@ -35,9 +35,8 @@ PACKAGE_TEMPLATE = {
     <build_type>ament_python</build_type>
   </export>
 </package>
-''',
-
-    'setup.py': '''from setuptools import setup
+""",
+    "setup.py": """from setuptools import setup
 
 package_name = '{package_name}'
 
@@ -63,19 +62,15 @@ setup(
         ],
     }},
 )
-''',
-
-    'setup.cfg': '''[develop]
+""",
+    "setup.cfg": """[develop]
 script_dir=$base/lib/{package_name}
 [install]
 install_scripts=$base/lib/{package_name}
-''',
-
-    'resource/package_name': '',
-
-    'src/__init__.py': '',
-
-    'src/{package_name}_node.py': '''#!/usr/bin/env python3
+""",
+    "resource/package_name": "",
+    "src/__init__.py": "",
+    "src/{package_name}_node.py": '''#!/usr/bin/env python3
 """
 🚀 {description} Node
 
@@ -123,35 +118,18 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-'''
+''',
 }
 
 SUBSYSTEMS = {
-    'navigation': {
-        'description': 'Navigation Subsystem',
-        'class_name': 'Navigation'
-    },
-    'slam': {
-        'description': 'SLAM Subsystem',
-        'class_name': 'Slam'
-    },
-    'computer_vision': {
-        'description': 'Computer Vision Subsystem',
-        'class_name': 'ComputerVision'
-    },
-    'autonomous_typing': {
-        'description': 'Autonomous Typing Subsystem',
-        'class_name': 'AutonomousTyping'
-    },
-    'state_management': {
-        'description': 'State Management Subsystem',
-        'class_name': 'StateManagement'
-    },
-    'led_status': {
-        'description': 'LED Status Subsystem',
-        'class_name': 'LedStatus'
-    }
+    "navigation": {"description": "Navigation Subsystem", "class_name": "Navigation"},
+    "slam": {"description": "SLAM Subsystem", "class_name": "Slam"},
+    "computer_vision": {"description": "Computer Vision Subsystem", "class_name": "ComputerVision"},
+    "autonomous_typing": {"description": "Autonomous Typing Subsystem", "class_name": "AutonomousTyping"},
+    "state_management": {"description": "State Management Subsystem", "class_name": "StateManagement"},
+    "led_status": {"description": "LED Status Subsystem", "class_name": "LedStatus"},
 }
+
 
 def create_package(package_name: str, info: dict):
     """Create a ROS 2 package for the given subsystem."""
@@ -165,23 +143,21 @@ def create_package(package_name: str, info: dict):
 
     # Create files from templates
     for filename, template in PACKAGE_TEMPLATE.items():
-        if filename == 'resource/package_name':
+        if filename == "resource/package_name":
             # Special case for resource file
             file_path = package_dir / "resource" / package_name
-            file_path.write_text('')
-        elif filename == 'src/__init__.py':
-            (package_dir / filename).write_text('')
+            file_path.write_text("")
+        elif filename == "src/__init__.py":
+            (package_dir / filename).write_text("")
         else:
             # Format template
             content = template.format(
-                package_name=package_name,
-                description=info['description'],
-                class_name=info['class_name']
+                package_name=package_name, description=info["description"], class_name=info["class_name"]
             )
 
-            if 'src/' in filename:
+            if "src/" in filename:
                 # Handle src files
-                actual_filename = filename.replace('src/', '').replace('{package_name}', package_name)
+                actual_filename = filename.replace("src/", "").replace("{package_name}", package_name)
                 file_path = package_dir / "src" / actual_filename
             else:
                 file_path = package_dir / filename
@@ -189,6 +165,7 @@ def create_package(package_name: str, info: dict):
             file_path.write_text(content)
 
     print(f"✅ Created {package_name} package")
+
 
 def test_package_compilation():
     """Test that all packages compile."""
@@ -198,12 +175,22 @@ def test_package_compilation():
 
     # Run colcon build
     import subprocess
-    result = subprocess.run([
-        "colcon", "build",
-        "--packages-select",
-        "navigation", "slam", "computer_vision",
-        "autonomous_typing", "state_management", "led_status"
-    ], capture_output=True, text=True)
+
+    result = subprocess.run(
+        [
+            "colcon",
+            "build",
+            "--packages-select",
+            "navigation",
+            "slam",
+            "computer_vision",
+            "autonomous_typing",
+            "state_management",
+            "led_status",
+        ],
+        capture_output=True,
+        text=True,
+    )
 
     if result.returncode == 0:
         print("✅ All packages compiled successfully!")
@@ -213,6 +200,7 @@ def test_package_compilation():
         print(result.stdout)
         print(result.stderr)
         return False
+
 
 def main():
     """Create all ROS 2 packages."""
@@ -234,5 +222,6 @@ def main():
     else:
         print("\n⚠️  Some packages failed compilation - check errors above")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

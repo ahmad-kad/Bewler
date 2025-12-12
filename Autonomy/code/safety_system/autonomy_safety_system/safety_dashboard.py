@@ -261,19 +261,13 @@ class SafetyDashboard(Node):
         )
 
         # Active alerts publishing
-        self.alerts_timer = self.create_timer(
-            2.0, self._publish_active_alerts, callback_group=self.alerting_group
-        )
+        self.alerts_timer = self.create_timer(2.0, self._publish_active_alerts, callback_group=self.alerting_group)
 
         # System health aggregation
-        self.health_timer = self.create_timer(
-            5.0, self._publish_system_health, callback_group=self.aggregation_group
-        )
+        self.health_timer = self.create_timer(5.0, self._publish_system_health, callback_group=self.aggregation_group)
 
         # Alert evaluation and cleanup
-        self.alert_evaluation_timer = self.create_timer(
-            10.0, self._evaluate_alerts, callback_group=self.alerting_group
-        )
+        self.alert_evaluation_timer = self.create_timer(10.0, self._evaluate_alerts, callback_group=self.alerting_group)
 
         # Diagnostics publishing
         self.diagnostics_timer = self.create_timer(
@@ -284,9 +278,7 @@ class SafetyDashboard(Node):
 
     def _safety_status_callback(self, msg: SafetyStatus):
         """Handle primary safety system status."""
-        self._update_system_health(
-            "state_machine", SafetySystemStatus.HEALTHY, time.time()
-        )
+        self._update_system_health("state_machine", SafetySystemStatus.HEALTHY, time.time())
 
         # Check for safety violations
         if not msg.is_safe or msg.safety_level in ["WARNING", "CRITICAL", "EMERGENCY"]:
@@ -316,9 +308,7 @@ class SafetyDashboard(Node):
 
     def _safety_violations_callback(self, msg: SafetyStatus):
         """Handle watchdog safety violations."""
-        self._update_system_health(
-            "safety_watchdog", SafetySystemStatus.HEALTHY, time.time()
-        )
+        self._update_system_health("safety_watchdog", SafetySystemStatus.HEALTHY, time.time())
 
         if not msg.is_safe:
             alert_level = SafetyAlertLevel.CRITICAL
@@ -336,9 +326,7 @@ class SafetyDashboard(Node):
 
     def _redundant_safety_callback(self, msg: SafetyStatus):
         """Handle redundant safety system status."""
-        self._update_system_health(
-            "redundant_safety_monitor", SafetySystemStatus.HEALTHY, time.time()
-        )
+        self._update_system_health("redundant_safety_monitor", SafetySystemStatus.HEALTHY, time.time())
 
         if not msg.is_safe:
             alert_level = SafetyAlertLevel.WARNING  # Redundant system warnings
@@ -363,20 +351,12 @@ class SafetyDashboard(Node):
             active_violations = status_data.get("active_violations_count", 0)
             health_score = max(0.0, 1.0 - (active_violations * 0.1))
 
-            status = (
-                SafetySystemStatus.DEGRADED
-                if active_violations > 0
-                else SafetySystemStatus.HEALTHY
-            )
+            status = SafetySystemStatus.DEGRADED if active_violations > 0 else SafetySystemStatus.HEALTHY
 
-            self._update_system_health(
-                "safety_watchdog", status, time.time(), health_score
-            )
+            self._update_system_health("safety_watchdog", status, time.time(), health_score)
 
         except json.JSONDecodeError:
-            self._update_system_health(
-                "safety_watchdog", SafetySystemStatus.FAILED, time.time(), 0.0
-            )
+            self._update_system_health("safety_watchdog", SafetySystemStatus.FAILED, time.time(), 0.0)
 
     def _sensor_health_callback(self, msg: String):
         """Handle sensor health updates."""
@@ -385,9 +365,7 @@ class SafetyDashboard(Node):
 
             # Update sensor system health
             sensors = health_data.get("sensors", {})
-            healthy_sensors = sum(
-                1 for s in sensors.values() if s.get("healthy", False)
-            )
+            healthy_sensors = sum(1 for s in sensors.values() if s.get("healthy", False))
             total_sensors = len(sensors)
 
             if total_sensors > 0:
@@ -395,16 +373,10 @@ class SafetyDashboard(Node):
                 status = (
                     SafetySystemStatus.HEALTHY
                     if health_score >= 0.8
-                    else (
-                        SafetySystemStatus.DEGRADED
-                        if health_score >= 0.5
-                        else SafetySystemStatus.FAILED
-                    )
+                    else (SafetySystemStatus.DEGRADED if health_score >= 0.5 else SafetySystemStatus.FAILED)
                 )
 
-                self._update_system_health(
-                    "sensor_health", status, time.time(), health_score
-                )
+                self._update_system_health("sensor_health", status, time.time(), health_score)
 
         except json.JSONDecodeError:
             pass
@@ -456,45 +428,27 @@ class SafetyDashboard(Node):
                 system_status = SafetySystemStatus.FAILED
                 health_score = 0.1
 
-            self._update_system_health(
-                system_name, system_status, time.time(), health_score
-            )
+            self._update_system_health(system_name, system_status, time.time(), health_score)
 
     def _battery_status_callback(self, msg: BatteryState):
         """Monitor battery status for dashboard."""
-        self._update_system_health(
-            "battery_monitor", SafetySystemStatus.HEALTHY, time.time()
-        )
+        self._update_system_health("battery_monitor", SafetySystemStatus.HEALTHY, time.time())
 
         # Check battery health
         if msg.percentage <= 20.0:
             health_score = msg.percentage / 100.0
-            status = (
-                SafetySystemStatus.DEGRADED
-                if msg.percentage > 10.0
-                else SafetySystemStatus.FAILED
-            )
-            self._update_system_health(
-                "battery_monitor", status, time.time(), health_score
-            )
+            status = SafetySystemStatus.DEGRADED if msg.percentage > 10.0 else SafetySystemStatus.FAILED
+            self._update_system_health("battery_monitor", status, time.time(), health_score)
 
     def _temperature_status_callback(self, msg: Temperature):
         """Monitor temperature status for dashboard."""
-        self._update_system_health(
-            "temperature_monitor", SafetySystemStatus.HEALTHY, time.time()
-        )
+        self._update_system_health("temperature_monitor", SafetySystemStatus.HEALTHY, time.time())
 
         # Check temperature health
         if msg.temperature >= 70.0:
             health_score = max(0.1, 1.0 - ((msg.temperature - 70.0) / 30.0))
-            status = (
-                SafetySystemStatus.DEGRADED
-                if msg.temperature < 85.0
-                else SafetySystemStatus.FAILED
-            )
-            self._update_system_health(
-                "temperature_monitor", status, time.time(), health_score
-            )
+            status = SafetySystemStatus.DEGRADED if msg.temperature < 85.0 else SafetySystemStatus.FAILED
+            self._update_system_health("temperature_monitor", status, time.time(), health_score)
 
     def _map_safety_level_to_alert(self, safety_level: str) -> SafetyAlertLevel:
         """Map safety status level to alert level."""
@@ -581,11 +535,7 @@ class SafetyDashboard(Node):
                 self.logger.error(f"ALERT ESCALATED TO EMERGENCY: {alert_id}")
 
             # Remove resolved alerts after 30 seconds
-            if (
-                alert.resolved
-                and alert.resolved_time
-                and current_time - alert.resolved_time > 30.0
-            ):
+            if alert.resolved and alert.resolved_time and current_time - alert.resolved_time > 30.0:
                 alerts_to_remove.append(alert_id)
 
         # Remove old resolved alerts
@@ -610,16 +560,12 @@ class SafetyDashboard(Node):
         # Calculate overall system health
         active_alerts_count = len(self.active_alerts)
         critical_alerts = sum(
-            1
-            for a in self.active_alerts.values()
-            if a.level in [SafetyAlertLevel.CRITICAL, SafetyAlertLevel.EMERGENCY]
+            1 for a in self.active_alerts.values() if a.level in [SafetyAlertLevel.CRITICAL, SafetyAlertLevel.EMERGENCY]
         )
 
         # System health scores
         system_scores = [h.health_score for h in self.system_health.values()]
-        average_health = (
-            sum(system_scores) / len(system_scores) if system_scores else 0.5
-        )
+        average_health = sum(system_scores) / len(system_scores) if system_scores else 0.5
 
         # Overall status determination
         if critical_alerts > 0 or average_health < 0.3:
@@ -636,21 +582,9 @@ class SafetyDashboard(Node):
             "critical_alerts_count": critical_alerts,
             "average_system_health": average_health,
             "systems_monitored": len(self.system_health),
-            "systems_healthy": sum(
-                1
-                for h in self.system_health.values()
-                if h.status == SafetySystemStatus.HEALTHY
-            ),
-            "systems_degraded": sum(
-                1
-                for h in self.system_health.values()
-                if h.status == SafetySystemStatus.DEGRADED
-            ),
-            "systems_failed": sum(
-                1
-                for h in self.system_health.values()
-                if h.status == SafetySystemStatus.FAILED
-            ),
+            "systems_healthy": sum(1 for h in self.system_health.values() if h.status == SafetySystemStatus.HEALTHY),
+            "systems_degraded": sum(1 for h in self.system_health.values() if h.status == SafetySystemStatus.DEGRADED),
+            "systems_failed": sum(1 for h in self.system_health.values() if h.status == SafetySystemStatus.FAILED),
         }
 
         dashboard_msg = String()
@@ -718,14 +652,10 @@ class SafetyDashboard(Node):
             dashboard_status.message = "Safety dashboard monitoring normal"
         elif active_alerts <= 5:
             dashboard_status.level = DiagnosticStatus.WARN
-            dashboard_status.message = (
-                f"Safety dashboard: {active_alerts} active alerts"
-            )
+            dashboard_status.message = f"Safety dashboard: {active_alerts} active alerts"
         else:
             dashboard_status.level = DiagnosticStatus.ERROR
-            dashboard_status.message = (
-                f"Safety dashboard: {active_alerts} active alerts (high)"
-            )
+            dashboard_status.message = f"Safety dashboard: {active_alerts} active alerts (high)"
 
         # Add system health information
         for system_name, health in self.system_health.items():

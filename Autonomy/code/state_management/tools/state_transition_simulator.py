@@ -15,10 +15,6 @@ import time
 from datetime import datetime
 from typing import Optional
 
-sys.path.insert(
-    0, os.path.join(os.path.dirname(__file__), "..", "autonomy_state_machine")
-)
-
 from states import (
     AutonomousSubstate,
     EquipmentServicingSubstate,
@@ -27,6 +23,8 @@ from states import (
     get_state_metadata,
     is_valid_transition,
 )
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "autonomy_state_machine"))
 
 
 class StateTransitionSimulator:
@@ -48,9 +46,7 @@ class StateTransitionSimulator:
         # Set up logging
         self.setup_logging()
 
-        self.logger.info(
-            f"[INIT] State Machine Simulator Initialized - Starting in {self.current_state.value} state"
-        )
+        self.logger.info(f"[INIT] State Machine Simulator Initialized - Starting in {self.current_state.value} state")
 
     def setup_logging(self):
         """Configure structured logging for state transitions."""
@@ -89,14 +85,10 @@ class StateTransitionSimulator:
         to_subsystems = get_required_subsystems(to_state)
 
         if from_subsystems:
-            self.logger.info(
-                f"[EXIT] Deactivating subsystems for {from_state.value}: {', '.join(from_subsystems)}"
-            )
+            self.logger.info(f"[EXIT] Deactivating subsystems for {from_state.value}: {', '.join(from_subsystems)}")
 
         if to_subsystems:
-            self.logger.info(
-                f"[ENTER] Activating subsystems for {to_state.value}: {', '.join(to_subsystems)}"
-            )
+            self.logger.info(f"[ENTER] Activating subsystems for {to_state.value}: {', '.join(to_subsystems)}")
 
     def execute_transition(
         self,
@@ -255,9 +247,7 @@ class StateTransitionSimulator:
 
     def simulate_error_conditions(self):
         """Simulate error conditions and invalid transitions."""
-        self.logger.info(
-            "[ERROR_TEST] Testing Error Conditions and Invalid Transitions"
-        )
+        self.logger.info("[ERROR_TEST] Testing Error Conditions and Invalid Transitions")
         self.logger.info("-" * 50)
 
         # Reset to a known state
@@ -287,9 +277,7 @@ class StateTransitionSimulator:
         for from_state, to_state, description in invalid_transitions:
             self.current_state = from_state
             self.logger.info(f"Testing invalid transition: {description}")
-            success = self.execute_transition(
-                to_state, reason="Testing invalid transition"
-            )
+            success = self.execute_transition(to_state, reason="Testing invalid transition")
             if not success:
                 self.logger.info("[VALIDATED] Invalid transition correctly blocked")
             time.sleep(0.5)
@@ -347,9 +335,7 @@ class StateTransitionSimulator:
             # Show required subsystems
             subsystems = get_required_subsystems(state, substate)
             if subsystems:
-                self.logger.info(
-                    f"   [SUBSYSTEMS] Required subsystems: {', '.join(subsystems)}"
-                )
+                self.logger.info(f"   [SUBSYSTEMS] Required subsystems: {', '.join(subsystems)}")
             else:
                 self.logger.info("   [SUBSYSTEMS] No specific subsystems required")
 
@@ -376,9 +362,7 @@ def main():
     simulator.simulate_mission_sequence()
     print()
 
-    print(
-        "[SIMULATOR] Simulation complete! Check the logs above for detailed state transitions."
-    )
+    print("[SIMULATOR] Simulation complete! Check the logs above for detailed state transitions.")
 
 
 if __name__ == "__main__":

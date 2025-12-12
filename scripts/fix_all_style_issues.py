@@ -8,7 +8,6 @@ import ast
 import re
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 
 def fix_line_lengths(content: str) -> str:
@@ -53,6 +52,7 @@ def fix_line_lengths(content: str) -> str:
 
     return '\n'.join(fixed_lines)
 
+
 def fix_continuation_indentation(content: str) -> str:
     """Fix continuation line indentation (E128)."""
     lines = content.split('\n')
@@ -70,9 +70,9 @@ def fix_continuation_indentation(content: str) -> str:
             continue
 
         # Look for backslash continuation or implicit continuation
-        prev_line = lines[i-1].rstrip()
+        prev_line = lines[i - 1].rstrip()
         if prev_line.endswith('\\') or (prev_line and not prev_line.rstrip().endswith((':', '(', '[', '{')) and
-                                      not stripped.startswith((')', ']', '}', 'elif ', 'else:', 'except ', 'finally:'))):
+                                        not stripped.startswith((')', ']', '}', 'elif ', 'else:', 'except ', 'finally:'))):
             # This might be a continuation - check indentation
             if line.startswith(' ') and not line.startswith('    '):  # Not properly indented
                 # Calculate proper indentation based on previous line
@@ -88,6 +88,7 @@ def fix_continuation_indentation(content: str) -> str:
             fixed_lines.append(line)
 
     return '\n'.join(fixed_lines)
+
 
 def fix_blank_lines(content: str) -> str:
     """Fix blank line spacing issues (E302, E305)."""
@@ -114,7 +115,7 @@ def fix_blank_lines(content: str) -> str:
                 del fixed_lines[-blank_count:-2]
 
             # Add missing blank lines if needed
-            elif blank_count < 2 and i > 0 and not lines[i-1].strip().startswith(('class ', 'def ')):
+            elif blank_count < 2 and i > 0 and not lines[i - 1].strip().startswith(('class ', 'def ')):
                 # Add blank lines before class/function
                 while len([l for l in fixed_lines[-3:] if not l.strip()]) < 2:
                     fixed_lines.insert(-1, '')
@@ -122,6 +123,7 @@ def fix_blank_lines(content: str) -> str:
         i += 1
 
     return '\n'.join(fixed_lines)
+
 
 def fix_unused_variables(content: str, filepath: str) -> str:
     """Fix unused local variables by prefixing with underscore."""
@@ -184,6 +186,7 @@ def fix_unused_variables(content: str, filepath: str) -> str:
     except SyntaxError:
         return content
 
+
 def process_file(filepath: str) -> bool:
     """Process a single file for all style fixes."""
     try:
@@ -207,6 +210,7 @@ def process_file(filepath: str) -> bool:
         print(f"Error processing {filepath}: {e}", file=sys.stderr)
 
     return False
+
 
 def main():
     """Main style fixing function."""
@@ -232,6 +236,7 @@ def main():
             print(f"Fixed: {filepath}")
 
     print(f"\nStyle fixing complete: {files_modified} files modified out of {files_processed} processed")
+
 
 if __name__ == '__main__':
     main()

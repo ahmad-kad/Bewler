@@ -211,9 +211,7 @@ class RedundantSafetyMonitor(Node):
         )
 
         # Sensor health monitoring timer
-        self.health_timer = self.create_timer(
-            5.0, self._publish_sensor_health, callback_group=self.monitoring_group
-        )
+        self.health_timer = self.create_timer(5.0, self._publish_sensor_health, callback_group=self.monitoring_group)
 
         # Redundant safety evaluation timer
         self.safety_timer = self.create_timer(
@@ -244,17 +242,11 @@ class RedundantSafetyMonitor(Node):
 
         # Extract acceleration magnitude
         accel_magnitude = (
-            msg.linear_acceleration.x**2
-            + msg.linear_acceleration.y**2
-            + msg.linear_acceleration.z**2
+            msg.linear_acceleration.x**2 + msg.linear_acceleration.y**2 + msg.linear_acceleration.z**2
         ) ** 0.5
 
         # Extract gyro magnitude
-        gyro_magnitude = (
-            msg.angular_velocity.x**2
-            + msg.angular_velocity.y**2
-            + msg.angular_velocity.z**2
-        ) ** 0.5
+        gyro_magnitude = (msg.angular_velocity.x**2 + msg.angular_velocity.y**2 + msg.angular_velocity.z**2) ** 0.5
 
         # Add to validation buffers
         self.imu_accel_buffer.append(accel_magnitude)
@@ -365,9 +357,7 @@ class RedundantSafetyMonitor(Node):
 
         # Extract velocity magnitude
         velocity_magnitude = (
-            msg.twist.twist.linear.x**2
-            + msg.twist.twist.linear.y**2
-            + msg.twist.twist.linear.z**2
+            msg.twist.twist.linear.x**2 + msg.twist.twist.linear.y**2 + msg.twist.twist.linear.z**2
         ) ** 0.5
 
         # Check velocity limits
@@ -399,13 +389,9 @@ class RedundantSafetyMonitor(Node):
             # Degrade data quality score
             health.data_quality_score = max(0.0, health.data_quality_score - 0.1)
 
-    def _trigger_redundant_violation(
-        self, violation_id: str, description: str, context: Dict[str, Any]
-    ):
+    def _trigger_redundant_violation(self, violation_id: str, description: str, context: Dict[str, Any]):
         """Trigger a redundant safety violation."""
-        self.logger.warning(
-            f"Redundant safety violation: {violation_id} - {description}"
-        )
+        self.logger.warning(f"Redundant safety violation: {violation_id} - {description}")
 
         # Update redundant state
         if "critical" in violation_id.lower() or "emergency" in violation_id.lower():
@@ -427,12 +413,8 @@ class RedundantSafetyMonitor(Node):
         violation_msg.trigger_source = "redundant_safety_monitor"
         violation_msg.trigger_time = self.get_clock().now().to_msg()
         violation_msg.trigger_description = description
-        violation_msg.requires_manual_intervention = (
-            self.current_state == RedundantSafetyState.EMERGENCY
-        )
-        violation_msg.can_auto_recover = (
-            self.current_state != RedundantSafetyState.EMERGENCY
-        )
+        violation_msg.requires_manual_intervention = self.current_state == RedundantSafetyState.EMERGENCY
+        violation_msg.can_auto_recover = self.current_state != RedundantSafetyState.EMERGENCY
         violation_msg.recovery_steps = [
             "Investigate redundant safety violation",
             "Verify primary safety system",
@@ -461,9 +443,7 @@ class RedundantSafetyMonitor(Node):
         # Map primary safety levels to redundant states
         if primary_level == "EMERGENCY":
             if self.current_state != RedundantSafetyState.EMERGENCY:
-                self._update_redundant_state(
-                    RedundantSafetyState.EMERGENCY, "Primary system emergency detected"
-                )
+                self._update_redundant_state(RedundantSafetyState.EMERGENCY, "Primary system emergency detected")
         elif primary_level == "CRITICAL":
             if self.current_state not in [
                 RedundantSafetyState.EMERGENCY,
@@ -484,9 +464,7 @@ class RedundantSafetyMonitor(Node):
 
             if time_since_primary > self.thresholds.communication_timeout:
                 consistency = SafetyConsistency.SYSTEM_FAILURE
-                description = (
-                    f"Primary safety system timeout: {time_since_primary:.1f}s"
-                )
+                description = f"Primary safety system timeout: {time_since_primary:.1f}s"
             else:
                 # Compare safety levels
                 primary_level = self.primary_safety_status.safety_level
@@ -511,11 +489,7 @@ class RedundantSafetyMonitor(Node):
             "timestamp": time.time(),
             "consistency": consistency.value,
             "description": description,
-            "primary_level": (
-                self.primary_safety_status.safety_level
-                if self.primary_safety_status
-                else "unknown"
-            ),
+            "primary_level": (self.primary_safety_status.safety_level if self.primary_safety_status else "unknown"),
             "redundant_level": self.current_state.value,
         }
 
@@ -551,11 +525,7 @@ class RedundantSafetyMonitor(Node):
 
         # Check for overall system degradation
         active_violations = len(
-            [
-                r
-                for r in self.consistency_history
-                if r["consistency"] != SafetyConsistency.CONSISTENT
-            ]
+            [r for r in self.consistency_history if r["consistency"] != SafetyConsistency.CONSISTENT]
         )
 
         if active_violations > 10:  # Many recent inconsistencies
@@ -588,8 +558,7 @@ class RedundantSafetyMonitor(Node):
                 "error_count": health.error_count,
                 "consecutive_failures": health.consecutive_failures,
                 "data_quality_score": health.data_quality_score,
-                "healthy": health.data_quality_score > 0.7
-                and health.consecutive_failures == 0,
+                "healthy": health.data_quality_score > 0.7 and health.consecutive_failures == 0,
             }
 
         health_msg = String()
@@ -618,14 +587,10 @@ class RedundantSafetyMonitor(Node):
             RedundantSafetyState.EMERGENCY,
         ]:
             safety_status.level = DiagnosticStatus.ERROR
-            safety_status.message = (
-                f"Redundant safety monitoring: {self.current_state.value}"
-            )
+            safety_status.message = f"Redundant safety monitoring: {self.current_state.value}"
         else:
             safety_status.level = DiagnosticStatus.OK
-            safety_status.message = (
-                f"Redundant safety monitoring: {self.current_state.value}"
-            )
+            safety_status.message = f"Redundant safety monitoring: {self.current_state.value}"
 
         # Add sensor health information
         for sensor_name, health in self.sensor_health.items():
@@ -653,8 +618,7 @@ class RedundantSafetyMonitor(Node):
                 "error_count": health.error_count,
                 "consecutive_failures": health.consecutive_failures,
                 "data_quality_score": health.data_quality_score,
-                "healthy": health.data_quality_score > 0.7
-                and health.consecutive_failures == 0,
+                "healthy": health.data_quality_score > 0.7 and health.consecutive_failures == 0,
             }
             for sensor_name, health in self.sensor_health.items()
         }

@@ -72,9 +72,7 @@ class KeyboardLocalizationNode(Node):
 
         # Publishers
         self.keyboard_pose_pub = self.create_publisher(PoseStamped, "keyboard_pose", 10)
-        self.debug_image_pub = self.create_publisher(
-            Image, "keyboard_detection_image", 10
-        )
+        self.debug_image_pub = self.create_publisher(Image, "keyboard_detection_image", 10)
 
         # Subscribers
         self.image_sub = self.create_subscription(
@@ -119,16 +117,10 @@ class KeyboardLocalizationNode(Node):
 
                 # Load marker positions if available
                 if "markers" in config:
-                    self.marker_positions = {
-                        int(k): np.array(v) for k, v in config["markers"].items()
-                    }
-                    self.get_logger().info(
-                        f"Loaded {len(self.marker_positions)} marker positions from config"
-                    )
+                    self.marker_positions = {int(k): np.array(v) for k, v in config["markers"].items()}
+                    self.get_logger().info(f"Loaded {len(self.marker_positions)} marker positions from config")
             else:
-                self.get_logger().warn(
-                    f"Configuration file not found, using default marker positions"
-                )
+                self.get_logger().warn(f"Configuration file not found, using default marker positions")
 
         except Exception as e:
             self.get_logger().warn(f"Failed to load configuration: {e}")
@@ -141,9 +133,7 @@ class KeyboardLocalizationNode(Node):
             self.camera_info_received = True
 
             self.get_logger().info(
-                "Camera calibration received:\n"
-                f"  Matrix: {self.camera_matrix}\n"
-                f"  Distortion: {self.dist_coeffs}"
+                "Camera calibration received:\n" f"  Matrix: {self.camera_matrix}\n" f"  Distortion: {self.dist_coeffs}"
             )
 
     def _image_callback(self, msg: Image) -> None:
@@ -179,9 +169,7 @@ class KeyboardLocalizationNode(Node):
         except Exception as e:
             self.get_logger().error(f"Image processing error: {e}")
 
-    def _estimate_keyboard_pose(
-        self, corners: List, ids: np.ndarray, image: np.ndarray
-    ) -> Optional[Dict]:
+    def _estimate_keyboard_pose(self, corners: List, ids: np.ndarray, image: np.ndarray) -> Optional[Dict]:
         """
         Estimate keyboard pose from detected markers using PnP.
 
@@ -206,9 +194,7 @@ class KeyboardLocalizationNode(Node):
                     object_points.append(self.marker_positions[marker_id])
 
             if len(object_points) < 3:
-                self.get_logger().warn(
-                    f"Not enough marker correspondences: {len(object_points)}/3"
-                )
+                self.get_logger().warn(f"Not enough marker correspondences: {len(object_points)}/3")
                 return None
 
             object_points = np.array(object_points, dtype=np.float32)

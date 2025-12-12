@@ -7,7 +7,6 @@ Author: [Your Name]
 Date: [Date]
 """
 
-
 # Standard imports
 import time
 from typing import Optional

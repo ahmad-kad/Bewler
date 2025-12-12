@@ -18,10 +18,4 @@ from .camera_intrinsics_calibrator import (
     CharUcoBoardConfig,
 )
 
-__all__ = [
-    'CameraConfig',
-    'CharUcoBoardConfig',
-    'CameraIntrinsicsCalibrator',
-    'CalibrationResult',
-    'CaptureMode'
-]
+__all__ = ["CameraConfig", "CharUcoBoardConfig", "CameraIntrinsicsCalibrator", "CalibrationResult", "CaptureMode"]

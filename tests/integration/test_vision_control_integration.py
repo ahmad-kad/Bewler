@@ -6,7 +6,7 @@ Tests interaction between computer vision and state machine control.
 """
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 
 class TestVisionControlIntegration(unittest.TestCase):
@@ -151,7 +151,7 @@ class TestStateMachineVisionIntegration(unittest.TestCase):
 
     def test_mission_object_detection_state_change(self):
         """Test state changes based on mission object detection."""
-        from autonomy_state_machine.states import AutonomousSubstate, SystemState
+        from autonomy_state_machine.states import SystemState
 
         # Vision detects mission-critical objects
         mission_objects_found = self.vision.detect_mission_objects()

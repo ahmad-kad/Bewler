@@ -11,20 +11,20 @@ import random
 import time
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import List, Optional
 
-import numpy as np
 import rclpy
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
-from sensor_msgs.msg import Imu, LaserScan, NavSatFix, Temperature
-from std_msgs.msg import Bool, String
+from sensor_msgs.msg import Imu, LaserScan, NavSatFix
+from std_msgs.msg import String
 
 
 class SensorType(Enum):
     """Types of sensors that can fail."""
+
     IMU = "imu"
     GPS = "gps"
     LIDAR = "lidar"
@@ -34,6 +34,7 @@ class SensorType(Enum):
 
 class FailureMode(Enum):
     """Types of sensor failures."""
+
     COMPLETE_OUTAGE = "complete_outage"
     NOISY_DATA = "noisy_data"
     BIASED_DATA = "biased_data"
@@ -44,6 +45,7 @@ class FailureMode(Enum):
 @dataclass
 class SensorFailure:
     """Sensor failure configuration."""
+
     sensor_type: SensorType
     failure_mode: FailureMode
     start_time: float
@@ -55,6 +57,7 @@ class SensorFailure:
 @dataclass
 class RecoveryMetrics:
     """Recovery performance metrics."""
+
     failure_detection_time: float = 0.0
     degradation_start_time: float = 0.0
     recovery_time: float = 0.0
@@ -83,13 +86,7 @@ class SensorFailureRecoveryTester(Node):
 
         # Sensor health monitoring
         self.last_sensor_updates = {}
-        self.sensor_timeouts = {
-            'imu': 0.5,
-            'gps': 2.0,
-            'lidar': 0.2,
-            'camera': 0.1,
-            'odom': 0.1
-        }
+        self.sensor_timeouts = {"imu": 0.5, "gps": 2.0, "lidar": 0.2, "camera": 0.1, "odom": 0.1}
 
         # Navigation state
         self.current_position = None
@@ -98,33 +95,21 @@ class SensorFailureRecoveryTester(Node):
 
         # QoS profiles
         self.qos_reliable = QoSProfile(
-            reliability=ReliabilityPolicy.RELIABLE,
-            history=HistoryPolicy.KEEP_LAST,
-            depth=10
+            reliability=ReliabilityPolicy.RELIABLE, history=HistoryPolicy.KEEP_LAST, depth=10
         )
 
         self.qos_best_effort = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
-            history=HistoryPolicy.KEEP_LAST,
-            depth=20
+            reliability=ReliabilityPolicy.BEST_EFFORT, history=HistoryPolicy.KEEP_LAST, depth=20
         )
 
         # Subscribers
-        self.imu_sub = self.create_subscription(
-            Imu, "/imu", self.imu_callback, self.qos_best_effort
-        )
+        self.imu_sub = self.create_subscription(Imu, "/imu", self.imu_callback, self.qos_best_effort)
 
-        self.gps_sub = self.create_subscription(
-            NavSatFix, "/gps/fix", self.gps_callback, self.qos_reliable
-        )
+        self.gps_sub = self.create_subscription(NavSatFix, "/gps/fix", self.gps_callback, self.qos_reliable)
 
-        self.lidar_sub = self.create_subscription(
-            LaserScan, "/scan", self.laser_callback, self.qos_best_effort
-        )
+        self.lidar_sub = self.create_subscription(LaserScan, "/scan", self.laser_callback, self.qos_best_effort)
 
-        self.odom_sub = self.create_subscription(
-            Odometry, "/odom", self.odom_callback, self.qos_reliable
-        )
+        self.odom_sub = self.create_subscription(Odometry, "/odom", self.odom_callback, self.qos_reliable)
 
         # Publishers
         self.cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
@@ -148,62 +133,74 @@ class SensorFailureRecoveryTester(Node):
         failures = []
 
         # GPS failure (critical for long-distance navigation)
-        failures.append(SensorFailure(
-            sensor_type=SensorType.GPS,
-            failure_mode=FailureMode.COMPLETE_OUTAGE,
-            start_time=120.0,  # 2 minutes in
-            duration=60.0,     # 1 minute outage
-            severity=1.0
-        ))
+        failures.append(
+            SensorFailure(
+                sensor_type=SensorType.GPS,
+                failure_mode=FailureMode.COMPLETE_OUTAGE,
+                start_time=120.0,  # 2 minutes in
+                duration=60.0,  # 1 minute outage
+                severity=1.0,
+            )
+        )
 
         # IMU noise injection
-        failures.append(SensorFailure(
-            sensor_type=SensorType.IMU,
-            failure_mode=FailureMode.NOISY_DATA,
-            start_time=240.0,  # 4 minutes in
-            duration=45.0,     # 45 seconds
-            severity=0.7
-        ))
+        failures.append(
+            SensorFailure(
+                sensor_type=SensorType.IMU,
+                failure_mode=FailureMode.NOISY_DATA,
+                start_time=240.0,  # 4 minutes in
+                duration=45.0,  # 45 seconds
+                severity=0.7,
+            )
+        )
 
         # LiDAR partial failure
-        failures.append(SensorFailure(
-            sensor_type=SensorType.LIDAR,
-            failure_mode=FailureMode.INTERMITTENT,
-            start_time=360.0,  # 6 minutes in
-            duration=90.0,     # 1.5 minutes
-            severity=0.5
-        ))
+        failures.append(
+            SensorFailure(
+                sensor_type=SensorType.LIDAR,
+                failure_mode=FailureMode.INTERMITTENT,
+                start_time=360.0,  # 6 minutes in
+                duration=90.0,  # 1.5 minutes
+                severity=0.5,
+            )
+        )
 
         # Camera degradation
-        failures.append(SensorFailure(
-            sensor_type=SensorType.CAMERA,
-            failure_mode=FailureMode.BIASED_DATA,
-            start_time=480.0,  # 8 minutes in
-            duration=30.0,     # 30 seconds
-            severity=0.8
-        ))
+        failures.append(
+            SensorFailure(
+                sensor_type=SensorType.CAMERA,
+                failure_mode=FailureMode.BIASED_DATA,
+                start_time=480.0,  # 8 minutes in
+                duration=30.0,  # 30 seconds
+                severity=0.8,
+            )
+        )
 
         # Multiple sensor failure (stress test)
-        failures.append(SensorFailure(
-            sensor_type=SensorType.IMU,
-            failure_mode=FailureMode.COMPLETE_OUTAGE,
-            start_time=600.0,  # 10 minutes in
-            duration=30.0,     # 30 seconds
-            severity=1.0
-        ))
-        failures.append(SensorFailure(
-            sensor_type=SensorType.GPS,
-            failure_mode=FailureMode.DELAYED_DATA,
-            start_time=600.0,  # Simultaneous
-            duration=30.0,
-            severity=0.6
-        ))
+        failures.append(
+            SensorFailure(
+                sensor_type=SensorType.IMU,
+                failure_mode=FailureMode.COMPLETE_OUTAGE,
+                start_time=600.0,  # 10 minutes in
+                duration=30.0,  # 30 seconds
+                severity=1.0,
+            )
+        )
+        failures.append(
+            SensorFailure(
+                sensor_type=SensorType.GPS,
+                failure_mode=FailureMode.DELAYED_DATA,
+                start_time=600.0,  # Simultaneous
+                duration=30.0,
+                severity=0.6,
+            )
+        )
 
         return failures
 
     def imu_callback(self, msg):
         """Handle IMU data."""
-        self.last_sensor_updates['imu'] = time.time()
+        self.last_sensor_updates["imu"] = time.time()
 
         # Check for active IMU failure
         active_failure = self.get_active_failure(SensorType.IMU)
@@ -212,7 +209,7 @@ class SensorFailureRecoveryTester(Node):
 
     def gps_callback(self, msg):
         """Handle GPS data."""
-        self.last_sensor_updates['gps'] = time.time()
+        self.last_sensor_updates["gps"] = time.time()
 
         # Check for active GPS failure
         active_failure = self.get_active_failure(SensorType.GPS)
@@ -221,7 +218,7 @@ class SensorFailureRecoveryTester(Node):
 
     def laser_callback(self, msg):
         """Handle LiDAR data."""
-        self.last_sensor_updates['lidar'] = time.time()
+        self.last_sensor_updates["lidar"] = time.time()
 
         # Check for active LiDAR failure
         active_failure = self.get_active_failure(SensorType.LIDAR)
@@ -230,20 +227,18 @@ class SensorFailureRecoveryTester(Node):
 
     def odom_callback(self, msg):
         """Handle odometry data."""
-        self.last_sensor_updates['odom'] = time.time()
-        self.current_position = (
-            msg.pose.pose.position.x,
-            msg.pose.pose.position.y,
-            msg.pose.pose.position.z
-        )
+        self.last_sensor_updates["odom"] = time.time()
+        self.current_position = (msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z)
 
     def get_active_failure(self, sensor_type: SensorType) -> Optional[SensorFailure]:
         """Get currently active failure for a sensor type."""
         current_time = time.time() - self.start_time
 
         for failure in self.current_failures:
-            if (failure.sensor_type == sensor_type and
-                failure.start_time <= current_time <= failure.start_time + failure.duration):
+            if (
+                failure.sensor_type == sensor_type
+                and failure.start_time <= current_time <= failure.start_time + failure.duration
+            ):
                 return failure
 
         return None
@@ -256,7 +251,7 @@ class SensorFailureRecoveryTester(Node):
 
         elif failure.failure_mode == FailureMode.NOISY_DATA:
             # Add noise to sensor data
-            if hasattr(msg, 'linear_acceleration'):
+            if hasattr(msg, "linear_acceleration"):
                 # IMU acceleration noise
                 noise_factor = failure.severity * 10.0
                 msg.linear_acceleration.x += random.gauss(0, noise_factor)
@@ -265,7 +260,7 @@ class SensorFailureRecoveryTester(Node):
 
         elif failure.failure_mode == FailureMode.BIASED_DATA:
             # Add bias to sensor data
-            if hasattr(msg, 'ranges'):
+            if hasattr(msg, "ranges"):
                 # LiDAR range bias
                 bias_factor = failure.severity * 2.0
                 msg.ranges = [r * (1 + bias_factor) for r in msg.ranges]
@@ -277,7 +272,9 @@ class SensorFailureRecoveryTester(Node):
 
         # Publish failure notification
         failure_msg = String()
-        failure_msg.data = f"SENSOR_FAILURE_SIM|{failure.sensor_type.value}|{failure.failure_mode.value}|{failure.severity}"
+        failure_msg.data = (
+            f"SENSOR_FAILURE_SIM|{failure.sensor_type.value}|{failure.failure_mode.value}|{failure.severity}"
+        )
         self.failure_pub.publish(failure_msg)
 
     def inject_failure(self):
@@ -289,29 +286,24 @@ class SensorFailureRecoveryTester(Node):
 
         # Check for failures to start
         for failure in self.failure_schedule:
-            if (failure.start_time <= current_time <= failure.start_time + failure.duration and
-                failure not in self.current_failures):
+            if (
+                failure.start_time <= current_time <= failure.start_time + failure.duration
+                and failure not in self.current_failures
+            ):
 
                 self.current_failures.append(failure)
                 self.failure_history.append(failure)
 
                 self.get_logger().warn(
-                    f"INJECTING FAILURE: {failure.sensor_type.value} {failure.failure_mode.value} "
-                    ".1f"
+                    f"INJECTING FAILURE: {failure.sensor_type.value} {failure.failure_mode.value} " ".1f"
                 )
 
                 # Record degradation start
-                metrics = RecoveryMetrics(
-                    failure_detection_time=current_time,
-                    degradation_start_time=current_time
-                )
+                metrics = RecoveryMetrics(failure_detection_time=current_time, degradation_start_time=current_time)
                 self.recovery_metrics.append(metrics)
 
         # Check for failures to end
-        self.current_failures = [
-            f for f in self.current_failures
-            if current_time <= f.start_time + f.duration
-        ]
+        self.current_failures = [f for f in self.current_failures if current_time <= f.start_time + f.duration]
 
         # Publish current failure status
         active_failures = [f"{f.sensor_type.value}:{f.failure_mode.value}" for f in self.current_failures]
@@ -379,8 +371,8 @@ class SensorFailureRecoveryTester(Node):
 
                 # Check if system recovered (simplified check)
                 recovery_successful = (
-                    self.navigation_active and  # Navigation still working
-                    not self.degraded_mode      # Not stuck in degraded mode
+                    self.navigation_active  # Navigation still working
+                    and not self.degraded_mode  # Not stuck in degraded mode
                 )
 
                 if recovery_successful:
@@ -391,33 +383,31 @@ class SensorFailureRecoveryTester(Node):
 
         # Generate comprehensive results
         test_results = {
-            'test_info': {
-                'name': 'Sensor Failure Recovery Test',
-                'duration_seconds': time.time() - self.start_time,
-                'failures_injected': len(self.failure_history),
-                'start_time': time.ctime(self.start_time),
-                'end_time': time.ctime(time.time())
+            "test_info": {
+                "name": "Sensor Failure Recovery Test",
+                "duration_seconds": time.time() - self.start_time,
+                "failures_injected": len(self.failure_history),
+                "start_time": time.ctime(self.start_time),
+                "end_time": time.ctime(time.time()),
             },
-            'failure_schedule': [
+            "failure_schedule": [
                 {
-                    'sensor': f.sensor_type.value,
-                    'mode': f.failure_mode.value,
-                    'start_time': f.start_time,
-                    'duration': f.duration,
-                    'severity': f.severity
+                    "sensor": f.sensor_type.value,
+                    "mode": f.failure_mode.value,
+                    "start_time": f.start_time,
+                    "duration": f.duration,
+                    "severity": f.severity,
                 }
                 for f in self.failure_history
             ],
-            'recovery_metrics': [
-                asdict(m) for m in self.recovery_metrics
-            ],
-            'overall_results': {
-                'successful_recoveries': successful_recoveries,
-                'total_failures': len(self.failure_history),
-                'recovery_rate': successful_recoveries / max(1, len(self.failure_history)),
-                'graceful_degradation': all(m.graceful_degradation for m in self.recovery_metrics),
-                'navigation_continuity': self.navigation_active
-            }
+            "recovery_metrics": [asdict(m) for m in self.recovery_metrics],
+            "overall_results": {
+                "successful_recoveries": successful_recoveries,
+                "total_failures": len(self.failure_history),
+                "recovery_rate": successful_recoveries / max(1, len(self.failure_history)),
+                "graceful_degradation": all(m.graceful_degradation for m in self.recovery_metrics),
+                "navigation_continuity": self.navigation_active,
+            },
         }
 
         # Save results
@@ -426,13 +416,15 @@ class SensorFailureRecoveryTester(Node):
 
         # Publish completion status
         completion_msg = String()
-        completion_msg.data = f"SENSOR_FAILURE_TEST_COMPLETE|Recoveries:{successful_recoveries}/{len(self.failure_history)}"
+        completion_msg.data = (
+            f"SENSOR_FAILURE_TEST_COMPLETE|Recoveries:{successful_recoveries}/{len(self.failure_history)}"
+        )
         self.test_status_pub.publish(completion_msg)
 
         # Print comprehensive results
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("SENSOR FAILURE RECOVERY TEST RESULTS")
-        print("="*70)
+        print("=" * 70)
         print(f"Failures Injected: {len(self.failure_history)}")
         print(f"Successful Recoveries: {successful_recoveries}")
         print(f"Navigation Continuity: {' YES' if self.navigation_active else ' NO'}")
@@ -447,7 +439,7 @@ class SensorFailureRecoveryTester(Node):
         overall_success = success_rate > 0.8 and self.navigation_active
 
         print(f"\nOVERALL RESULT: {' SUCCESS' if overall_success else '  NEEDS IMPROVEMENT'}")
-        print("="*70)
+        print("=" * 70)
 
         self.get_logger().info("Sensor Failure Recovery Test completed")
         self.get_logger().info("Results saved to /tmp/sensor_failure_test_results.json")
@@ -466,5 +458,5 @@ def main():
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

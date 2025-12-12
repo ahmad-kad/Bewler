@@ -7,7 +7,7 @@ Tests complete competition mission scenarios end-to-end.
 
 import time
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 
 class TestCompetitionScenario(unittest.TestCase):
@@ -47,7 +47,7 @@ class TestCompetitionScenario(unittest.TestCase):
                 accuracy = self._calculate_accuracy(final_position, waypoint['position'])
 
                 self.assertLessEqual(accuracy, self.mission_requirements['gnss_accuracy'],
-                                   f"GNSS waypoint {waypoint['id']} accuracy {accuracy:.2f}m exceeds requirement")
+                                     f"GNSS waypoint {waypoint['id']} accuracy {accuracy:.2f}m exceeds requirement")
 
         # Phase 2: AR Tag Precision Navigation
         aruco_targets = [
@@ -68,7 +68,7 @@ class TestCompetitionScenario(unittest.TestCase):
                 accuracy = self._calculate_accuracy(final_position, target['position'])
 
                 self.assertLessEqual(accuracy, self.mission_requirements['aruco_accuracy'],
-                                   f"AR tag target {target['id']} accuracy {accuracy:.2f}m exceeds requirement")
+                                     f"AR tag target {target['id']} accuracy {accuracy:.2f}m exceeds requirement")
 
         # Phase 3: Equipment Servicing
         equipment_locations = [
@@ -94,12 +94,12 @@ class TestCompetitionScenario(unittest.TestCase):
         # Phase 4: Mission Completion
         total_time = self.system.get_mission_time()
         self.assertLessEqual(total_time, self.mission_requirements['time_limit'],
-                           f"Mission time {total_time:.0f}s exceeds limit {self.mission_requirements['time_limit']}s")
+                             f"Mission time {total_time:.0f}s exceeds limit {self.mission_requirements['time_limit']}s")
 
         # Verify all waypoints completed
         completed_waypoints = self.system.get_completed_waypoints()
         self.assertEqual(len(completed_waypoints), self.mission_requirements['waypoints'],
-                        "Not all waypoints completed")
+                         "Not all waypoints completed")
 
     def test_emergency_stop_during_mission(self):
         """Test emergency stop during active mission."""
@@ -146,7 +146,7 @@ class TestCompetitionScenario(unittest.TestCase):
 
         # Should complete within reasonable time (allow 5 minutes for 100m)
         self.assertLessEqual(navigation_time, 300.0,
-                           f"Navigation too slow: {navigation_time:.1f}s for 100m")
+                             f"Navigation too slow: {navigation_time:.1f}s for 100m")
 
         # Test typing speed
         start_time = time.time()
@@ -155,7 +155,7 @@ class TestCompetitionScenario(unittest.TestCase):
 
         # Should complete within reasonable time (< 30 seconds for 5 chars)
         self.assertLessEqual(typing_time, 30.0,
-                           f"Typing too slow: {typing_time:.1f}s for 5 characters")
+                             f"Typing too slow: {typing_time:.1f}s for 5 characters")
 
         # Test system responsiveness
         response_times = []
@@ -192,16 +192,16 @@ class TestCompetitionScenario(unittest.TestCase):
 
                 # Safety should be engaged during failures
                 self.assertTrue(safety_engaged,
-                              f"Safety not engaged during {scenario}")
+                                f"Safety not engaged during {scenario}")
 
                 # System should remain stable (not crash)
                 self.assertTrue(system_stable,
-                              f"System unstable during {scenario}")
+                                f"System unstable during {scenario}")
 
                 # Recovery should be possible
                 recovery_success = self.system.attempt_recovery()
                 self.assertTrue(recovery_success,
-                              f"Recovery failed for {scenario}")
+                                f"Recovery failed for {scenario}")
 
     def _calculate_accuracy(self, actual, target):
         """Calculate position accuracy in meters."""

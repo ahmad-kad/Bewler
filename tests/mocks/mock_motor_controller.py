@@ -9,8 +9,6 @@ Author: URC 2026 Autonomy Team
 """
 
 import math
-import time
-from typing import Tuple
 
 import rclpy
 from geometry_msgs.msg import Twist
@@ -106,7 +104,8 @@ class MockMotorController(Node):
 
         self.get_logger().info('Mock Motor Controller initialized')
         self.get_logger().info(f'Update rate: {self.update_rate} Hz')
-        self.get_logger().info(f'Max velocities: linear={self.max_linear_vel} m/s, angular={self.max_angular_vel} rad/s')
+        self.get_logger().info(
+            f'Max velocities: linear={self.max_linear_vel} m/s, angular={self.max_angular_vel} rad/s')
 
     def cmd_vel_callback(self, msg: Twist):
         """Handle velocity commands from navigation stack"""
@@ -221,11 +220,11 @@ class MockMotorController(Node):
 
         # Pose covariance (diagonal matrix)
         odom.pose.covariance = [0.01, 0.0, 0.0, 0.0, 0.0, 0.0,
-                               0.0, 0.01, 0.0, 0.0, 0.0, 0.0,
-                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                               0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                               0.0, 0.0, 0.0, 0.0, 0.0, 0.01]
+                                0.0, 0.01, 0.0, 0.0, 0.0, 0.0,
+                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                0.0, 0.0, 0.0, 0.0, 0.0, 0.01]
 
         # Twist
         odom.twist.twist.linear.x = self.vx
@@ -237,11 +236,11 @@ class MockMotorController(Node):
 
         # Twist covariance
         odom.twist.covariance = [0.01, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                0.0, 0.01, 0.0, 0.0, 0.0, 0.0,
-                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                0.0, 0.0, 0.0, 0.0, 0.01, 0.0]
+                                 0.0, 0.01, 0.0, 0.0, 0.0, 0.0,
+                                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                 0.0, 0.0, 0.0, 0.0, 0.01, 0.0]
 
         self.odom_pub.publish(odom)
 

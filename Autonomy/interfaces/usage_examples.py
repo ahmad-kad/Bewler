@@ -7,50 +7,46 @@ in your ROS2 nodes with clean input/output contracts.
 """
 
 import rclpy
-from autonomy_interfaces.action import NavigateToPose, PerformTyping
+from autonomy_interfaces.action import NavigateToPose
 
 # Import your custom interfaces (generated from .msg/.srv/.action files)
 from autonomy_interfaces.msg import LedCommand, NavigationStatus, VisionDetection
 from autonomy_interfaces.srv import GetSubsystemStatus, SwitchMode
 
 # Standard ROS2 interfaces
-from geometry_msgs.msg import PoseStamped, Twist
-from rclpy.action import ActionClient, ActionServer
+from rclpy.action import ActionServer
 from rclpy.action.server import ServerGoalHandle
 from rclpy.node import Node
 from std_msgs.msg import String
-from std_srvs.srv import Trigger
 
 
 class StateManagementNode(Node):
     """Example: Clean interface usage in state management"""
 
     def __init__(self):
-        super().__init__('state_management_node')
+        super().__init__("state_management_node")
 
         # Publishers with clear contracts
-        self.mission_status_pub = self.create_publisher(
-            String, 'mission_status', 10)
+        self.mission_status_pub = self.create_publisher(String, "mission_status", 10)
 
         # Services with specific request/response contracts
-        self.switch_mode_service = self.create_service(
-            SwitchMode, 'switch_mode', self.switch_mode_callback)
+        self.switch_mode_service = self.create_service(SwitchMode, "switch_mode", self.switch_mode_callback)
 
         self.get_status_service = self.create_service(
-            GetSubsystemStatus, 'get_subsystem_status',
-            self.get_subsystem_status_callback)
+            GetSubsystemStatus, "get_subsystem_status", self.get_subsystem_status_callback
+        )
 
         # Subscribers to subsystem status
         self.navigation_status_sub = self.create_subscription(
-            NavigationStatus, 'navigation/status',
-            self.navigation_status_callback, 10)
+            NavigationStatus, "navigation/status", self.navigation_status_callback, 10
+        )
 
     def switch_mode_callback(self, request, response):
         """Clean service contract: specific input → specific output"""
-        self.get_logger().info(f'Switching to mode: {request.requested_mode}')
+        self.get_logger().info(f"Switching to mode: {request.requested_mode}")
 
         # Validate input
-        valid_modes = ['autonomous', 'teleoperation', 'manual_override', 'idle']
+        valid_modes = ["autonomous", "teleoperation", "manual_override", "idle"]
         if request.requested_mode not in valid_modes:
             response.success = False
             response.message = f"Invalid mode. Must be one of: {valid_modes}"
@@ -82,7 +78,7 @@ class StateManagementNode(Node):
                 "SLAM tracking stable",
                 "Vision detecting AR tags",
                 "Typing system idle",
-                "LED showing ready status"
+                "LED showing ready status",
             ]
         else:
             # Query specific subsystem
@@ -117,18 +113,14 @@ class NavigationNode(Node):
     """Example: Publishing clean status interface"""
 
     def __init__(self):
-        super().__init__('navigation_node')
+        super().__init__("navigation_node")
 
         # Publisher with clear contract
-        self.status_publisher = self.create_publisher(
-            NavigationStatus, 'navigation/status', 10)
+        self.status_publisher = self.create_publisher(NavigationStatus, "navigation/status", 10)
 
         # Action server with Goal-Feedback-Result contract
         self.navigate_action_server = ActionServer(
-            self,
-            NavigateToPose,
-            'navigate_to_pose',
-            self.navigate_to_pose_callback
+            self, NavigateToPose, "navigate_to_pose", self.navigate_to_pose_callback
         )
 
         # Timer to publish status
@@ -206,15 +198,13 @@ class VisionNode(Node):
     """Example: Publishing detection results with clean interface"""
 
     def __init__(self):
-        super().__init__('vision_node')
+        super().__init__("vision_node")
 
         # Publisher for detections (could be array, but showing single for clarity)
-        self.detection_publisher = self.create_publisher(
-            VisionDetection, 'vision/detections', 10)
+        self.detection_publisher = self.create_publisher(VisionDetection, "vision/detections", 10)
 
         # LED command publisher for status signaling
-        self.led_publisher = self.create_publisher(
-            LedCommand, 'led/command', 10)
+        self.led_publisher = self.create_publisher(LedCommand, "led/command", 10)
 
         # Timer to simulate detections
         self.create_timer(2.0, self.publish_detection)
@@ -237,7 +227,7 @@ class VisionNode(Node):
 
         detection.size.x = 0.1  # width
         detection.size.y = 0.1  # height
-        detection.size.z = 0.01 # depth
+        detection.size.z = 0.01  # depth
 
         detection.keypoints = [320.5, 240.8, 325.2, 245.1]  # corner points
         detection.detector_type = "aruco"
@@ -263,11 +253,10 @@ class LedNode(Node):
     """Example: Consuming LED commands with clean interface"""
 
     def __init__(self):
-        super().__init__('led_node')
+        super().__init__("led_node")
 
         # Subscriber for LED commands
-        self.led_subscription = self.create_subscription(
-            LedCommand, 'led/command', self.led_command_callback, 10)
+        self.led_subscription = self.create_subscription(LedCommand, "led/command", self.led_command_callback, 10)
 
     def led_command_callback(self, msg: LedCommand):
         """Process structured LED commands"""
@@ -291,12 +280,10 @@ class LedNode(Node):
     def set_led_color(self, r, g, b):
         """Set LED color (hardware interface)"""
         # GPIO control code would go here
-        pass
 
     def set_led_pattern(self, pattern):
         """Set LED pattern (hardware interface)"""
         # Pattern control code would go here
-        pass
 
 
 def main(args=None):
@@ -322,5 +309,5 @@ def main(args=None):
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

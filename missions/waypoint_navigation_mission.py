@@ -16,19 +16,17 @@ import math
 import threading
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import rclpy
 
 # ROS2 Messages
-from geometry_msgs.msg import Point, Pose, PoseStamped
+from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry, Path
-from rclpy.action import ActionClient
-from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import NavSatFix
-from std_msgs.msg import Bool, Float32, String
+from std_msgs.msg import Float32, String
 
 # Using std_srvs for basic service calls instead of nav2 action
 from std_srvs.srv import Trigger

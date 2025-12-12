@@ -14,11 +14,10 @@ import sys
 import unittest
 
 import numpy as np
-
-sys.path.insert(0, "/Users/ahmadkaddoura/robotics2025/Autonomy/code/slam/autonomy_slam")
-
 from depth_processor import DepthProcessor
 from gps_fusion_node import ExtendedKalmanFilter
+
+sys.path.insert(0, "/Users/ahmadkaddoura/robotics2025/Autonomy/code/slam/autonomy_slam")
 
 
 class TestDepthProcessing(unittest.TestCase):
@@ -170,15 +169,9 @@ class TestGPSFusion(unittest.TestCase):
     def test_angle_normalization(self):
         """Test angle normalization to [-pi, pi]."""
         # Test various angles
-        self.assertAlmostEqual(
-            ExtendedKalmanFilter._normalize_angle(4 * np.pi), 0.0, places=5
-        )
-        self.assertAlmostEqual(
-            ExtendedKalmanFilter._normalize_angle(3 * np.pi), -np.pi, places=5
-        )
-        self.assertAlmostEqual(
-            ExtendedKalmanFilter._normalize_angle(-3 * np.pi), np.pi, places=5
-        )
+        self.assertAlmostEqual(ExtendedKalmanFilter._normalize_angle(4 * np.pi), 0.0, places=5)
+        self.assertAlmostEqual(ExtendedKalmanFilter._normalize_angle(3 * np.pi), -np.pi, places=5)
+        self.assertAlmostEqual(ExtendedKalmanFilter._normalize_angle(-3 * np.pi), np.pi, places=5)
 
     def test_fusion_modes(self):
         """Test graceful degradation between fusion modes."""

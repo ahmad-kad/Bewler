@@ -5,7 +5,6 @@ Fixes common style issues like unused variables and basic line length violations
 """
 
 import ast
-import os
 import re
 import sys
 from pathlib import Path
@@ -58,6 +57,7 @@ def fix_unused_variables(content, filepath):
         # If we can't parse, return unchanged
         return content
 
+
 def fix_basic_line_lengths(content):
     """Fix basic line length issues by breaking long lines."""
     lines = content.split('\n')
@@ -88,6 +88,7 @@ def fix_basic_line_lengths(content):
 
     return '\n'.join(fixed_lines)
 
+
 def process_file(filepath):
     """Process a single file for style fixes."""
     try:
@@ -112,6 +113,7 @@ def process_file(filepath):
 
     return False
 
+
 def main():
     """Main style fixing function."""
     project_root = Path(__file__).parent.parent
@@ -133,6 +135,7 @@ def main():
             print(f"Fixed: {filepath}")
 
     print(f"\nStyle fixing complete: {files_modified} files modified out of {files_processed} processed")
+
 
 if __name__ == '__main__':
     main()

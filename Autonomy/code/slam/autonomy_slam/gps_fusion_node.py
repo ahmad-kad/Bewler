@@ -262,9 +262,7 @@ class GPSFusionNode(Node):
         self.declare_parameter("fusion_rate_hz", 10.0)
 
         # Get parameters
-        self.slam_confidence_threshold = self.get_parameter(
-            "slam_confidence_threshold"
-        ).value
+        self.slam_confidence_threshold = self.get_parameter("slam_confidence_threshold").value
         self.gps_std_dev = self.get_parameter("gps_std_dev").value
         fusion_rate = self.get_parameter("fusion_rate_hz").value
 
@@ -277,9 +275,7 @@ class GPSFusionNode(Node):
         self.last_slam_covariance: Optional[np.ndarray] = None
         self.slam_confidence: float = 0.0
         self.gps_available: bool = False
-        self.fusion_mode: str = (
-            "initializing"  # initializing, slam_only, gps_slam_fusion, gps_only
-        )
+        self.fusion_mode: str = "initializing"  # initializing, slam_only, gps_slam_fusion, gps_only
 
         # Subscribers
         self.slam_pose_sub = self.create_subscription(
@@ -370,9 +366,7 @@ class GPSFusionNode(Node):
 
         # Update with SLAM if available and confident
         if self.last_slam_pose is not None:
-            self.ekf.update_slam(
-                self.last_slam_pose, self.last_slam_yaw, self.last_slam_covariance
-            )
+            self.ekf.update_slam(self.last_slam_pose, self.last_slam_yaw, self.last_slam_covariance)
 
         # Update fusion mode
         self._update_fusion_mode()
@@ -387,9 +381,7 @@ class GPSFusionNode(Node):
         """Determine fusion mode based on available data."""
         if self.last_slam_pose is None:
             self.fusion_mode = "initializing"
-        elif (
-            self.gps_available and self.slam_confidence > self.slam_confidence_threshold
-        ):
+        elif self.gps_available and self.slam_confidence > self.slam_confidence_threshold:
             self.fusion_mode = "gps_slam_fusion"
         elif self.slam_confidence > self.slam_confidence_threshold:
             self.fusion_mode = "slam_only"

@@ -166,13 +166,9 @@ class ProximityMonitor(Node):
 
     def _setup_publishers(self):
         """Setup ROS2 publishers."""
-        self.proximity_status_pub = self.create_publisher(
-            String, "/safety/proximity_status", self.qos_reliable
-        )
+        self.proximity_status_pub = self.create_publisher(String, "/safety/proximity_status", self.qos_reliable)
 
-        self.safety_trigger_pub = self.create_publisher(
-            SafetyStatus, "/safety/proximity_trigger", self.qos_reliable
-        )
+        self.safety_trigger_pub = self.create_publisher(SafetyStatus, "/safety/proximity_trigger", self.qos_reliable)
 
     def _setup_subscribers(self):
         """Setup ROS2 subscribers for proximity sensors."""
@@ -218,9 +214,7 @@ class ProximityMonitor(Node):
         self.proximity_timer = self.create_timer(0.1, self._check_proximity)  # 10Hz
 
         # Status publishing timer
-        self.status_timer = self.create_timer(
-            0.5, self._publish_proximity_status
-        )  # 2Hz
+        self.status_timer = self.create_timer(0.5, self._publish_proximity_status)  # 2Hz
 
     def _lidar_callback(self, msg: LaserScan):
         """Process LIDAR scan data with AoI tracking."""
@@ -365,9 +359,7 @@ class ProximityMonitor(Node):
 
         if violations:
             # Find most severe violation
-            most_severe_zone, reading = max(
-                violations, key=lambda x: self._severity_priority(x[0].severity)
-            )
+            most_severe_zone, reading = max(violations, key=lambda x: self._severity_priority(x[0].severity))
 
             self._trigger_proximity_violation(most_severe_zone, reading)
             self.last_violation_time = current_time
@@ -384,9 +376,7 @@ class ProximityMonitor(Node):
 
         return len(self.aoi_trackers) > 0  # At least one safety sensor must be tracked
 
-    def _find_closest_in_zone_aoi_aware(
-        self, zone: ProximityZone
-    ) -> Optional[ProximityReading]:
+    def _find_closest_in_zone_aoi_aware(self, zone: ProximityZone) -> Optional[ProximityReading]:
         """Find the closest reading within a safety zone, considering AoI freshness."""
         candidates = []
         current_time = time.time()
@@ -398,9 +388,7 @@ class ProximityMonitor(Node):
                 sensor_aoi = self.aoi_trackers[reading.sensor_id].get_current_aoi()
 
             # Only consider readings that are both temporally and AoI fresh
-            time_fresh = (
-                current_time - reading.timestamp
-            ) <= 0.1  # 100ms time freshness
+            time_fresh = (current_time - reading.timestamp) <= 0.1  # 100ms time freshness
             aoi_fresh = sensor_aoi <= self.aoi_config.acceptable_threshold
 
             if time_fresh and aoi_fresh:
@@ -430,9 +418,7 @@ class ProximityMonitor(Node):
         priorities = {"WARNING": 1, "CRITICAL": 2, "EMERGENCY": 3}
         return priorities.get(severity, 0)
 
-    def _trigger_proximity_violation(
-        self, zone: ProximityZone, reading: ProximityReading
-    ):
+    def _trigger_proximity_violation(self, zone: ProximityZone, reading: ProximityReading):
         """Trigger a proximity violation safety event."""
         self.proximity_violation_active = True
 
@@ -459,8 +445,7 @@ class ProximityMonitor(Node):
         safety_msg.trigger_source = f"proximity_monitor_{reading.sensor_type.value}"
         safety_msg.trigger_time = self.get_clock().now().to_msg()
         safety_msg.trigger_description = (
-            f"Object detected in {zone.name} zone at {reading.distance:.2f}m "
-            f"(threshold: {zone.max_distance:.2f}m)"
+            f"Object detected in {zone.name} zone at {reading.distance:.2f}m " f"(threshold: {zone.max_distance:.2f}m)"
         )
         safety_msg.requires_manual_intervention = zone.severity == "EMERGENCY"
         safety_msg.can_auto_recover = zone.severity != "EMERGENCY"
@@ -496,9 +481,7 @@ class ProximityMonitor(Node):
                 "severity": zone.severity,
                 "max_distance": zone.max_distance,
                 "closest_reading": closest.distance if closest else None,
-                "in_violation": (
-                    closest.distance <= zone.max_distance if closest else False
-                ),
+                "in_violation": (closest.distance <= zone.max_distance if closest else False),
             }
             status_data["zones"].append(zone_status)
 

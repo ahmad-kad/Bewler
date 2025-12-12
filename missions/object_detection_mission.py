@@ -17,21 +17,19 @@ import json
 import math
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional
 
 import cv2
 import numpy as np
 import rclpy
 
 # ROS2 Messages
-from geometry_msgs.msg import Point, Pose, PoseStamped, Twist
+from geometry_msgs.msg import PoseStamped, Twist
 from nav_msgs.msg import Odometry
-from rclpy.action import ActionClient
-from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import CameraInfo, Image
-from std_msgs.msg import Bool, Float32, String
+from std_msgs.msg import Float32, String
 
 # Using std_srvs for basic service calls
 from std_srvs.srv import Trigger

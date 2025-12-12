@@ -5,7 +5,6 @@ Tests the complete data flow from mock teleoperation to autonomy decision-making
 """
 
 import os
-import signal
 import subprocess
 import sys
 import time
@@ -188,7 +187,7 @@ def test_full_integration():
         # Kill any remaining processes
         try:
             subprocess.run(['pkill', '-f', 'test_teleoperation_integration'], check=False)
-        except:
+        except BaseException:
             pass
 
     # Final results
@@ -209,6 +208,7 @@ def test_full_integration():
 
     return success
 
+
 if __name__ == '__main__':
     # Set ROS environment if running standalone
     ros_env = os.environ.get('ROS_DISTRO')
@@ -218,7 +218,7 @@ if __name__ == '__main__':
         if os.path.exists(ros_setup):
             print("📦 Sourcing ROS2 environment...")
             result = subprocess.run(['bash', '-c', f'source {ros_setup} && env'],
-                                  capture_output=True, text=True)
+                                    capture_output=True, text=True)
             if result.returncode == 0:
                 # Update environment with ROS variables
                 for line in result.stdout.split('\n'):

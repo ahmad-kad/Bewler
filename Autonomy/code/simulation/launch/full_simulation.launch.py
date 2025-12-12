@@ -20,9 +20,7 @@ def generate_launch_description():
 
     # Launch arguments
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
-    use_gazebo = LaunchConfiguration(
-        "use_gazebo", default="false"
-    )  # Disabled by default for ARM64
+    use_gazebo = LaunchConfiguration("use_gazebo", default="false")  # Disabled by default for ARM64
     world_file = LaunchConfiguration("world_file", default="mars_desert.world")
     robot_name = LaunchConfiguration("robot_name", default="rover2025")
 
@@ -42,9 +40,7 @@ def generate_launch_description():
         description="World file to load",
     )
 
-    declare_robot_name = DeclareLaunchArgument(
-        "robot_name", default_value="rover2025", description="Robot name"
-    )
+    declare_robot_name = DeclareLaunchArgument("robot_name", default_value="rover2025", description="Robot name")
 
     # Robot description
     robot_description_content = Command(
@@ -81,9 +77,7 @@ def generate_launch_description():
 
     # Basic simulation (when Gazebo not available)
     basic_sim = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [os.path.join(pkg_simulation, "launch", "basic_simulation.launch.py")]
-        ),
+        PythonLaunchDescriptionSource([os.path.join(pkg_simulation, "launch", "basic_simulation.launch.py")]),
         condition=IfCondition(PythonExpression(["not ", use_gazebo])),
     )
 
@@ -110,11 +104,7 @@ def generate_launch_description():
     # Digital Twin System (PLACEHOLDER integration)
     digital_twin = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [
-                os.path.join(
-                    pkg_simulation, "digitaltwins", "launch", "digital_twin.launch.py"
-                )
-            ]
+            [os.path.join(pkg_simulation, "digitaltwins", "launch", "digital_twin.launch.py")]
         ),
         launch_arguments={
             "sync_rate": "10.0",  # PLACEHOLDER

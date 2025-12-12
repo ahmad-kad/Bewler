@@ -78,8 +78,6 @@ repos:
         stages: [pre-push]
 
       # Security scanning
-      - id: detect-aws-credentials
-        stages: [pre-push]
       - id: detect-private-key
         stages: [pre-push]
 

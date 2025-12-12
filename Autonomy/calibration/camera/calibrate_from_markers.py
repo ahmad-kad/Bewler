@@ -32,8 +32,9 @@ import cv2
 import numpy as np
 
 
-def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
-                          square_size=0.030, marker_size=0.018, output_file="calibration.json"):
+def calibrate_from_markers(
+    camera_index=0, duration=30, cols=7, rows=5, square_size=0.030, marker_size=0.018, output_file="calibration.json"
+):
     """
     Calibrate camera by collecting ArUco markers from ChArUco board.
 
@@ -69,10 +70,7 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
     detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
 
     board = cv2.aruco.CharucoBoard(
-        (cols, rows),
-        squareLength=square_size,
-        markerLength=marker_size,
-        dictionary=aruco_dict
+        (cols, rows), squareLength=square_size, markerLength=marker_size, dictionary=aruco_dict
     )
 
     # Open camera
@@ -114,10 +112,8 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
                 try:
                     # Try interpolating ChArUco corners - this sometimes fails
                     try:
-                        charuco_corners, charuco_ids = cv2.aruco.interpolateCornersCharuco(
-                            corners, ids, frame, board
-                        )
-                    except:
+                        charuco_corners, charuco_ids = cv2.aruco.interpolateCornersCharuco(corners, ids, frame, board)
+                    except BaseException:
                         # If interpolation fails, use raw marker corners
                         charuco_corners = corners
                         charuco_ids = ids
@@ -146,10 +142,10 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
                 if frame_count % 30 == 0:
                     print(f"⏳ Frame {frame_count}: Searching for board...")
 
-            cv2.imshow('Calibration - Collecting Frames', frame)
+            cv2.imshow("Calibration - Collecting Frames", frame)
 
             key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
+            if key == ord("q"):
                 print("\n⏹️ User interrupted")
                 break
 
@@ -157,7 +153,7 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
         cap.release()
         cv2.destroyAllWindows()
 
-    print(f"\n📊 Results:")
+    print("\n📊 Results:")
     print(f"   Frames processed: {frame_count}")
     print(f"   Frames collected: {collected_frames}")
 
@@ -166,7 +162,7 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
         return False
 
     # Calibrate
-    print(f"\n🔧 Calibrating camera...")
+    print("\n🔧 Calibrating camera...")
     try:
         camera_matrix = np.zeros((3, 3))
         dist_coeffs = np.zeros((5, 1))
@@ -184,12 +180,15 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
 
             for i, marker_id in enumerate(ids_frame.flatten()):
                 # 3D coordinates for ArUco marker corners
-                marker_obj_pt = np.array([
-                    [-marker_size/2, -marker_size/2, 0],
-                    [marker_size/2, -marker_size/2, 0],
-                    [marker_size/2, marker_size/2, 0],
-                    [-marker_size/2, marker_size/2, 0]
-                ], dtype=np.float32)
+                marker_obj_pt = np.array(
+                    [
+                        [-marker_size / 2, -marker_size / 2, 0],
+                        [marker_size / 2, -marker_size / 2, 0],
+                        [marker_size / 2, marker_size / 2, 0],
+                        [-marker_size / 2, marker_size / 2, 0],
+                    ],
+                    dtype=np.float32,
+                )
 
                 frame_obj_pts.append(marker_obj_pt)
                 frame_img_pts.append(corners_frame[i].reshape(4, 2).astype(np.float32))
@@ -214,24 +213,16 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
 
         # Save
         calib_data = {
-            "camera_matrix": {
-                "rows": 3,
-                "cols": 3,
-                "data": camera_matrix.flatten().tolist()
-            },
-            "distortion_coefficients": {
-                "rows": 1,
-                "cols": 5,
-                "data": dist_coeffs.flatten().tolist()
-            },
+            "camera_matrix": {"rows": 3, "cols": 3, "data": camera_matrix.flatten().tolist()},
+            "distortion_coefficients": {"rows": 1, "cols": 5, "data": dist_coeffs.flatten().tolist()},
             "image_width": width,
             "image_height": height,
             "frames_used": collected_frames,
             "board_size": f"{cols}x{rows}",
-            "calibration_quality": "good"
+            "calibration_quality": "good",
         }
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(calib_data, f, indent=2)
 
         print(f"💾 Calibration saved to: {output_file}")
@@ -243,18 +234,19 @@ def calibrate_from_markers(camera_index=0, duration=30, cols=7, rows=5,
     except Exception as e:
         print(f"❌ Calibration error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Calibrate camera from ArUco markers')
-    parser.add_argument('--cols', type=int, default=7, help='Board columns')
-    parser.add_argument('--rows', type=int, default=5, help='Board rows')
-    parser.add_argument('--square-size', type=float, default=0.030, help='Square size in meters')
-    parser.add_argument('--marker-size', type=float, default=0.018, help='Marker size in meters')
-    parser.add_argument('--duration', type=int, default=30, help='Capture duration in seconds')
-    parser.add_argument('--output', '-o', default='calibration.json', help='Output file')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Calibrate camera from ArUco markers")
+    parser.add_argument("--cols", type=int, default=7, help="Board columns")
+    parser.add_argument("--rows", type=int, default=5, help="Board rows")
+    parser.add_argument("--square-size", type=float, default=0.030, help="Square size in meters")
+    parser.add_argument("--marker-size", type=float, default=0.018, help="Marker size in meters")
+    parser.add_argument("--duration", type=int, default=30, help="Capture duration in seconds")
+    parser.add_argument("--output", "-o", default="calibration.json", help="Output file")
 
     args = parser.parse_args()
 
@@ -264,7 +256,7 @@ if __name__ == '__main__':
         rows=args.rows,
         square_size=args.square_size,
         marker_size=args.marker_size,
-        output_file=args.output
+        output_file=args.output,
     )
 
     exit(0 if success else 1)

@@ -31,34 +31,18 @@ class ComputerVisionNode(Node):
         super().__init__("computer_vision_node")
 
         # Publishers
-        self.detection_publisher = self.create_publisher(
-            VisionDetection, "vision/detections", 10
-        )
-        self.status_publisher = self.create_publisher(
-            String, "computer_vision/status", 10
-        )
-        self.debug_image_publisher = self.create_publisher(
-            Image, "vision/debug_image", 10
-        )
+        self.detection_publisher = self.create_publisher(VisionDetection, "vision/detections", 10)
+        self.status_publisher = self.create_publisher(String, "computer_vision/status", 10)
+        self.debug_image_publisher = self.create_publisher(Image, "vision/debug_image", 10)
 
         # Camera data republishers (for data flow and monitoring)
-        self.camera_image_republisher = self.create_publisher(
-            Image, "camera/image_raw", 10
-        )
-        self.camera_depth_republisher = self.create_publisher(
-            Image, "camera/depth/image_raw", 10
-        )
-        self.camera_info_republisher = self.create_publisher(
-            CameraInfo, "camera/camera_info", 10
-        )
+        self.camera_image_republisher = self.create_publisher(Image, "camera/image_raw", 10)
+        self.camera_depth_republisher = self.create_publisher(Image, "camera/depth/image_raw", 10)
+        self.camera_info_republisher = self.create_publisher(CameraInfo, "camera/camera_info", 10)
 
         # Subscribers
-        self.image_subscription = self.create_subscription(
-            Image, "camera/image_raw", self.image_callback, 10
-        )
-        self.depth_subscription = self.create_subscription(
-            Image, "camera/depth/image_raw", self.depth_callback, 10
-        )
+        self.image_subscription = self.create_subscription(Image, "camera/image_raw", self.image_callback, 10)
+        self.depth_subscription = self.create_subscription(Image, "camera/depth/image_raw", self.depth_callback, 10)
         self.camera_info_subscription = self.create_subscription(
             CameraInfo, "camera/camera_info", self.camera_info_callback, 10
         )
@@ -72,9 +56,7 @@ class ComputerVisionNode(Node):
         self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.aruco_params)
 
         # Camera parameters (placeholder - would be calibrated)
-        self.camera_matrix = np.array(
-            [[600, 0, 320], [0, 600, 240], [0, 0, 1]], dtype=np.float32
-        )
+        self.camera_matrix = np.array([[600, 0, 320], [0, 600, 240], [0, 0, 1]], dtype=np.float32)
         self.dist_coeffs = np.zeros((5, 1), dtype=np.float32)
 
         # Competition targets
@@ -222,9 +204,7 @@ class ComputerVisionNode(Node):
                     self.current_detections.append(detection)
 
                     # Draw marker on debug image
-                    cv2.aruco.drawDetectedMarkers(
-                        self.last_image, [corners[i]], ids[i : i + 1]
-                    )
+                    cv2.aruco.drawDetectedMarkers(self.last_image, [corners[i]], ids[i : i + 1])
                     cv2.aruco.drawAxis(
                         self.last_image,
                         self.camera_matrix,
@@ -249,9 +229,7 @@ class ComputerVisionNode(Node):
         orange_mask = cv2.inRange(hsv, orange_lower, orange_upper)
 
         # Find contours in mask
-        contours, _ = cv2.findContours(
-            orange_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, _ = cv2.findContours(orange_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         for contour in contours:
             area = cv2.contourArea(contour)
@@ -261,9 +239,7 @@ class ComputerVisionNode(Node):
 
                 # Estimate position (simplified - would use depth sensing in practice)
                 distance = 2.0  # Placeholder distance estimate
-                angle = (
-                    (x + w / 2) - self.last_image.shape[1] / 2
-                ) * 0.002  # Rough angle estimate
+                angle = ((x + w / 2) - self.last_image.shape[1] / 2) * 0.002  # Rough angle estimate
 
                 # Create detection message
                 detection = VisionDetection()
@@ -289,9 +265,7 @@ class ComputerVisionNode(Node):
                     2,
                 )
 
-    def rotation_matrix_to_quaternion(
-        self, R: np.ndarray
-    ) -> Tuple[float, float, float, float]:
+    def rotation_matrix_to_quaternion(self, R: np.ndarray) -> Tuple[float, float, float, float]:
         """Convert rotation matrix to quaternion."""
         q = np.zeros(4)
         trace = np.trace(R)

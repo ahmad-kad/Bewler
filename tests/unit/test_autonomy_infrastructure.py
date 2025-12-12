@@ -36,6 +36,7 @@ def test_mission_executor_import():
         traceback.print_exc()
         return False
 
+
 def test_configuration_loading():
     """Test that configuration can be loaded"""
     print("🔍 Testing Configuration Loading...")
@@ -72,6 +73,7 @@ def test_configuration_loading():
         print(f"❌ Configuration loading failed: {e}")
         return False
 
+
 def test_mock_teleoperation_import():
     """Test that mock teleoperation publisher can be imported"""
     print("🔍 Testing Mock Teleoperation Import...")
@@ -91,6 +93,7 @@ def test_mock_teleoperation_import():
     except Exception as e:
         print(f"❌ Mock Teleoperation import failed: {e}")
         return False
+
 
 def test_data_structures():
     """Test that our data structures are properly defined"""
@@ -142,6 +145,7 @@ def test_data_structures():
         print(f"❌ Data structure test failed: {e}")
         return False
 
+
 def test_validation_functions():
     """Test that our validation functions work (syntactically)"""
     print("🔍 Testing Validation Function Structure...")
@@ -173,6 +177,7 @@ def test_validation_functions():
     except Exception as e:
         print(f"❌ Validation function test failed: {e}")
         return False
+
 
 def run_infrastructure_tests():
     """Run all infrastructure tests"""
@@ -224,6 +229,7 @@ def run_infrastructure_tests():
         print("⚠️  Some infrastructure tests failed")
         print("❌ Fix issues before ROS2 integration")
         return False
+
 
 if __name__ == '__main__':
     success = run_infrastructure_tests()

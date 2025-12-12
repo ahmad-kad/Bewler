@@ -5,9 +5,8 @@ Integration Tests for Safety and Navigation Systems
 Tests interaction between safety system and navigation system.
 """
 
-import time
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 
 class TestSafetyNavigationIntegration(unittest.TestCase):
@@ -126,10 +125,7 @@ class TestSafetyNavigationIntegration(unittest.TestCase):
 
     def test_safestop_resume_navigation(self):
         """Test resuming navigation after safestop."""
-        from autonomy_state_machine.safety_manager import (
-            SafetySeverity,
-            SafetyTriggerType,
-        )
+        from autonomy_state_machine.safety_manager import SafetyTriggerType
 
         # Clear any active triggers
         self.safety_manager.clear_trigger(SafetyTriggerType.SAFESTOP_REQUEST)

@@ -23,8 +23,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 
-def generate_aruco_tag(marker_id=0, size_cm=20.0, aruco_dict_name="DICT_4X4_50",
-                       output_filename="aruco_tag.pdf"):
+def generate_aruco_tag(marker_id=0, size_cm=20.0, aruco_dict_name="DICT_4X4_50", output_filename="aruco_tag.pdf"):
     """
     Generates a single ArUco tag and saves it as a to-scale PDF.
     """
@@ -75,7 +74,7 @@ def generate_aruco_tag(marker_id=0, size_cm=20.0, aruco_dict_name="DICT_4X4_50",
 
     # --- PDF Creation (using PIL) ---
     # Convert numpy array to PIL Image
-    pil_image = Image.fromarray(canvas, mode='RGB')
+    pil_image = Image.fromarray(canvas, mode="RGB")
 
     # Add footer text using ImageDraw
     draw = ImageDraw.Draw(pil_image)
@@ -97,31 +96,25 @@ def generate_aruco_tag(marker_id=0, size_cm=20.0, aruco_dict_name="DICT_4X4_50",
     draw.text((10, footer_y), footer_text, fill=(0, 0, 0), font=font)
 
     try:
-        pil_image.save(output_filename, format='PDF')
+        pil_image.save(output_filename, format="PDF")
         print(f"\n✅ Successfully generated tag: '{output_filename}'")
     except Exception as e:
         print(f"\n❌ Error saving file: {e}")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='Generate a single, to-scale ArUco tag for printing.'
-    )
+    parser = argparse.ArgumentParser(description="Generate a single, to-scale ArUco tag for printing.")
+    parser.add_argument("-i", "--id", type=int, required=True, help="The ID of the ArUco marker to generate.")
     parser.add_argument(
-        '-i', '--id', type=int, required=True,
-        help='The ID of the ArUco marker to generate.'
+        "-s",
+        "--size-cm",
+        type=float,
+        required=True,
+        help="The physical size (width and height) of the tag in centimeters.",
     )
+    parser.add_argument("-d", "--dict", default="DICT_4X4_50", help="ArUco dictionary name (default: DICT_4X4_50).")
     parser.add_argument(
-        '-s', '--size-cm', type=float, required=True,
-        help='The physical size (width and height) of the tag in centimeters.'
-    )
-    parser.add_argument(
-        '-d', '--dict', default='DICT_4X4_50',
-        help='ArUco dictionary name (default: DICT_4X4_50).'
-    )
-    parser.add_argument(
-        '-o', '--output', default=None,
-        help='Output PDF filename. If not set, a name is generated automatically.'
+        "-o", "--output", default=None, help="Output PDF filename. If not set, a name is generated automatically."
     )
     args = parser.parse_args()
 
@@ -130,12 +123,9 @@ def main():
         output_filename = f"aruco_{args.dict}_id{args.id}_{args.size_cm:.0f}cm.pdf"
 
     generate_aruco_tag(
-        marker_id=args.id,
-        size_cm=args.size_cm,
-        aruco_dict_name=args.dict,
-        output_filename=output_filename
+        marker_id=args.id, size_cm=args.size_cm, aruco_dict_name=args.dict, output_filename=output_filename
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

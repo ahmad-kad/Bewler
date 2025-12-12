@@ -135,13 +135,9 @@ class TerrainClassifier:
 
         This method is part of the reserved API for costmap / planner integration.
         """
-        return self.terrain_properties.get(
-            terrain_type, self.terrain_properties[TerrainType.UNKNOWN]
-        )
+        return self.terrain_properties.get(terrain_type, self.terrain_properties[TerrainType.UNKNOWN])
 
-    def assess_traversability(
-        self, position: Tuple[float, float], _lookahead_distance: float = 2.0
-    ) -> float:
+    def assess_traversability(self, position: Tuple[float, float], _lookahead_distance: float = 2.0) -> float:
         """
         Assess terrain traversability ahead (reserved API).
 
@@ -173,9 +169,7 @@ class TerrainClassifier:
 
         return recommended_speed
 
-    def calculate_terrain_cost(
-        self, terrain_type: TerrainType, distance: float
-    ) -> float:
+    def calculate_terrain_cost(self, terrain_type: TerrainType, distance: float) -> float:
         """
         Calculate path cost for terrain segment (reserved API).
 
@@ -210,9 +204,7 @@ class TerrainClassifier:
         # - Return hazard information
         return []  # Placeholder
 
-    def update_terrain_map(
-        self, position: Tuple[float, float], terrain_type: TerrainType
-    ) -> None:
+    def update_terrain_map(self, position: Tuple[float, float], terrain_type: TerrainType) -> None:
         """Update internal terrain map (reserved API)."""
         # TODO: Implement terrain map updates
         # - Store terrain classifications

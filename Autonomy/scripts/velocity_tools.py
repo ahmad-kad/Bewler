@@ -24,18 +24,17 @@ Attributes:
 """
 
 import json
-import os
 import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 # Default configuration constants
 DEFAULT_MONITORING_DAYS = 7
 VELOCITY_THRESHOLDS = {
-    'commits_per_day': {'low': 2, 'medium': 5, 'high': 10},
-    'lines_per_day': {'low': 50, 'medium': 200, 'high': 500},
-    'files_per_day': {'low': 3, 'medium': 10, 'high': 20}
+    "commits_per_day": {"low": 2, "medium": 5, "high": 10},
+    "lines_per_day": {"low": 50, "medium": 200, "high": 500},
+    "files_per_day": {"low": 3, "medium": 10, "high": 20},
 }
 
 
@@ -75,7 +74,7 @@ class VelocityMonitor:
         Returns:
             bool: True if the path contains a .git directory, False otherwise.
         """
-        return (self.repo_path / '.git').exists()
+        return (self.repo_path / ".git").exists()
 
     def get_velocity_metrics(self, days: int = DEFAULT_MONITORING_DAYS) -> Dict[str, Any]:
         """Calculate comprehensive velocity metrics for the last N days.
@@ -116,20 +115,24 @@ class VelocityMonitor:
             # Commit count
             commit_result = subprocess.run(
                 ["git", "rev-list", "--count", f"--since={since_date}", "HEAD"],
-                capture_output=True, text=True, cwd=self.repo_path
+                capture_output=True,
+                text=True,
+                cwd=self.repo_path,
             )
             commit_count = int(commit_result.stdout.strip()) if commit_result.returncode == 0 else 0
 
             # Lines changed
             lines_result = subprocess.run(
                 ["git", "log", f"--since={since_date}", "--pretty=tformat:", "--numstat"],
-                capture_output=True, text=True, cwd=self.repo_path
+                capture_output=True,
+                text=True,
+                cwd=self.repo_path,
             )
             lines_changed = 0
             if lines_result.returncode == 0:
-                for line in lines_result.stdout.split('\n'):
-                    if line.strip() and '\t' in line:
-                        parts = line.split('\t')
+                for line in lines_result.stdout.split("\n"):
+                    if line.strip() and "\t" in line:
+                        parts = line.split("\t")
                         if len(parts) >= 2:
                             try:
                                 lines_changed += int(parts[0]) + int(parts[1])
@@ -139,31 +142,28 @@ class VelocityMonitor:
             # File changes
             files_result = subprocess.run(
                 ["git", "log", f"--since={since_date}", "--pretty=tformat:", "--name-only"],
-                capture_output=True, text=True, cwd=self.repo_path
+                capture_output=True,
+                text=True,
+                cwd=self.repo_path,
             )
             files_changed = set()
             if files_result.returncode == 0:
-                for line in files_result.stdout.split('\n'):
-                    if line.strip() and not line.startswith(' '):
+                for line in files_result.stdout.split("\n"):
+                    if line.strip() and not line.startswith(" "):
                         files_changed.add(line.strip())
 
             return {
-                'period_days': days,
-                'commits': commit_count,
-                'lines_changed': lines_changed,
-                'files_changed': len(files_changed),
-                'commits_per_day': commit_count / days,
-                'lines_per_commit': lines_changed / commit_count if commit_count > 0 else 0,
-                'velocity_score': self._calculate_velocity_score(commit_count, lines_changed, len(files_changed), days)
+                "period_days": days,
+                "commits": commit_count,
+                "lines_changed": lines_changed,
+                "files_changed": len(files_changed),
+                "commits_per_day": commit_count / days,
+                "lines_per_commit": lines_changed / commit_count if commit_count > 0 else 0,
+                "velocity_score": self._calculate_velocity_score(commit_count, lines_changed, len(files_changed), days),
             }
 
         except Exception as e:
-            return {
-                'error': str(e),
-                'period_days': days,
-                'commits': 0,
-                'velocity_score': 0
-            }
+            return {"error": str(e), "period_days": days, "commits": 0, "velocity_score": 0}
 
     def _calculate_velocity_score(self, commits: int, lines: int, files: int, days: int) -> float:
         """Calculate velocity score (0-100)."""
@@ -210,21 +210,22 @@ class VelocityMonitor:
         try:
             result = subprocess.run(
                 ["git", "log", "--oneline", "--grep=Merge conflict", "-n", "5"],
-                capture_output=True, text=True, cwd=self.repo_path
+                capture_output=True,
+                text=True,
+                cwd=self.repo_path,
             )
-            return len(result.stdout.strip().split('\n')) > 1
-        except:
+            return len(result.stdout.strip().split("\n")) > 1
+        except BaseException:
             return False
 
     def _check_uncommitted_changes(self) -> bool:
         """Check for uncommitted changes."""
         try:
             result = subprocess.run(
-                ["git", "status", "--porcelain"],
-                capture_output=True, text=True, cwd=self.repo_path
+                ["git", "status", "--porcelain"], capture_output=True, text=True, cwd=self.repo_path
             )
             return len(result.stdout.strip()) > 0
-        except:
+        except BaseException:
             return False
 
     def _check_outdated_branches(self) -> bool:
@@ -233,19 +234,22 @@ class VelocityMonitor:
             # Get branches that haven't been updated in 7+ days
             result = subprocess.run(
                 ["git", "branch", "--format=%(refname:short)|%(committerdate:relative)"],
-                capture_output=True, text=True, cwd=self.repo_path
+                capture_output=True,
+                text=True,
+                cwd=self.repo_path,
             )
 
             outdated = []
-            for line in result.stdout.split('\n'):
-                if '|' in line:
-                    branch, date = line.split('|', 1)
-                    if any(word in date for word in ['week', 'month', 'year']):
+            for line in result.stdout.split("\n"):
+                if "|" in line:
+                    branch, date = line.split("|", 1)
+                    if any(word in date for word in ["week", "month", "year"]):
                         outdated.append(branch.strip())
 
             return len(outdated) > 2  # More than 2 outdated branches is concerning
-        except:
+        except BaseException:
             return False
+
 
 class ArchitectureSimplifier:
     """Tools to simplify and maintain clean architecture."""
@@ -256,40 +260,17 @@ class ArchitectureSimplifier:
     def generate_interfaces(self) -> Dict[str, Any]:
         """Generate interface definitions for subsystems."""
         return {
-            'state_management': {
-                'topics': {
-                    'mission_status': 'MissionState',
-                    'subsystem_health': 'HealthStatus'
-                },
-                'services': {
-                    'get_mission': 'GetMission',
-                    'abort_mission': 'AbortMission'
-                },
-                'actions': {
-                    'execute_mission': 'ExecuteMission'
-                }
+            "state_management": {
+                "topics": {"mission_status": "MissionState", "subsystem_health": "HealthStatus"},
+                "services": {"get_mission": "GetMission", "abort_mission": "AbortMission"},
+                "actions": {"execute_mission": "ExecuteMission"},
             },
-            'navigation': {
-                'topics': {
-                    'goal': 'PoseStamped',
-                    'status': 'NavigationStatus'
-                },
-                'services': {
-                    'navigate_to': 'NavigateTo'
-                }
+            "navigation": {
+                "topics": {"goal": "PoseStamped", "status": "NavigationStatus"},
+                "services": {"navigate_to": "NavigateTo"},
             },
-            'slam': {
-                'topics': {
-                    'pose': 'PoseWithCovarianceStamped',
-                    'map': 'OccupancyGrid'
-                }
-            },
-            'computer_vision': {
-                'topics': {
-                    'detections': 'DetectionArray',
-                    'aruco_poses': 'PoseArray'
-                }
-            }
+            "slam": {"topics": {"pose": "PoseWithCovarianceStamped", "map": "OccupancyGrid"}},
+            "computer_vision": {"topics": {"detections": "DetectionArray", "aruco_poses": "PoseArray"}},
         }
 
     def validate_architecture(self) -> Dict[str, Any]:
@@ -308,11 +289,7 @@ class ArchitectureSimplifier:
         import_issues = self._check_unused_imports()
         issues.extend(import_issues)
 
-        return {
-            'valid': len(issues) == 0,
-            'issues': issues,
-            'recommendations': self._generate_recommendations(issues)
-        }
+        return {"valid": len(issues) == 0, "issues": issues, "recommendations": self._generate_recommendations(issues)}
 
     def _has_circular_dependencies(self) -> bool:
         """Check for circular import dependencies."""
@@ -322,13 +299,12 @@ class ArchitectureSimplifier:
         imports = {}
         for file in python_files:
             try:
-                with open(file, 'r') as f:
+                with open(file, "r") as f:
                     content = f.read()
                     # Extract imports
-                    import_lines = [line for line in content.split('\n')
-                                  if line.strip().startswith(('import', 'from'))]
+                    import_lines = [line for line in content.split("\n") if line.strip().startswith(("import", "from"))]
                     imports[str(file)] = import_lines
-            except:
+            except BaseException:
                 pass
 
         # Basic circular dependency check (simplified)
@@ -350,19 +326,20 @@ class ArchitectureSimplifier:
         """Generate recommendations based on issues."""
         recommendations = []
 
-        if any('circular' in issue.lower() for issue in issues):
+        if any("circular" in issue.lower() for issue in issues):
             recommendations.append("🔄 Refactor to eliminate circular dependencies")
 
-        if any('interface' in issue.lower() for issue in issues):
+        if any("interface" in issue.lower() for issue in issues):
             recommendations.append("🔗 Standardize topic/service naming conventions")
 
-        if any('import' in issue.lower() for issue in issues):
+        if any("import" in issue.lower() for issue in issues):
             recommendations.append("🧹 Remove unused imports to reduce complexity")
 
         if not recommendations:
             recommendations.append("✅ Architecture looks clean - maintain current practices")
 
         return recommendations
+
 
 class RiskMitigator:
     """Tools to identify and mitigate development risks."""
@@ -372,33 +349,29 @@ class RiskMitigator:
 
     def assess_risks(self) -> Dict[str, Any]:
         """Assess current development risks."""
-        risks = {
-            'high': [],
-            'medium': [],
-            'low': []
-        }
+        risks = {"high": [], "medium": [], "low": []}
 
         # Timeline risk
         days_remaining = 40  # Would be calculated dynamically
         if days_remaining < 20:
-            risks['high'].append("⏰ Critical timeline pressure")
+            risks["high"].append("⏰ Critical timeline pressure")
 
         # Technical debt risk
         if self._has_high_technical_debt():
-            risks['medium'].append("💸 Accumulating technical debt")
+            risks["medium"].append("💸 Accumulating technical debt")
 
         # Integration risk
         if self._has_integration_issues():
-            risks['high'].append("🔗 Integration complexity")
+            risks["high"].append("🔗 Integration complexity")
 
         # Team risk
         if self._has_team_issues():
-            risks['medium'].append("👥 Team coordination challenges")
+            risks["medium"].append("👥 Team coordination challenges")
 
         return {
-            'overall_risk_level': self._calculate_risk_level(risks),
-            'risks': risks,
-            'mitigations': self._generate_mitigations(risks)
+            "overall_risk_level": self._calculate_risk_level(risks),
+            "risks": risks,
+            "mitigations": self._generate_mitigations(risks),
         }
 
     def _has_high_technical_debt(self) -> bool:
@@ -409,17 +382,17 @@ class RiskMitigator:
 
         for py_file in self.repo_path.glob("Autonomy/code/**/*.py"):
             try:
-                with open(py_file, 'r') as f:
+                with open(py_file, "r") as f:
                     content = f.read()
 
                 # Count TODOs
-                todo_count += content.upper().count('TODO')
+                todo_count += content.upper().count("TODO")
 
                 # Check file size
                 if len(content) > 1000:  # Arbitrary threshold
                     large_files += 1
 
-            except:
+            except BaseException:
                 pass
 
         return todo_count > 20 or large_files > 5
@@ -436,35 +409,36 @@ class RiskMitigator:
 
     def _calculate_risk_level(self, risks: Dict[str, List]) -> str:
         """Calculate overall risk level."""
-        high_count = len(risks['high'])
-        medium_count = len(risks['medium'])
+        high_count = len(risks["high"])
+        medium_count = len(risks["medium"])
 
         if high_count > 0:
-            return 'HIGH'
+            return "HIGH"
         elif medium_count > 2:
-            return 'MEDIUM'
+            return "MEDIUM"
         else:
-            return 'LOW'
+            return "LOW"
 
     def _generate_mitigations(self, risks: Dict[str, List]) -> List[str]:
         """Generate risk mitigation strategies."""
         mitigations = []
 
-        for risk in risks['high'] + risks['medium']:
-            if 'timeline' in risk.lower():
+        for risk in risks["high"] + risks["medium"]:
+            if "timeline" in risk.lower():
                 mitigations.append("📅 Implement daily progress checkpoints")
                 mitigations.append("🎯 Prioritize MVP features only")
-            elif 'technical debt' in risk.lower():
+            elif "technical debt" in risk.lower():
                 mitigations.append("🧹 Schedule weekly code cleanup sessions")
                 mitigations.append("📝 Convert TODOs to issues immediately")
-            elif 'integration' in risk.lower():
+            elif "integration" in risk.lower():
                 mitigations.append("🔗 Establish daily integration testing")
                 mitigations.append("📋 Define clear interface contracts")
-            elif 'team' in risk.lower():
+            elif "team" in risk.lower():
                 mitigations.append("👥 Increase communication frequency")
                 mitigations.append("📊 Implement pair programming for complex features")
 
         return mitigations
+
 
 def main():
     """Main velocity monitoring and risk assessment."""
@@ -487,18 +461,19 @@ def main():
     # Architecture validation
     arch_validation = simplifier.validate_architecture()
     print(f"\n🏗️ ARCHITECTURE STATUS: {'✅ VALID' if arch_validation['valid'] else '⚠️ ISSUES'}")
-    if not arch_validation['valid']:
+    if not arch_validation["valid"]:
         print("Issues:")
-        for issue in arch_validation['issues']:
+        for issue in arch_validation["issues"]:
             print(f"  {issue}")
 
     # Risk assessment
     risks = mitigator.assess_risks()
     print(f"\n🛡️ RISK LEVEL: {risks['overall_risk_level']}")
-    if risks['mitigations']:
+    if risks["mitigations"]:
         print("Recommended Mitigations:")
-        for mitigation in risks['mitigations']:
+        for mitigation in risks["mitigations"]:
             print(f"  {mitigation}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

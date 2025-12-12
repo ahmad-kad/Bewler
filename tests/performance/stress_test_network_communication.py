@@ -6,24 +6,21 @@ Tests ROS2 DDS communication under extreme network conditions that are harsher
 than real-world scenarios, including severe congestion, packet loss, and latency.
 """
 
-import asyncio
 import random
 import statistics
 import subprocess
 import sys
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
-from typing import Dict, List, Optional
+from typing import Dict
 
 import rclpy
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
+from std_msgs.msg import String
 
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-
-from rclpy.node import Node
-from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
-from std_msgs.msg import Float64, String
 
 
 class NetworkStressPublisher(Node):
@@ -189,7 +186,7 @@ class NetworkEmulator:
         """Clear all network stress rules."""
         try:
             subprocess.run(['sudo', 'tc', 'qdisc', 'del', 'dev', 'lo', 'root'],
-                         capture_output=True)
+                           capture_output=True)
         except subprocess.CalledProcessError:
             pass  # May not have rules to clear
 
@@ -295,7 +292,7 @@ def run_network_stress_test(stress_level: str = 'extreme', duration: float = 30.
             'jitter_ms': final_stats['jitter_ms'],
             'out_of_order': final_stats['out_of_order'],
             'packet_loss_rate': (publisher.dropped_messages /
-                               (publisher.message_count + publisher.dropped_messages)) * 100 if publisher.message_count > 0 else 0
+                                 (publisher.message_count + publisher.dropped_messages)) * 100 if publisher.message_count > 0 else 0
         }
 
     finally:
@@ -331,8 +328,10 @@ def run_comprehensive_network_stress_test():
     for level in stress_levels:
         result = results[level]
         print(f"\n{level.upper()} Conditions:")
-        print(f"  Reliability: {'❌ POOR' if result['packet_loss_rate'] > 30 else '⚠️ FAIR' if result['packet_loss_rate'] > 10 else '✅ GOOD'}")
-        print(f"  Latency: {'❌ VERY HIGH' if result['avg_latency_ms'] > 100 else '⚠️ HIGH' if result['avg_latency_ms'] > 50 else '✅ ACCEPTABLE'}")
+        print(
+            f"  Reliability: {'❌ POOR' if result['packet_loss_rate'] > 30 else '⚠️ FAIR' if result['packet_loss_rate'] > 10 else '✅ GOOD'}")
+        print(
+            f"  Latency: {'❌ VERY HIGH' if result['avg_latency_ms'] > 100 else '⚠️ HIGH' if result['avg_latency_ms'] > 50 else '✅ ACCEPTABLE'}")
         print(f"  Jitter: {result['jitter_ms']:.1f}ms")
 
     # Overall assessment

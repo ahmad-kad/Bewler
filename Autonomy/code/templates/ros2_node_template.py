@@ -119,9 +119,7 @@ class YourNodeName(Node):
     def _setup_subscribers(self):
         """Setup ROS 2 subscribers."""
         # Example subscribers - modify as needed
-        self.example_sub = self.create_subscription(
-            Odometry, "odom", self.example_callback, self.qos_sensor
-        )
+        self.example_sub = self.create_subscription(Odometry, "odom", self.example_callback, self.qos_sensor)
 
         # Add more subscribers here
         # self.scan_sub = self.create_subscription(
@@ -132,16 +130,12 @@ class YourNodeName(Node):
     def _setup_services(self):
         """Setup ROS 2 services."""
         # Example service - modify as needed
-        self.example_service = self.create_service(
-            Trigger, "example_service", self.example_service_callback
-        )
+        self.example_service = self.create_service(Trigger, "example_service", self.example_service_callback)
 
     def _setup_timers(self):
         """Setup ROS 2 timers."""
         # Main control loop timer
-        self.control_timer = self.create_timer(
-            1.0 / self.update_rate, self.control_loop
-        )
+        self.control_timer = self.create_timer(1.0 / self.update_rate, self.control_loop)
 
         # Optional: Additional timers for different tasks
         # self.health_check_timer = self.create_timer(

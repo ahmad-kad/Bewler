@@ -72,9 +72,7 @@ class FollowMeTester(Node):
                 self.test_results.append("❌ State transition to follow me: FAILED")
 
         except Exception as e:
-            self.test_results.append(
-                f"❌ State transition to follow me: ERROR - {str(e)}"
-            )
+            self.test_results.append(f"❌ State transition to follow me: ERROR - {str(e)}")
 
     def _test_follow_me_behavior(self):
         """Test follow me behavior start/stop."""
@@ -139,9 +137,7 @@ class FollowMeTester(Node):
 
     def _on_state_update(self, state: SystemStateMsg):
         """Handle state updates."""
-        self.get_logger().info(
-            f"State update: {state.current_state} / {state.substate}"
-        )
+        self.get_logger().info(f"State update: {state.current_state} / {state.substate}")
 
     def _print_test_results(self):
         """Print test results."""

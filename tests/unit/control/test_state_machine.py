@@ -10,7 +10,7 @@ If it is not available in the current environment, the entire module is skipped.
 import os
 import sys
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
@@ -246,6 +246,7 @@ class TestMissionCoordinator(unittest.TestCase):
 
         # Mock waypoint progression
         current_waypoint_index = 0
+
         def mock_get_status():
             nonlocal current_waypoint_index
             return {

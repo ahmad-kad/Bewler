@@ -9,18 +9,17 @@ This test focuses on ROS2 compatibility and interface contracts.
 import os
 import sys
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 # Add paths for testing
 sys.path.append(os.path.join(os.path.dirname(__file__), 'Autonomy/code'))
 
 try:
-    import rclpy
-    from rclpy.node import Node
     ROS2_AVAILABLE = True
 except ImportError:
     ROS2_AVAILABLE = False
     print("⚠️  ROS2 not available - some tests will be skipped")
+
 
 class TestTeleoperationCompatibility(unittest.TestCase):
     """Test teleoperation system compatibility with autonomy"""
@@ -34,7 +33,6 @@ class TestTeleoperationCompatibility(unittest.TestCase):
         with patch('submodules.teleoperation.server.can_serial.CanSerial'):
             # Import after mocking
             try:
-                from submodules.teleoperation.server import py_server
                 self.py_server_available = True
             except ImportError as e:
                 print(f"⚠️  Cannot import py_server: {e}")
@@ -192,8 +190,8 @@ class TestTeleoperationCompatibility(unittest.TestCase):
         # The teleoperation system should provide complementary data
         teleoperation_topics = [
             '/teleoperation/joint_states',     # Motor positions/velocities
-            '/teleoperation/chassis_velocity', # Actual chassis velocity
-            '/teleoperation/motor_temperatures', # Thermal monitoring
+            '/teleoperation/chassis_velocity',  # Actual chassis velocity
+            '/teleoperation/motor_temperatures',  # Thermal monitoring
             '/teleoperation/system_status',    # Battery/power status
         ]
 
@@ -211,9 +209,6 @@ class TestTeleoperationCompatibility(unittest.TestCase):
 
         # Check that required packages can be imported
         try:
-            import gevent
-            import serial
-            import socketio
             print("✅ Core dependencies available")
         except ImportError as e:
             self.fail(f"Required dependency missing: {e}")
@@ -221,10 +216,6 @@ class TestTeleoperationCompatibility(unittest.TestCase):
         # Check ROS2 compatibility
         if ROS2_AVAILABLE:
             try:
-                import rclpy
-                from geometry_msgs.msg import TwistStamped
-                from sensor_msgs.msg import BatteryState, JointState
-                from std_msgs.msg import Float32MultiArray
                 print("✅ ROS2 dependencies available")
             except ImportError as e:
                 self.fail(f"ROS2 dependency missing: {e}")

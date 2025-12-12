@@ -6,8 +6,6 @@ This script validates that the core ROS2 infrastructure is properly set up
 and ready for development.
 """
 
-import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -33,17 +31,17 @@ class InfrastructureValidator:
 
         for path in required_paths:
             if not path.exists():
-                self.results['workspace'] = f"❌ Missing: {path}"
+                self.results["workspace"] = f"❌ Missing: {path}"
                 return False
 
         # Check for package symlinks
         expected_packages = [
-            'autonomy_state_management',
-            'autonomy_navigation',
-            'autonomy_slam',
-            'autonomy_computer_vision',
-            'autonomy_autonomous_typing',
-            'autonomy_led_status'
+            "autonomy_state_management",
+            "autonomy_navigation",
+            "autonomy_slam",
+            "autonomy_computer_vision",
+            "autonomy_autonomous_typing",
+            "autonomy_led_status",
         ]
 
         missing_packages = []
@@ -53,10 +51,10 @@ class InfrastructureValidator:
                 missing_packages.append(pkg)
 
         if missing_packages:
-            self.results['workspace'] = f"❌ Missing packages: {missing_packages}"
+            self.results["workspace"] = f"❌ Missing packages: {missing_packages}"
             return False
 
-        self.results['workspace'] = "✅ ROS2 workspace structure is valid"
+        self.results["workspace"] = "✅ ROS2 workspace structure is valid"
         return True
 
     def validate_package_structure(self) -> bool:
@@ -66,29 +64,31 @@ class InfrastructureValidator:
         packages_valid = True
         package_issues = []
 
-        for pkg_dir in self.src_dir.glob('autonomy_*'):
+        for pkg_dir in self.src_dir.glob("autonomy_*"):
             if not pkg_dir.is_dir():
                 continue
 
             pkg_name = pkg_dir.name
 
             # Check if this is an interface package (has msg/, srv/, or action/ directories)
-            has_interfaces = any((pkg_dir / d).exists() for d in ['msg', 'srv', 'action'])
+            has_interfaces = any((pkg_dir / d).exists() for d in ["msg", "srv", "action"])
 
             if has_interfaces:
                 # Interface packages should be CMake-based
-                required_files = ['package.xml', 'CMakeLists.txt']
+                required_files = ["package.xml", "CMakeLists.txt"]
             else:
                 # Regular packages should have either Python or CMake setup
-                has_python = (pkg_dir / 'setup.py').exists() and (pkg_dir / 'setup.cfg').exists()
-                has_cmake = (pkg_dir / 'CMakeLists.txt').exists()
+                has_python = (pkg_dir / "setup.py").exists() and (pkg_dir / "setup.cfg").exists()
+                has_cmake = (pkg_dir / "CMakeLists.txt").exists()
 
                 if not (has_python or has_cmake):
-                    package_issues.append(f"{pkg_name}: missing both Python (setup.py/setup.cfg) and CMake (CMakeLists.txt) files")
+                    package_issues.append(
+                        f"{pkg_name}: missing both Python (setup.py/setup.cfg) and CMake (CMakeLists.txt) files"
+                    )
                     packages_valid = False
                     continue
 
-                required_files = ['package.xml']
+                required_files = ["package.xml"]
 
             missing_files = []
             for file in required_files:
@@ -105,12 +105,12 @@ class InfrastructureValidator:
                 if not py_pkg_dir.exists():
                     package_issues.append(f"{pkg_name}: missing Python package directory")
                     packages_valid = False
-                elif not (py_pkg_dir / '__init__.py').exists():
+                elif not (py_pkg_dir / "__init__.py").exists():
                     package_issues.append(f"{pkg_name}: missing __init__.py")
                     packages_valid = False
 
             # Check for resource marker
-            resource_dir = pkg_dir / 'resource'
+            resource_dir = pkg_dir / "resource"
             if resource_dir.exists():
                 resource_file = resource_dir / pkg_name
                 if not resource_file.exists():
@@ -118,31 +118,29 @@ class InfrastructureValidator:
                     packages_valid = False
 
         if package_issues:
-            self.results['packages'] = f"❌ Package issues: {package_issues}"
+            self.results["packages"] = f"❌ Package issues: {package_issues}"
             return False
 
-        self.results['packages'] = "✅ All ROS2 packages are properly structured"
+        self.results["packages"] = "✅ All ROS2 packages are properly structured"
         return True
 
     def validate_ci_cd_setup(self) -> bool:
         """Validate CI/CD setup"""
         print("🔍 Validating CI/CD setup...")
 
-        workflow_file = self.project_root / '.github' / 'workflows' / 'ci.yml'
+        workflow_file = self.project_root / ".github" / "workflows" / "ci.yml"
         if not workflow_file.exists():
-            self.results['ci_cd'] = "❌ Missing GitHub Actions workflow"
+            self.results["ci_cd"] = "❌ Missing GitHub Actions workflow"
             return False
 
-        self.results['ci_cd'] = "✅ CI/CD pipeline configured"
+        self.results["ci_cd"] = "✅ CI/CD pipeline configured"
         return True
 
     def validate_testing_framework(self) -> bool:
         """Validate testing framework"""
         print("🔍 Validating testing framework...")
 
-        test_files = [
-            self.autonomy_dir / 'tests' / 'integration_test.py'
-        ]
+        test_files = [self.autonomy_dir / "tests" / "integration_test.py"]
 
         missing_tests = []
         for test_file in test_files:
@@ -150,10 +148,10 @@ class InfrastructureValidator:
                 missing_tests.append(str(test_file))
 
         if missing_tests:
-            self.results['testing'] = f"❌ Missing test files: {missing_tests}"
+            self.results["testing"] = f"❌ Missing test files: {missing_tests}"
             return False
 
-        self.results['testing'] = "✅ Testing framework configured"
+        self.results["testing"] = "✅ Testing framework configured"
         return True
 
     def validate_development_tools(self) -> bool:
@@ -164,16 +162,16 @@ class InfrastructureValidator:
         tool_issues = []
 
         # Check Docker setup
-        docker_compose = self.autonomy_dir / 'development' / 'docker' / 'docker-compose.yml'
+        docker_compose = self.autonomy_dir / "development" / "docker" / "docker-compose.yml"
         if not docker_compose.exists():
             tool_issues.append("Missing docker-compose.yml")
             tools_present = False
 
         # Check scripts
         scripts = [
-            self.autonomy_dir / 'development' / 'docker' / 'scripts' / 'docker-dev.sh',
-            self.autonomy_dir / 'scripts' / 'daily_velocity_check.py',
-            self.autonomy_dir / 'scripts' / 'velocity_tools.py'
+            self.autonomy_dir / "development" / "docker" / "scripts" / "docker-dev.sh",
+            self.autonomy_dir / "scripts" / "daily_velocity_check.py",
+            self.autonomy_dir / "scripts" / "velocity_tools.py",
         ]
 
         for script in scripts:
@@ -182,10 +180,10 @@ class InfrastructureValidator:
                 tools_present = False
 
         if tool_issues:
-            self.results['tools'] = f"❌ Tool issues: {tool_issues}"
+            self.results["tools"] = f"❌ Tool issues: {tool_issues}"
             return False
 
-        self.results['tools'] = "✅ Development tools configured"
+        self.results["tools"] = "✅ Development tools configured"
         return True
 
     def run_validation(self) -> bool:
@@ -244,5 +242,5 @@ def main():
     sys.exit(0 if success else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

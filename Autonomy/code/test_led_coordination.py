@@ -17,9 +17,7 @@ import time
 def run_command(cmd, timeout=10):
     """Run a command with timeout"""
     try:
-        result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=timeout
-        )
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
         return result.returncode == 0, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
         return False, "", "Command timed out"
@@ -59,9 +57,7 @@ def test_led_coordination():
         time.sleep(2)  # Wait for node to start
 
         # Check if state management node is running
-        success, out, err = run_command(
-            "ros2 node list | grep state_management", timeout=5
-        )
+        success, out, err = run_command("ros2 node list | grep state_management", timeout=5)
         if not success:
             print(f"   ❌ State management node not found: {err}")
             state_proc.terminate()
@@ -90,9 +86,7 @@ def test_led_coordination():
 
         # Step 4: Test initial state (should be idle)
         print("4. Testing initial state...")
-        success, out, err = run_command(
-            "ros2 topic echo --once /system_mode", timeout=5
-        )
+        success, out, err = run_command("ros2 topic echo --once /system_mode", timeout=5)
         if success and "idle" in out:
             print("   ✅ Initial system mode: idle")
         else:
@@ -101,9 +95,7 @@ def test_led_coordination():
 
         # Step 5: Start mission (should switch to autonomous mode - red LED)
         print("5. Starting autonomous mission...")
-        success, out, err = run_command(
-            "ros2 service call /start_mission std_srvs/srv/Trigger", timeout=5
-        )
+        success, out, err = run_command("ros2 service call /start_mission std_srvs/srv/Trigger", timeout=5)
         if success and "success: true" in out.lower():
             print("   ✅ Mission started successfully")
         else:
@@ -112,9 +104,7 @@ def test_led_coordination():
 
         # Wait for mode change and check system mode
         time.sleep(2)
-        success, out, err = run_command(
-            "ros2 topic echo --once /system_mode", timeout=5
-        )
+        success, out, err = run_command("ros2 topic echo --once /system_mode", timeout=5)
         if success and "autonomous" in out:
             print("   ✅ System mode switched to autonomous (🔴 Red LED)")
         else:
@@ -123,9 +113,7 @@ def test_led_coordination():
 
         # Step 6: Simulate target reached (should switch to completed - flashing green LED)
         print("6. Simulating target reached...")
-        success, out, err = run_command(
-            "ros2 service call /simulate_target_reached std_srvs/srv/Trigger", timeout=5
-        )
+        success, out, err = run_command("ros2 service call /simulate_target_reached std_srvs/srv/Trigger", timeout=5)
         if success and "success: true" in out.lower():
             print("   ✅ Target reached simulation successful")
         else:
@@ -134,9 +122,7 @@ def test_led_coordination():
 
         # Wait for mission status change and check mission status
         time.sleep(2)
-        success, out, err = run_command(
-            "ros2 topic echo --once /mission_status", timeout=5
-        )
+        success, out, err = run_command("ros2 topic echo --once /mission_status", timeout=5)
         if success and "completed" in out:
             print("   ✅ Mission status: completed (🟢 Flashing Green LED)")
         else:
@@ -145,9 +131,7 @@ def test_led_coordination():
 
         # Step 7: Stop mission (should return to idle)
         print("7. Stopping mission...")
-        success, out, err = run_command(
-            "ros2 service call /stop_mission std_srvs/srv/Trigger", timeout=5
-        )
+        success, out, err = run_command("ros2 service call /stop_mission std_srvs/srv/Trigger", timeout=5)
         if success and "success: true" in out.lower():
             print("   ✅ Mission stopped successfully")
         else:
@@ -156,9 +140,7 @@ def test_led_coordination():
 
         # Wait for mode change and check final state
         time.sleep(2)
-        success, out, err = run_command(
-            "ros2 topic echo --once /system_mode", timeout=5
-        )
+        success, out, err = run_command("ros2 topic echo --once /system_mode", timeout=5)
         if success and "idle" in out:
             print("   ✅ Final system mode: idle (LED off)")
         else:
@@ -187,7 +169,7 @@ def test_led_coordination():
             if "led_proc" in locals():
                 led_proc.terminate()
                 led_proc.wait(timeout=5)
-        except:
+        except BaseException:
             pass
 
         # Stop ROS2 daemon

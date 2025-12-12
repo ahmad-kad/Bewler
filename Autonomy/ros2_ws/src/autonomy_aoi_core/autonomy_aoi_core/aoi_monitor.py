@@ -9,15 +9,12 @@ Provides system-wide AoI tracking with minimal resource usage.
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
-from std_msgs.msg import String
 from sensor_msgs.msg import Imu, NavSatFix
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry
 from autonomy_interfaces.msg import AOIStatus, AOIMetrics
 from autonomy_interfaces.srv import GetAOIStatus
-from autonomy_aoi_core.aoi_tracker import (
-    AOITracker, SharedAOIBuffer, AOIQualityAssessor, AOIConfig
-)
+from autonomy_aoi_core.aoi_tracker import AOITracker, SharedAOIBuffer, AOIQualityAssessor, AOIConfig
 import time
 import logging
 
@@ -32,30 +29,24 @@ class AOIMonitorNode(Node):
     """
 
     def __init__(self):
-        super().__init__('aoi_monitor')
+        super().__init__("aoi_monitor")
 
         # Declare parameters
-        self.declare_parameter('update_rate_hz', 5.0)
-        self.declare_parameter('max_sensors', 16)
-        self.declare_parameter('history_window', 32)
-        self.declare_parameter('enable_detailed_logging', False)
+        self.declare_parameter("update_rate_hz", 5.0)
+        self.declare_parameter("max_sensors", 16)
+        self.declare_parameter("history_window", 32)
+        self.declare_parameter("enable_detailed_logging", False)
 
         # Get parameters
-        update_rate = self.get_parameter('update_rate_hz').value
-        max_sensors = self.get_parameter('max_sensors').value
-        history_window = self.get_parameter('history_window').value
-        self.enable_logging = self.get_parameter('enable_detailed_logging').value
+        update_rate = self.get_parameter("update_rate_hz").value
+        max_sensors = self.get_parameter("max_sensors").value
+        history_window = self.get_parameter("history_window").value
+        self.enable_logging = self.get_parameter("enable_detailed_logging").value
 
         # Initialize AoI infrastructure
-        self.aoi_config = AOIConfig(
-            history_window=history_window,
-            update_interval=1.0/update_rate
-        )
+        self.aoi_config = AOIConfig(history_window=history_window, update_interval=1.0 / update_rate)
 
-        self.shared_buffer = SharedAOIBuffer(
-            max_sensors=max_sensors,
-            history_size=history_window
-        )
+        self.shared_buffer = SharedAOIBuffer(max_sensors=max_sensors, history_size=history_window)
 
         self.quality_assessor = AOIQualityAssessor()
 
@@ -67,72 +58,60 @@ class AOIMonitorNode(Node):
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
             depth=1,  # Only keep latest
-            durability=DurabilityPolicy.VOLATILE
+            durability=DurabilityPolicy.VOLATILE,
         )
 
-        self.aoi_status_pub = self.create_publisher(
-            AOIStatus, '/system/aoi_status', aoi_qos
-        )
+        self.aoi_status_pub = self.create_publisher(AOIStatus, "/system/aoi_status", aoi_qos)
 
-        self.aoi_metrics_pub = self.create_publisher(
-            AOIMetrics, '/system/aoi_metrics', aoi_qos
-        )
+        self.aoi_metrics_pub = self.create_publisher(AOIMetrics, "/system/aoi_metrics", aoi_qos)
 
         # Service for AoI queries
-        self.aoi_service = self.create_service(
-            GetAOIStatus, '/system/get_aoi_status', self.handle_aoi_query
-        )
+        self.aoi_service = self.create_service(GetAOIStatus, "/system/get_aoi_status", self.handle_aoi_query)
 
         # Subscribers for critical sensors (minimal processing)
         self.imu_sub = self.create_subscription(
-            Imu, '/imu/data', self.on_imu_data, 1,  # Minimal QoS
-            callback_group=self.create_callback_group()
+            Imu, "/imu/data", self.on_imu_data, 1, callback_group=self.create_callback_group()  # Minimal QoS
         )
 
         self.gps_sub = self.create_subscription(
-            NavSatFix, '/gps/fix', self.on_gps_data, 1,
-            callback_group=self.create_callback_group()
+            NavSatFix, "/gps/fix", self.on_gps_data, 1, callback_group=self.create_callback_group()
         )
 
         self.slam_sub = self.create_subscription(
-            PoseStamped, '/slam/pose', self.on_slam_pose, 1,
-            callback_group=self.create_callback_group()
+            PoseStamped, "/slam/pose", self.on_slam_pose, 1, callback_group=self.create_callback_group()
         )
 
         self.wheel_sub = self.create_subscription(
-            Odometry, '/wheel/odom', self.on_wheel_odom, 1,
-            callback_group=self.create_callback_group()
+            Odometry, "/wheel/odom", self.on_wheel_odom, 1, callback_group=self.create_callback_group()
         )
 
         # Periodic status updates
-        self.status_timer = self.create_timer(
-            1.0/update_rate, self.publish_status_updates
-        )
+        self.status_timer = self.create_timer(1.0 / update_rate, self.publish_status_updates)
 
         # Health monitoring
         self.last_update_time = time.time()
         self.update_count = 0
 
         self.get_logger().info(
-            f'AoI Monitor initialized: {max_sensors} sensors max, '
-            f'{update_rate}Hz updates, {history_window} sample history'
+            f"AoI Monitor initialized: {max_sensors} sensors max, "
+            f"{update_rate}Hz updates, {history_window} sample history"
         )
 
     def on_imu_data(self, msg):
         """Track IMU AoI."""
-        self._track_sensor_aoi('imu', msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
+        self._track_sensor_aoi("imu", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
 
     def on_gps_data(self, msg):
         """Track GPS AoI."""
-        self._track_sensor_aoi('gps', msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
+        self._track_sensor_aoi("gps", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
 
     def on_slam_pose(self, msg):
         """Track SLAM pose AoI."""
-        self._track_sensor_aoi('slam_pose', msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
+        self._track_sensor_aoi("slam_pose", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
 
     def on_wheel_odom(self, msg):
         """Track wheel odometry AoI."""
-        self._track_sensor_aoi('wheel_odom', msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
+        self._track_sensor_aoi("wheel_odom", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
 
     def _track_sensor_aoi(self, sensor_name: str, sensor_timestamp: float):
         """Update AoI tracking for sensor."""
@@ -142,7 +121,7 @@ class AOIMonitorNode(Node):
         # Update shared buffer (minimal memory)
         success = self.shared_buffer.update_aoi(sensor_name, aoi)
         if not success:
-            self.get_logger().warn(f'AoI buffer full, cannot track {sensor_name}')
+            self.get_logger().warn(f"AoI buffer full, cannot track {sensor_name}")
             return
 
         # Update detailed tracker if logging enabled
@@ -173,27 +152,25 @@ class AOIMonitorNode(Node):
             # Get detailed stats if available
             if sensor_name in self.trackers:
                 stats = self.trackers[sensor_name].get_statistics()
-                quality_score, quality_category = self.quality_assessor.assess_quality(
-                    sensor_name, current_aoi
-                )
+                quality_score, quality_category = self.quality_assessor.assess_quality(sensor_name, current_aoi)
 
                 # Create status message
                 status_msg = AOIStatus()
                 status_msg.header.stamp = self.get_clock().now().to_msg()
-                status_msg.header.frame_id = 'aoi_monitor'
+                status_msg.header.frame_id = "aoi_monitor"
                 status_msg.sensor_name = sensor_name
                 status_msg.sensor_type = self._get_sensor_type(sensor_name)
                 status_msg.current_aoi = current_aoi
-                status_msg.average_aoi = stats['average_aoi']
-                status_msg.max_aoi = stats['max_aoi']
-                status_msg.min_aoi = stats['min_aoi']
+                status_msg.average_aoi = stats["average_aoi"]
+                status_msg.max_aoi = stats["max_aoi"]
+                status_msg.min_aoi = stats["min_aoi"]
                 status_msg.is_fresh = current_aoi <= self.aoi_config.acceptable_threshold
                 status_msg.quality_score = quality_score
                 status_msg.freshness_status = quality_category
                 status_msg.acceptable_threshold = self.aoi_config.acceptable_threshold
                 status_msg.optimal_threshold = self.aoi_config.optimal_threshold
                 status_msg.sample_count = len(self.trackers[sensor_name].aoi_history)
-                status_msg.freshness_ratio = stats['freshness_ratio']
+                status_msg.freshness_ratio = stats["freshness_ratio"]
 
                 self.aoi_status_pub.publish(status_msg)
 
@@ -203,13 +180,13 @@ class AOIMonitorNode(Node):
 
         metrics_msg = AOIMetrics()
         metrics_msg.header.stamp = self.get_clock().now().to_msg()
-        metrics_msg.header.frame_id = 'aoi_monitor'
+        metrics_msg.header.frame_id = "aoi_monitor"
 
         # System summary
-        metrics_msg.system_average_aoi = system_stats['average_aoi']
-        metrics_msg.total_sensors = system_stats['total_sensors']
-        metrics_msg.fresh_sensors = system_stats['fresh_sensors']
-        metrics_msg.stale_sensors = system_stats['total_sensors'] - system_stats['fresh_sensors']
+        metrics_msg.system_average_aoi = system_stats["average_aoi"]
+        metrics_msg.total_sensors = system_stats["total_sensors"]
+        metrics_msg.fresh_sensors = system_stats["fresh_sensors"]
+        metrics_msg.stale_sensors = system_stats["total_sensors"] - system_stats["fresh_sensors"]
         metrics_msg.critical_sensors = 0  # TODO: implement critical threshold tracking
 
         # AoI distribution (simplified)
@@ -227,7 +204,7 @@ class AOIMonitorNode(Node):
             metrics_msg.aoi_p99 = sorted_aois[int(n * 0.99)]
 
         # System health
-        freshness_ratio = system_stats['freshness_ratio']
+        freshness_ratio = system_stats["freshness_ratio"]
         metrics_msg.system_healthy = freshness_ratio > 0.7  # 70% fresh sensors
         metrics_msg.health_score = freshness_ratio
 
@@ -262,14 +239,9 @@ class AOIMonitorNode(Node):
                         response.sensor_status = [status]
 
                     if request.include_history and request.history_samples > 0:
-                        history = self.shared_buffer.get_sensor_history(
-                            request.sensor_name, request.history_samples
-                        )
+                        history = self.shared_buffer.get_sensor_history(request.sensor_name, request.history_samples)
                         response.aoi_history = [aoi for _, aoi in history]
-                        response.timestamp_history = [
-                            self.get_clock().now().to_msg()  # Simplified
-                            for _ in history
-                        ]
+                        response.timestamp_history = [self.get_clock().now().to_msg() for _ in history]  # Simplified
                 else:
                     response.success = False
                     response.message = f"Unknown sensor: {request.sensor_name}"
@@ -283,9 +255,9 @@ class AOIMonitorNode(Node):
 
             # System metrics
             system_stats = self.shared_buffer.get_system_stats()
-            response.system_metrics.system_average_aoi = system_stats['average_aoi']
-            response.system_metrics.total_sensors = system_stats['total_sensors']
-            response.system_metrics.fresh_sensors = system_stats['fresh_sensors']
+            response.system_metrics.system_average_aoi = system_stats["average_aoi"]
+            response.system_metrics.total_sensors = system_stats["total_sensors"]
+            response.system_metrics.fresh_sensors = system_stats["fresh_sensors"]
 
         except Exception as e:
             response.success = False
@@ -302,21 +274,19 @@ class AOIMonitorNode(Node):
 
         status = AOIStatus()
         status.header.stamp = self.get_clock().now().to_msg()
-        status.header.frame_id = 'aoi_monitor'
+        status.header.frame_id = "aoi_monitor"
         status.sensor_name = sensor_name
         status.sensor_type = self._get_sensor_type(sensor_name)
         status.current_aoi = current_aoi
 
         if sensor_name in self.trackers:
             stats = self.trackers[sensor_name].get_statistics()
-            status.average_aoi = stats['average_aoi']
-            status.max_aoi = stats['max_aoi']
-            status.min_aoi = stats['min_aoi']
-            status.freshness_ratio = stats['freshness_ratio']
+            status.average_aoi = stats["average_aoi"]
+            status.max_aoi = stats["max_aoi"]
+            status.min_aoi = stats["min_aoi"]
+            status.freshness_ratio = stats["freshness_ratio"]
 
-        quality_score, quality_category = self.quality_assessor.assess_quality(
-            sensor_name, current_aoi
-        )
+        quality_score, quality_category = self.quality_assessor.assess_quality(sensor_name, current_aoi)
         status.quality_score = quality_score
         status.freshness_status = quality_category
         status.is_fresh = current_aoi <= self.aoi_config.acceptable_threshold
@@ -326,14 +296,14 @@ class AOIMonitorNode(Node):
     def _get_sensor_type(self, sensor_name: str) -> str:
         """Get sensor type category."""
         type_mapping = {
-            'imu': 'sensor',
-            'gps': 'sensor',
-            'camera': 'sensor',
-            'lidar': 'sensor',
-            'slam_pose': 'fusion',
-            'wheel_odom': 'sensor'
+            "imu": "sensor",
+            "gps": "sensor",
+            "camera": "sensor",
+            "lidar": "sensor",
+            "slam_pose": "fusion",
+            "wheel_odom": "sensor",
         }
-        return type_mapping.get(sensor_name, 'unknown')
+        return type_mapping.get(sensor_name, "unknown")
 
 
 def main(args=None):
@@ -349,5 +319,5 @@ def main(args=None):
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

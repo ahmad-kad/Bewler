@@ -23,9 +23,7 @@ class LEDIntegrationTester(Node):
         self.led_info_pub = self.create_publisher(String, "/state_machine/led_info", 10)
 
         # Publisher for system state
-        self.system_state_pub = self.create_publisher(
-            String, "/state_machine/system_state", 10
-        )
+        self.system_state_pub = self.create_publisher(String, "/state_machine/system_state", 10)
 
         # Test sequence
         self.test_sequence = [

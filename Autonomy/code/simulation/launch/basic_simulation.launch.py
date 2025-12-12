@@ -15,9 +15,7 @@ def generate_launch_description():
 
     # Package directories
     pkg_simulation = get_package_share_directory("autonomy_simulation")
-    pkg_description = get_package_share_directory(
-        "autonomy_simulation"
-    )  # Using simulation package for URDF
+    pkg_description = get_package_share_directory("autonomy_simulation")  # Using simulation package for URDF
 
     # Launch arguments
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
@@ -27,9 +25,7 @@ def generate_launch_description():
         "use_sim_time", default_value="true", description="Use simulation time"
     )
 
-    declare_robot_name = DeclareLaunchArgument(
-        "robot_name", default_value="rover2025", description="Robot name"
-    )
+    declare_robot_name = DeclareLaunchArgument("robot_name", default_value="rover2025", description="Robot name")
 
     # Robot description
     robot_description_content = Command(

@@ -4,7 +4,6 @@ Launch file for the complete URC 2026 Safety System.
 Launches all safety components: watchdog, redundant monitor, emergency coordinator, and dashboard.
 """
 
-
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node
 

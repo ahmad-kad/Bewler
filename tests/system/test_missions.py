@@ -10,13 +10,10 @@ Author: URC 2026 Autonomy Team
 
 import os
 import sys
-import time
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import pytest
 import rclpy
-import yaml
 
 # Ensure project root is importable as a package root
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -216,7 +213,6 @@ class TestObjectDetectionMission:
 
     def test_target_object_recognition(self, detection_mission):
         """Test target object identification"""
-        from autonomy_interfaces.msg import VisionDetection
 
         # Create mock detection
         detection = Mock()
@@ -268,7 +264,6 @@ class TestFollowMeMission:
 
     def test_follow_velocity_computation(self, follow_mission):
         """Test follow velocity calculation"""
-        from geometry_msgs.msg import Pose, PoseStamped
 
         # Create mock tag pose
         tag_pose = Mock()
@@ -385,8 +380,6 @@ class TestIntegration:
         node.get_logger.return_value = Mock()
 
         # Test that components can be instantiated together
-        from hardware_abstraction import HardwareInterface
-        from mission_executor import MissionExecutor
 
         # Mock the ROS2 node creation
         with pytest.raises(Exception):  # Would need proper ROS2 context

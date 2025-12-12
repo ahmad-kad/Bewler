@@ -39,9 +39,7 @@ class LEDStatePublisher:
         self.node = node
 
         # Publisher for LED state information
-        self.led_info_publisher = node.create_publisher(
-            String, "/state_machine/led_info", 10
-        )
+        self.led_info_publisher = node.create_publisher(String, "/state_machine/led_info", 10)
 
         logger.info("LED state publisher initialized")
 

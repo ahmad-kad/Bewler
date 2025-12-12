@@ -103,9 +103,7 @@ class WebSocketSensorBridgeNode(Node):
         # Health monitoring timer
         self.health_timer = self.create_timer(1.0, self._check_connection_health)
 
-        self.get_logger().info(
-            f"WebSocket Sensor Bridge initialized - URL: {self.websocket_url}"
-        )
+        self.get_logger().info(f"WebSocket Sensor Bridge initialized - URL: {self.websocket_url}")
 
     def _create_sensor_configs(self) -> Dict[str, SensorConfig]:
         """Create sensor configurations with appropriate QoS settings."""
@@ -181,47 +179,31 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 # Create publisher based on sensor type
                 if sensor_name == "imu":
-                    publisher = self.create_publisher(
-                        Imu, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(Imu, config.topic_name, config.qos_profile)
                 elif sensor_name == "gps":
-                    publisher = self.create_publisher(
-                        NavSatFix, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(NavSatFix, config.topic_name, config.qos_profile)
                 elif sensor_name == "battery":
-                    publisher = self.create_publisher(
-                        BatteryState, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(BatteryState, config.topic_name, config.qos_profile)
                 elif sensor_name == "wheel_odom":
-                    publisher = self.create_publisher(
-                        Odometry, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(Odometry, config.topic_name, config.qos_profile)
                 elif sensor_name == "temperature":
-                    publisher = self.create_publisher(
-                        Temperature, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(Temperature, config.topic_name, config.qos_profile)
                 else:
                     self.get_logger().warn(f"Unknown sensor type: {sensor_name}")
                     continue
 
                 self.publishers[sensor_name] = publisher
-                self.get_logger().info(
-                    f"Setup publisher for {sensor_name} on topic {config.topic_name}"
-                )
+                self.get_logger().info(f"Setup publisher for {sensor_name} on topic {config.topic_name}")
 
             except Exception as e:
-                self.get_logger().error(
-                    f"Failed to create publisher for {sensor_name}: {e}"
-                )
+                self.get_logger().error(f"Failed to create publisher for {sensor_name}: {e}")
 
     def _start_websocket_client(self):
         """Start WebSocket client in separate thread."""
         if self.websocket_thread and self.websocket_thread.is_alive():
             return
 
-        self.websocket_thread = threading.Thread(
-            target=self._websocket_client_loop, daemon=True
-        )
+        self.websocket_thread = threading.Thread(target=self._websocket_client_loop, daemon=True)
         self.websocket_thread.start()
 
     def _websocket_client_loop(self):
@@ -292,11 +274,7 @@ class WebSocketSensorBridgeNode(Node):
             data = json.loads(message)
 
             # Validate message format
-            if (
-                not isinstance(data, dict)
-                or "timestamp" not in data
-                or "sensors" not in data
-            ):
+            if not isinstance(data, dict) or "timestamp" not in data or "sensors" not in data:
                 self.get_logger().warn(f"Invalid message format: {message[:100]}...")
                 return
 
@@ -305,10 +283,7 @@ class WebSocketSensorBridgeNode(Node):
 
             # Process each sensor in the message
             for sensor_name, sensor_data in sensors.items():
-                if (
-                    sensor_name in self.publishers
-                    and sensor_name in self.sensor_configs
-                ):
+                if sensor_name in self.publishers and sensor_name in self.sensor_configs:
                     config = self.sensor_configs[sensor_name]
                     try:
                         # Convert and publish
@@ -327,9 +302,7 @@ class WebSocketSensorBridgeNode(Node):
 
         # Check if we've received messages recently
         if self.websocket_connected and (current_time - self.last_message_time) > 10.0:
-            self.get_logger().warn(
-                "No messages received for 10 seconds, connection may be stale"
-            )
+            self.get_logger().warn("No messages received for 10 seconds, connection may be stale")
             # Could trigger reconnection here if needed
 
         # Publish connection status
@@ -350,9 +323,7 @@ class WebSocketSensorBridgeNode(Node):
     # These convert JSON sensor data to ROS2 messages
     # When migrating to direct ROS2, keep these methods but change input source
 
-    def _convert_imu_data(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[Imu]:
+    def _convert_imu_data(self, data: Dict[str, Any], timestamp: float) -> Optional[Imu]:
         """Convert IMU JSON data to ROS2 Imu message."""
         try:
             msg = Imu()
@@ -381,14 +352,10 @@ class WebSocketSensorBridgeNode(Node):
             # Covariances (simplified diagonal)
             accel_cov = data.get("accel_covariance", [0.01, 0.01, 0.01])
             gyro_cov = data.get("gyro_covariance", [0.01, 0.01, 0.01])
-            orientation_cov = data.get(
-                "orientation_covariance", [0.01, 0.01, 0.01, 0.01]
-            )
+            orientation_cov = data.get("orientation_covariance", [0.01, 0.01, 0.01, 0.01])
 
             msg.linear_acceleration_covariance = accel_cov + [0.0] * 6 + [0.0] * 3
-            msg.angular_velocity_covariance = (
-                [0.0] * 3 + gyro_cov + [0.0] * 3 + [0.0] * 3
-            )
+            msg.angular_velocity_covariance = [0.0] * 3 + gyro_cov + [0.0] * 3 + [0.0] * 3
             msg.orientation_covariance = orientation_cov + [0.0] * 5 + [0.0] * 6
 
             return msg
@@ -397,9 +364,7 @@ class WebSocketSensorBridgeNode(Node):
             self.get_logger().error(f"Error converting IMU data: {e}")
             return None
 
-    def _convert_gps_data(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[NavSatFix]:
+    def _convert_gps_data(self, data: Dict[str, Any], timestamp: float) -> Optional[NavSatFix]:
         """Convert GPS JSON data to ROS2 NavSatFix message."""
         try:
             msg = NavSatFix()
@@ -415,9 +380,7 @@ class WebSocketSensorBridgeNode(Node):
             msg.status.service = data.get("service", 1)  # SERVICE_GPS
 
             # Position covariance
-            covariance = data.get(
-                "position_covariance", [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 2.0]
-            )
+            covariance = data.get("position_covariance", [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 2.0])
             msg.position_covariance = covariance
             msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
 
@@ -427,9 +390,7 @@ class WebSocketSensorBridgeNode(Node):
             self.get_logger().error(f"Error converting GPS data: {e}")
             return None
 
-    def _convert_battery_data(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[BatteryState]:
+    def _convert_battery_data(self, data: Dict[str, Any], timestamp: float) -> Optional[BatteryState]:
         """Convert battery JSON data to ROS2 BatteryState message."""
         try:
             msg = BatteryState()
@@ -444,15 +405,9 @@ class WebSocketSensorBridgeNode(Node):
             msg.percentage = data.get("percentage", 0.0)
 
             # Power supply status
-            msg.power_supply_status = data.get(
-                "status", BatteryState.POWER_SUPPLY_STATUS_UNKNOWN
-            )
-            msg.power_supply_health = data.get(
-                "health", BatteryState.POWER_SUPPLY_HEALTH_UNKNOWN
-            )
-            msg.power_supply_technology = data.get(
-                "technology", BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN
-            )
+            msg.power_supply_status = data.get("status", BatteryState.POWER_SUPPLY_STATUS_UNKNOWN)
+            msg.power_supply_health = data.get("health", BatteryState.POWER_SUPPLY_HEALTH_UNKNOWN)
+            msg.power_supply_technology = data.get("technology", BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN)
 
             # Cell voltages and temperatures
             msg.cell_voltage = data.get("cell_voltages", [])
@@ -465,9 +420,7 @@ class WebSocketSensorBridgeNode(Node):
             self.get_logger().error(f"Error converting battery data: {e}")
             return None
 
-    def _convert_wheel_odom(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[Odometry]:
+    def _convert_wheel_odom(self, data: Dict[str, Any], timestamp: float) -> Optional[Odometry]:
         """Convert wheel odometry JSON data to ROS2 Odometry message."""
         try:
             msg = Odometry()
@@ -504,9 +457,7 @@ class WebSocketSensorBridgeNode(Node):
             self.get_logger().error(f"Error converting wheel odometry data: {e}")
             return None
 
-    def _convert_temperature(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[Temperature]:
+    def _convert_temperature(self, data: Dict[str, Any], timestamp: float) -> Optional[Temperature]:
         """Convert temperature JSON data to ROS2 Temperature message."""
         try:
             msg = Temperature()

@@ -15,13 +15,12 @@ Author: URC 2026 Autonomy Team
 # Standard Library
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import rclpy
 
 # ROS2 Messages
 from geometry_msgs.msg import PoseStamped
-from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Bool, String

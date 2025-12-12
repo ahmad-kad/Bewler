@@ -4,17 +4,13 @@ ROS2 Messaging Consistency Test for URC 2026
 Tests publisher/subscriber patterns and message consistency
 """
 
-import threading
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import rclpy
-from diagnostic_msgs.msg import DiagnosticArray
-from geometry_msgs.msg import TwistStamped
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
-from sensor_msgs.msg import BatteryState, JointState
-from std_msgs.msg import Bool, Float32MultiArray, String
+from std_msgs.msg import Bool, String
 
 
 class MessagingConsistencyTester(Node):
@@ -215,7 +211,7 @@ class MessagingConsistencyTester(Node):
         import subprocess
         try:
             result = subprocess.run(['ros2', 'topic', 'list'],
-                                  capture_output=True, text=True, timeout=5)
+                                    capture_output=True, text=True, timeout=5)
             discovered_topics = set(result.stdout.strip().split('\n'))
 
             expected_topics = set(self.expected_topics.keys())
@@ -241,7 +237,6 @@ class MessagingConsistencyTester(Node):
         """Test message type consistency."""
         # This would require more complex introspection
         # For now, just check that topics exist with expected patterns
-        pass
 
     def _test_pub_sub_patterns(self):
         """Test publisher/subscriber relationship patterns."""
@@ -288,7 +283,7 @@ class MessagingConsistencyTester(Node):
             if len(timestamps) > 1:
                 intervals = []
                 for i in range(1, len(timestamps)):
-                    intervals.append(timestamps[i] - timestamps[i-1])
+                    intervals.append(timestamps[i] - timestamps[i - 1])
 
                 avg_interval = sum(intervals) / len(intervals) if intervals else 0
                 expected_freq = self.expected_topics.get(topic, {}).get('frequency', 'unknown')
@@ -319,9 +314,9 @@ class MessagingConsistencyTester(Node):
         }
 
         # Print summary
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("ROS2 MESSAGING CONSISTENCY TEST REPORT")
-        print("="*60)
+        print("=" * 60)
         print(f"Overall Status: {report['overall_status']}")
         print(f"Topics Analyzed: {report['summary']['topics_analyzed']}")
         print(f"Topics Discovered: {report['summary']['topics_discovered']}")
@@ -333,9 +328,10 @@ class MessagingConsistencyTester(Node):
             for error in self.test_results['errors']:
                 print(f"   {error}")
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
 
         self.test_results['final_report'] = report
+
 
 def main():
     """Main test function."""
@@ -351,6 +347,7 @@ def main():
     rclpy.shutdown()
 
     return tester.test_results
+
 
 if __name__ == '__main__':
     main()

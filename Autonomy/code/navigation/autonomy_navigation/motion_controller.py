@@ -87,9 +87,7 @@ class MotionController:
         self.current_velocity = Twist()
         self.target_velocity = Twist()
 
-    def calculate_wheel_velocities(
-        self, linear_x: float, angular_z: float
-    ) -> Tuple[float, float]:
+    def calculate_wheel_velocities(self, linear_x: float, angular_z: float) -> Tuple[float, float]:
         """Calculate individual wheel velocities for differential drive"""
         # Differential drive kinematics
         v_left = linear_x - (angular_z * self.wheel_separation / 2.0)
@@ -97,9 +95,7 @@ class MotionController:
 
         return v_left, v_right
 
-    def update_odometry(
-        self, left_wheel_velocity: float, right_wheel_velocity: float, dt: float
-    ):
+    def update_odometry(self, left_wheel_velocity: float, right_wheel_velocity: float, dt: float):
         """Update odometry from wheel encoders"""
         # TODO: Implement odometry calculation
         # - Calculate linear and angular velocity
@@ -116,12 +112,8 @@ class MotionController:
 
     def is_at_target_velocity(self, tolerance: float = 0.1) -> bool:
         """Check if current velocity matches target"""
-        linear_diff = abs(
-            self.current_velocity.linear.x - self.target_velocity.linear.x
-        )
-        angular_diff = abs(
-            self.current_velocity.angular.z - self.target_velocity.angular.z
-        )
+        linear_diff = abs(self.current_velocity.linear.x - self.target_velocity.linear.x)
+        angular_diff = abs(self.current_velocity.angular.z - self.target_velocity.angular.z)
 
         return linear_diff < tolerance and angular_diff < tolerance
 

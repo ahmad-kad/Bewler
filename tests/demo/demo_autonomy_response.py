@@ -4,7 +4,6 @@ Demo: Autonomy Response to Teleoperation Data
 Shows how autonomy reacts to different teleoperation scenarios
 """
 
-import random
 import time
 
 
@@ -104,6 +103,7 @@ def simulate_scenario(scenario_name, description):
         print("   🚀 Mission proceeding normally")
         print("   📈 Performance optimization active")
 
+
 def main():
     """Run the autonomy response demo"""
     print("🎭 Autonomy Response to Teleoperation Data Demo")
@@ -141,6 +141,7 @@ def main():
     print("• 📊 Provides detailed logging for monitoring and debugging")
     print()
     print("Ready for real teleoperation integration! 🚀")
+
 
 if __name__ == '__main__':
     main()

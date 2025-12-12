@@ -6,7 +6,6 @@ Provides convenient commands to run different types of tests and generate report
 """
 
 import argparse
-import os
 import subprocess
 import sys
 from pathlib import Path

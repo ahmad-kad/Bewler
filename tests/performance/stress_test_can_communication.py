@@ -6,21 +6,18 @@ Tests CAN bus communication under extreme conditions harsher than real-world
 scenarios, including bus overload, arbitration conflicts, and electrical faults.
 """
 
-import asyncio
 import random
 import statistics
 import sys
-import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, Optional
+
+from bridges.can_mock_simulator import CANBusMockSimulator
 
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-
-from bridges.can_mock_simulator import CANBusMockSimulator
 
 
 class CANStressLevel(Enum):

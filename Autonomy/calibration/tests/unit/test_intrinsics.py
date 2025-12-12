@@ -6,7 +6,6 @@ Unit Tests for Camera Intrinsics Calibration
 import os
 import tempfile
 import unittest
-from pathlib import Path
 
 import numpy as np
 
@@ -25,11 +24,7 @@ class TestCameraConfig(unittest.TestCase):
 
     def test_camera_config_creation(self):
         """Test creating camera config"""
-        cfg = CameraConfig(
-            name="Test Camera",
-            camera_index=0,
-            resolution=(1920, 1080)
-        )
+        cfg = CameraConfig(name="Test Camera", camera_index=0, resolution=(1920, 1080))
 
         self.assertEqual(cfg.name, "Test Camera")
         self.assertEqual(cfg.camera_index, 0)
@@ -38,11 +33,7 @@ class TestCameraConfig(unittest.TestCase):
 
     def test_camera_config_defaults(self):
         """Test default values"""
-        cfg = CameraConfig(
-            name="Test",
-            camera_index=0,
-            resolution=(640, 480)
-        )
+        cfg = CameraConfig(name="Test", camera_index=0, resolution=(640, 480))
 
         self.assertEqual(cfg.sensor_type, "rgb")
         self.assertEqual(cfg.focal_length_estimate_mm, 4.0)
@@ -54,11 +45,7 @@ class TestCharUcoBoardConfig(unittest.TestCase):
     def test_board_config_creation(self):
         """Test creating board config"""
         cfg = CharUcoBoardConfig(
-            name="test_board",
-            aruco_dict_name="DICT_4X4_50",
-            size=(5, 7),
-            checker_size_mm=30.0,
-            marker_size_mm=18.0
+            name="test_board", aruco_dict_name="DICT_4X4_50", size=(5, 7), checker_size_mm=30.0, marker_size_mm=18.0
         )
 
         self.assertEqual(cfg.name, "test_board")
@@ -70,18 +57,10 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures"""
-        self.camera_cfg = CameraConfig(
-            name="Test Camera",
-            camera_index=0,
-            resolution=(1920, 1080)
-        )
+        self.camera_cfg = CameraConfig(name="Test Camera", camera_index=0, resolution=(1920, 1080))
 
         self.board_cfg = CharUcoBoardConfig(
-            name="board_5x7",
-            aruco_dict_name="DICT_4X4_50",
-            size=(5, 7),
-            checker_size_mm=30.0,
-            marker_size_mm=18.0
+            name="board_5x7", aruco_dict_name="DICT_4X4_50", size=(5, 7), checker_size_mm=30.0, marker_size_mm=18.0
         )
 
     def test_calibrator_initialization(self):
@@ -128,7 +107,7 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
             capture_mode="manual",
             timestamp="2025-01-01T00:00:00",
             images_used=[],
-            quality_metrics={'fx': 800.0}
+            quality_metrics={"fx": 800.0},
         )
 
         self.assertEqual(result.capture_mode, "manual")
@@ -155,19 +134,19 @@ class TestCameraIntrinsicsCalibrator(unittest.TestCase):
                 capture_mode="manual",
                 timestamp="2025-01-01T00:00:00",
                 images_used=[],
-                quality_metrics={'fx': 800.0}
+                quality_metrics={"fx": 800.0},
             )
 
             files_saved = calibrator.save_calibration(result, tmpdir)
 
-            self.assertIn('pkl', files_saved)
-            self.assertIn('json', files_saved)
-            self.assertIn('yaml', files_saved)
+            self.assertIn("pkl", files_saved)
+            self.assertIn("json", files_saved)
+            self.assertIn("yaml", files_saved)
 
             # Check files exist
-            self.assertTrue(os.path.exists(files_saved['pkl']))
-            self.assertTrue(os.path.exists(files_saved['json']))
-            self.assertTrue(os.path.exists(files_saved['yaml']))
+            self.assertTrue(os.path.exists(files_saved["pkl"]))
+            self.assertTrue(os.path.exists(files_saved["json"]))
+            self.assertTrue(os.path.exists(files_saved["yaml"]))
 
 
 class TestCalibrationQualityMetrics(unittest.TestCase):
@@ -206,5 +185,5 @@ class TestCaptureModeEnum(unittest.TestCase):
         self.assertEqual(CaptureMode.CONSERVATIVE.value, "conservative")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

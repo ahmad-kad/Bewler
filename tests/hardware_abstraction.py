@@ -16,7 +16,6 @@ Author: URC 2026 Autonomy Team
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple
 
-import rclpy
 from autonomy_interfaces.msg import VisionDetection
 
 # ROS2 messages
@@ -24,8 +23,7 @@ from geometry_msgs.msg import PoseStamped, Twist
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
-from sensor_msgs.msg import BatteryState, CameraInfo, Image, Imu, NavSatFix, Temperature
-from std_msgs.msg import Bool, Float32
+from sensor_msgs.msg import BatteryState, Imu, NavSatFix, Temperature
 
 
 class SensorInterface(ABC):
@@ -34,42 +32,34 @@ class SensorInterface(ABC):
     @abstractmethod
     def get_current_position(self) -> Optional[Tuple[float, float, float]]:
         """Get current position (x, y, heading)"""
-        pass
 
     @abstractmethod
     def get_gps_position(self) -> Optional[NavSatFix]:
         """Get current GPS position"""
-        pass
 
     @abstractmethod
     def get_imu_data(self) -> Optional[Imu]:
         """Get current IMU data"""
-        pass
 
     @abstractmethod
     def get_odometry(self) -> Optional[Odometry]:
         """Get current odometry data"""
-        pass
 
     @abstractmethod
     def get_vision_detections(self) -> List[VisionDetection]:
         """Get recent vision detections"""
-        pass
 
     @abstractmethod
     def get_aruco_tag_pose(self, tag_id: int) -> Optional[PoseStamped]:
         """Get pose of specific ArUco tag"""
-        pass
 
     @abstractmethod
     def get_battery_status(self) -> Optional[BatteryState]:
         """Get battery status"""
-        pass
 
     @abstractmethod
     def get_temperature_data(self) -> Optional[Temperature]:
         """Get temperature sensor data"""
-        pass
 
 
 class ActuatorInterface(ABC):
@@ -78,22 +68,18 @@ class ActuatorInterface(ABC):
     @abstractmethod
     def send_velocity_command(self, linear_x: float, angular_z: float):
         """Send velocity command to motors"""
-        pass
 
     @abstractmethod
     def emergency_stop(self):
         """Immediate emergency stop"""
-        pass
 
     @abstractmethod
     def navigate_to_position(self, position: Dict[str, float]) -> bool:
         """Navigate to a specific position"""
-        pass
 
     @abstractmethod
     def set_led_status(self, status: str):
         """Set LED status indicator"""
-        pass
 
 
 class HardwareInterface:

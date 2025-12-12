@@ -17,21 +17,22 @@ import math
 import time
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 import rclpy
-from geometry_msgs.msg import Point, PoseStamped, Twist
+from geometry_msgs.msg import PoseStamped, Twist
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Bool, String
+from std_msgs.msg import String
 from visualization_msgs.msg import Marker, MarkerArray
 
 
 class URCChallenge(Enum):
     """URC 2026 Challenge Types."""
+
     WAYPOINT_NAVIGATION = "waypoint_navigation"
     FOLLOW_ME = "follow_me"
     EQUIPMENT_SERVICE = "equipment_service"
@@ -43,6 +44,7 @@ class URCChallenge(Enum):
 
 class ChallengePhase(Enum):
     """Challenge execution phases."""
+
     SETUP = "setup"
     EXECUTION = "execution"
     COMPLETION = "completion"
@@ -52,6 +54,7 @@ class ChallengePhase(Enum):
 @dataclass
 class ChallengeMetrics:
     """Metrics for challenge performance."""
+
     challenge_type: URCChallenge
     start_time: float
     end_time: Optional[float] = None
@@ -68,6 +71,7 @@ class ChallengeMetrics:
 @dataclass
 class URCChallengeResult:
     """Complete URC challenge test result."""
+
     challenge_name: str
     duration_minutes: float
     overall_success: bool
@@ -111,19 +115,13 @@ class URCChallengeSimulator(Node):
 
         # QoS profiles
         self.qos_reliable = QoSProfile(
-            reliability=ReliabilityPolicy.RELIABLE,
-            history=HistoryPolicy.KEEP_LAST,
-            depth=10
+            reliability=ReliabilityPolicy.RELIABLE, history=HistoryPolicy.KEEP_LAST, depth=10
         )
 
         # Subscribers
-        self.odom_sub = self.create_subscription(
-            Odometry, "/odom", self.odom_callback, self.qos_reliable
-        )
+        self.odom_sub = self.create_subscription(Odometry, "/odom", self.odom_callback, self.qos_reliable)
 
-        self.laser_sub = self.create_subscription(
-            LaserScan, "/scan", self.laser_callback, self.qos_reliable
-        )
+        self.laser_sub = self.create_subscription(LaserScan, "/scan", self.laser_callback, self.qos_reliable)
 
         # Publishers
         self.cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
@@ -155,7 +153,7 @@ class URCChallengeSimulator(Node):
             URCChallenge.EQUIPMENT_SERVICE,
             URCChallenge.SCIENCE_OPERATIONS,
             URCChallenge.LONG_DISTANCE,
-            URCChallenge.EMERGENCY_RESPONSE
+            URCChallenge.EMERGENCY_RESPONSE,
         ]
 
     def start_challenge(self):
@@ -168,10 +166,7 @@ class URCChallengeSimulator(Node):
         challenge_start = time.time()
 
         # Initialize challenge metrics
-        metrics = ChallengeMetrics(
-            challenge_type=self.current_challenge,
-            start_time=challenge_start
-        )
+        metrics = ChallengeMetrics(challenge_type=self.current_challenge, start_time=challenge_start)
 
         self.challenge_metrics.append(metrics)
 
@@ -190,17 +185,13 @@ class URCChallengeSimulator(Node):
                 (100.0, -50.0, 0.0),
                 (-50.0, 75.0, 0.0),
                 (25.0, -25.0, 0.0),
-                (0.0, 0.0, 0.0)  # Return to start
+                (0.0, 0.0, 0.0),  # Return to start
             ]
             self.publish_waypoint_markers()
 
         elif challenge == URCChallenge.TERRAIN_TRAVERSAL:
             # Rough terrain with obstacles
-            self.target_waypoints = [
-                (30.0, 30.0, 0.0),
-                (60.0, 10.0, 0.0),
-                (90.0, 40.0, 0.0)
-            ]
+            self.target_waypoints = [(30.0, 30.0, 0.0), (60.0, 10.0, 0.0), (90.0, 40.0, 0.0)]
 
         elif challenge == URCChallenge.FOLLOW_ME:
             # Follow moving target
@@ -219,7 +210,7 @@ class URCChallengeSimulator(Node):
             self.target_waypoints = [
                 (40.0, -20.0, 0.0),  # Sample site 1
                 (70.0, -10.0, 0.0),  # Sample site 2
-                (60.0, 20.0, 0.0),   # Analysis station
+                (60.0, 20.0, 0.0),  # Analysis station
             ]
 
         elif challenge == URCChallenge.LONG_DISTANCE:
@@ -239,17 +230,13 @@ class URCChallengeSimulator(Node):
 
     def odom_callback(self, msg):
         """Handle odometry updates."""
-        self.current_position = (
-            msg.pose.pose.position.x,
-            msg.pose.pose.position.y,
-            msg.pose.pose.position.z
-        )
+        self.current_position = (msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z)
 
         # Track total distance
         if self.last_position:
             distance = math.sqrt(
-                (self.current_position[0] - self.last_position[0])**2 +
-                (self.current_position[1] - self.last_position[1])**2
+                (self.current_position[0] - self.last_position[0]) ** 2
+                + (self.current_position[1] - self.last_position[1]) ** 2
             )
             self.total_distance += distance
 
@@ -280,8 +267,7 @@ class URCChallengeSimulator(Node):
 
         current_wp = self.target_waypoints[self.waypoint_index]
         distance_to_wp = math.sqrt(
-            (self.current_position[0] - current_wp[0])**2 +
-            (self.current_position[1] - current_wp[1])**2
+            (self.current_position[0] - current_wp[0]) ** 2 + (self.current_position[1] - current_wp[1]) ** 2
         )
 
         if distance_to_wp < 2.0:  # Within 2m of waypoint
@@ -364,7 +350,7 @@ class URCChallengeSimulator(Node):
                 # Move toward follow target
                 dx = self.follow_target[0] - self.current_position[0]
                 dy = self.follow_target[1] - self.current_position[1]
-                distance = math.sqrt(dx*dx + dy*dy)
+                distance = math.sqrt(dx * dx + dy * dy)
 
                 if distance > 2.0:  # Maintain 2m following distance
                     cmd = Twist()
@@ -378,7 +364,7 @@ class URCChallengeSimulator(Node):
                 wp = self.target_waypoints[self.waypoint_index]
                 dx = wp[0] - self.current_position[0]
                 dy = wp[1] - self.current_position[1]
-                distance = math.sqrt(dx*dx + dy*dy)
+                distance = math.sqrt(dx * dx + dy * dy)
 
                 if distance > 0.5:  # Not yet at waypoint
                     cmd = Twist()
@@ -392,14 +378,16 @@ class URCChallengeSimulator(Node):
 
         # Publish status update
         status_msg = String()
-        status_msg.data = json.dumps({
-            'elapsed_minutes': elapsed / 60,
-            'current_challenge': self.current_challenge.value if self.current_challenge else None,
-            'challenge_index': self.challenge_index,
-            'total_distance': self.total_distance,
-            'obstacles_avoided': self.obstacles_detected,
-            'waypoints_completed': sum(m.waypoints_completed for m in self.challenge_metrics)
-        })
+        status_msg.data = json.dumps(
+            {
+                "elapsed_minutes": elapsed / 60,
+                "current_challenge": self.current_challenge.value if self.current_challenge else None,
+                "challenge_index": self.challenge_index,
+                "total_distance": self.total_distance,
+                "obstacles_avoided": self.obstacles_detected,
+                "waypoints_completed": sum(m.waypoints_completed for m in self.challenge_metrics),
+            }
+        )
         self.challenge_status_pub.publish(status_msg)
 
     def next_challenge(self):
@@ -414,8 +402,10 @@ class URCChallengeSimulator(Node):
             self.challenge_metrics[-1].success = success
 
             duration = self.challenge_metrics[-1].end_time - self.challenge_metrics[-1].start_time
-            self.logger.info(f" CHALLENGE COMPLETE: {self.current_challenge.value} - "
-                           f"{'SUCCESS' if success else 'TIMEOUT'} ({duration:.1f}s)")
+            self.logger.info(
+                f" CHALLENGE COMPLETE: {self.current_challenge.value} - "
+                f"{'SUCCESS' if success else 'TIMEOUT'} ({duration:.1f}s)"
+            )
 
         self.challenge_index += 1
 
@@ -461,19 +451,19 @@ class URCChallengeSimulator(Node):
             total_score=total_score,
             safety_rating=safety_rating,
             performance_rating=performance_rating,
-            recommendations=self.generate_recommendations()
+            recommendations=self.generate_recommendations(),
         )
 
         # Save comprehensive results
         test_data = {
-            'summary': asdict(result),
-            'challenge_details': [asdict(m) for m in self.challenge_metrics],
-            'overall_metrics': {
-                'total_distance_traveled': self.total_distance,
-                'total_obstacles_avoided': self.obstacles_detected,
-                'total_safety_violations': total_violations,
-                'average_challenge_duration': total_duration / len(self.challenge_sequence)
-            }
+            "summary": asdict(result),
+            "challenge_details": [asdict(m) for m in self.challenge_metrics],
+            "overall_metrics": {
+                "total_distance_traveled": self.total_distance,
+                "total_obstacles_avoided": self.obstacles_detected,
+                "total_safety_violations": total_violations,
+                "average_challenge_duration": total_duration / len(self.challenge_sequence),
+            },
         }
 
         with open("/tmp/urc_challenge_test_results.json", "w") as f:
@@ -511,9 +501,9 @@ class URCChallengeSimulator(Node):
 
     def print_final_results(self, result: URCChallengeResult, test_data: Dict):
         """Print comprehensive final results."""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("URC 2026 COMPLETE CHALLENGE TEST RESULTS")
-        print("="*80)
+        print("=" * 80)
         print(f"Test Duration: {result.duration_minutes:.1f} minutes")
         print(f"Challenges Completed: {result.challenges_completed}/7")
         print(f"Safety Rating: {result.safety_rating}")
@@ -528,16 +518,18 @@ class URCChallengeSimulator(Node):
             URCChallenge.EQUIPMENT_SERVICE: "Equipment Service",
             URCChallenge.SCIENCE_OPERATIONS: "Science Operations",
             URCChallenge.LONG_DISTANCE: "Long Distance",
-            URCChallenge.EMERGENCY_RESPONSE: "Emergency Response"
+            URCChallenge.EMERGENCY_RESPONSE: "Emergency Response",
         }
 
         for i, metrics in enumerate(self.challenge_metrics):
             challenge_name = challenge_names.get(metrics.challenge_type, str(metrics.challenge_type))
             status = "" if metrics.success else ""
             duration = metrics.end_time - metrics.start_time if metrics.end_time else 0
-            print(f"  {status} {challenge_name}: {duration:.1f}s, "
-                  f"{metrics.waypoints_completed} waypoints, "
-                  f"{metrics.obstacles_avoided} obstacles avoided")
+            print(
+                f"  {status} {challenge_name}: {duration:.1f}s, "
+                f"{metrics.waypoints_completed} waypoints, "
+                f"{metrics.obstacles_avoided} obstacles avoided"
+            )
 
         print("\nOVERALL METRICS:")
         print(f"Obstacles Avoided: {self.obstacles_detected}")
@@ -547,7 +539,7 @@ class URCChallengeSimulator(Node):
         for rec in result.recommendations:
             print(f"  • {rec}")
 
-        print("="*80)
+        print("=" * 80)
         print("\nURC 2026 AUTONOMY SYSTEM TEST COMPLETE!")
         print("Results saved to /tmp/urc_challenge_test_results.json")
 
@@ -565,5 +557,5 @@ def main():
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

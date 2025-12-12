@@ -16,10 +16,10 @@ from typing import Any, Dict, Optional
 import rclpy
 import yaml
 from geometry_msgs.msg import PoseStamped, TransformStamped
-from nav_msgs.msg import Odometry, Path
+from nav_msgs.msg import Path
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, NavSatFix
-from std_msgs.msg import Float32, String
+from std_msgs.msg import String
 from tf2_ros import TransformBroadcaster
 
 
@@ -173,7 +173,8 @@ class SLAMDataBridge(Node):
         # Only log based on config interval to reduce network overhead
         pose_interval = self.config.get('slam', {}).get('pose_logging_interval', 10)
         if self.slam_pose_count % pose_interval == 0:
-            self.get_logger().info(f'Received SLAM pose #{self.slam_pose_count}: ({msg.pose.position.x:.2f}, {msg.pose.position.y:.2f})')
+            self.get_logger().info(
+                f'Received SLAM pose #{self.slam_pose_count}: ({msg.pose.position.x:.2f}, {msg.pose.position.y:.2f})')
 
         try:
             # Update robot path (limit based on config for memory efficiency)
@@ -201,7 +202,8 @@ class SLAMDataBridge(Node):
             # Only log based on config interval
             map_interval = self.config.get('slam', {}).get('map_publish_interval', 10)
             if self.map_data_count % map_interval == 0:
-                self.get_logger().info(f'Published map data #{self.map_data_count} for robot at ({msg.pose.position.x:.2f}, {msg.pose.position.y:.2f})')
+                self.get_logger().info(
+                    f'Published map data #{self.map_data_count} for robot at ({msg.pose.position.x:.2f}, {msg.pose.position.y:.2f})')
         except Exception as e:
             self.get_logger().error(f'Failed to process SLAM pose: {e}')
 
@@ -243,7 +245,7 @@ class SLAMDataBridge(Node):
                 'lat': self.latest_gps.latitude,
                 'lon': self.latest_gps.longitude,
                 'altitude': self.latest_gps.altitude,
-                'satellites': list(getattr(self.latest_gps, 'position_covariance', [0]*9))
+                'satellites': list(getattr(self.latest_gps, 'position_covariance', [0] * 9))
             }
 
         # Mission waypoints

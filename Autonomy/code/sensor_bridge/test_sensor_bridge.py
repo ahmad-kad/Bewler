@@ -34,15 +34,9 @@ class SensorDataVerifier(Node):
         # Subscribers
         self.imu_sub = self.create_subscription(Imu, "/imu/data", self.on_imu, 10)
         self.gps_sub = self.create_subscription(NavSatFix, "/gps/fix", self.on_gps, 10)
-        self.battery_sub = self.create_subscription(
-            BatteryState, "/battery/status", self.on_battery, 10
-        )
-        self.odom_sub = self.create_subscription(
-            Odometry, "/wheel/odom", self.on_wheel_odom, 10
-        )
-        self.temp_sub = self.create_subscription(
-            Temperature, "/temperature/data", self.on_temperature, 10
-        )
+        self.battery_sub = self.create_subscription(BatteryState, "/battery/status", self.on_battery, 10)
+        self.odom_sub = self.create_subscription(Odometry, "/wheel/odom", self.on_wheel_odom, 10)
+        self.temp_sub = self.create_subscription(Temperature, "/temperature/data", self.on_temperature, 10)
 
         self.get_logger().info("Sensor data verifier initialized")
 
@@ -86,21 +80,15 @@ class SensorDataVerifier(Node):
                 "vx": msg.twist.twist.linear.x,
             }
         )
-        self.get_logger().info(
-            f"Odom: x={msg.pose.pose.position.x:.2f}, vx={msg.twist.twist.linear.x:.2f}"
-        )
+        self.get_logger().info(f"Odom: x={msg.pose.pose.position.x:.2f}, vx={msg.twist.twist.linear.x:.2f}")
 
     def on_temperature(self, msg: Temperature):
-        self.received_messages["temperature"].append(
-            {"timestamp": time.time(), "temperature": msg.temperature}
-        )
+        self.received_messages["temperature"].append({"timestamp": time.time(), "temperature": msg.temperature})
         self.get_logger().info(f"Temp: {msg.temperature:.1f}°C")
 
     def get_stats(self):
         """Get reception statistics"""
-        return {
-            sensor: len(messages) for sensor, messages in self.received_messages.items()
-        }
+        return {sensor: len(messages) for sensor, messages in self.received_messages.items()}
 
 
 async def mock_websocket_server(websocket, path):

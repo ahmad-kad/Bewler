@@ -123,9 +123,7 @@ class AOITracker:
         average_aoi = sum(recent_aois) / len(recent_aois)
 
         # Freshness ratio (samples within acceptable threshold)
-        fresh_count = sum(
-            1 for a in recent_aois if a <= self.config.acceptable_threshold
-        )
+        fresh_count = sum(1 for a in recent_aois if a <= self.config.acceptable_threshold)
         freshness_ratio = fresh_count / len(recent_aois)
 
         return {
@@ -200,9 +198,7 @@ class SharedAOIBuffer:
         # Check if valid (non-zero)
         return aoi if aoi > 0 else None
 
-    def get_sensor_history(
-        self, sensor_name: str, max_samples: int = 10
-    ) -> List[Tuple[float, float]]:
+    def get_sensor_history(self, sensor_name: str, max_samples: int = 10) -> List[Tuple[float, float]]:
         """
         Get recent AoI history for sensor.
 
@@ -358,9 +354,7 @@ class NetworkAwareAOIAssessor:
 
         # Detect congestion
         congestion_detected = network_latency > profile["congestion_threshold"]
-        congestion_factor = (
-            network_latency / expected_latency if expected_latency > 0 else 1.0
-        )
+        congestion_factor = network_latency / expected_latency if expected_latency > 0 else 1.0
 
         # Track congestion events
         if congestion_detected:

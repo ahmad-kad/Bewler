@@ -11,7 +11,6 @@ import sys
 
 import pytest
 import rclpy
-from geometry_msgs.msg import PoseStamped
 from rclpy.node import Node
 from std_msgs.msg import String
 

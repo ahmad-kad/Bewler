@@ -4,7 +4,6 @@ Comprehensive Emoji Removal Script for URC Machiato 2026
 Removes all emojis and special Unicode symbols from source files
 """
 
-import os
 import re
 import sys
 from pathlib import Path
@@ -51,6 +50,7 @@ def remove_emojis_from_file(filepath):
         print(f"Error processing {filepath}: {e}", file=sys.stderr)
         return False
 
+
 def main():
     """Main cleanup function."""
     project_root = Path(__file__).parent.parent
@@ -73,6 +73,7 @@ def main():
                 print(f"Cleaned: {filepath}")
 
     print(f"\nCleanup complete: {files_modified} files modified out of {files_processed} processed")
+
 
 if __name__ == '__main__':
     main()

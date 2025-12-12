@@ -12,15 +12,15 @@ Usage:
 import argparse
 import json
 import logging
-import queue
 import threading
 from pathlib import Path
 
 import cv2
 import numpy as np
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class MultiCameraDetector:
     """Detect ArUco tags using multiple calibrated cameras."""
@@ -46,14 +46,14 @@ class MultiCameraDetector:
                 with open(calib_file) as f:
                     calib_data = json.load(f)
 
-                camera_index = calib_data.get('camera_index', 0)
-                camera_matrix = np.array(calib_data['camera_matrix']['data'], dtype=np.float32).reshape(3, 3)
-                dist_coeffs = np.array(calib_data['distortion_coefficients']['data'], dtype=np.float32).flatten()
+                camera_index = calib_data.get("camera_index", 0)
+                camera_matrix = np.array(calib_data["camera_matrix"]["data"], dtype=np.float32).reshape(3, 3)
+                dist_coeffs = np.array(calib_data["distortion_coefficients"]["data"], dtype=np.float32).flatten()
 
                 self.calibrations[camera_index] = {
-                    'file': str(calib_file),
-                    'camera_matrix': camera_matrix,
-                    'dist_coeffs': dist_coeffs
+                    "file": str(calib_file),
+                    "camera_matrix": camera_matrix,
+                    "dist_coeffs": dist_coeffs,
                 }
                 logger.info(f"✅ Loaded calibration for camera {camera_index}: {calib_file.name}")
             except Exception as e:
@@ -65,18 +65,23 @@ class MultiCameraDetector:
         """Calculate distance for a tag given corners and calibration."""
         try:
             # 3D object points for marker
-            obj_points = np.array([
-                [-self.tag_size_m/2, -self.tag_size_m/2, 0],
-                [self.tag_size_m/2, -self.tag_size_m/2, 0],
-                [self.tag_size_m/2, self.tag_size_m/2, 0],
-                [-self.tag_size_m/2, self.tag_size_m/2, 0]
-            ], dtype=np.float32)
+            obj_points = np.array(
+                [
+                    [-self.tag_size_m / 2, -self.tag_size_m / 2, 0],
+                    [self.tag_size_m / 2, -self.tag_size_m / 2, 0],
+                    [self.tag_size_m / 2, self.tag_size_m / 2, 0],
+                    [-self.tag_size_m / 2, self.tag_size_m / 2, 0],
+                ],
+                dtype=np.float32,
+            )
 
             # Solve PnP
             success, rvec, tvec = cv2.solvePnP(
-                obj_points, corners.astype(np.float32),
-                calibration['camera_matrix'], calibration['dist_coeffs'],
-                flags=cv2.SOLVEPNP_IPPE_SQUARE
+                obj_points,
+                corners.astype(np.float32),
+                calibration["camera_matrix"],
+                calibration["dist_coeffs"],
+                flags=cv2.SOLVEPNP_IPPE_SQUARE,
             )
 
             if success:
@@ -117,6 +122,7 @@ class MultiCameraDetector:
 
         frame_count = 0
         import time
+
         start_time = time.time()
 
         try:
@@ -155,14 +161,16 @@ class MultiCameraDetector:
                         cv2.putText(frame, info_text, (center_x - 50, center_y), font, 0.5, color, 2)
 
                 # Draw status
-                status_text = f"Camera {camera_index} | Frame {frame_count} | Detections: {len(ids) if ids is not None else 0}"
+                status_text = (
+                    f"Camera {camera_index} | Frame {frame_count} | Detections: {len(ids) if ids is not None else 0}"
+                )
                 cv2.putText(frame, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
                 # Display
                 if display:
-                    cv2.imshow(f'Camera {camera_index}', frame)
+                    cv2.imshow(f"Camera {camera_index}", frame)
                     key = cv2.waitKey(1) & 0xFF
-                    if key == ord('q'):
+                    if key == ord("q"):
                         break
 
                 # Check duration
@@ -188,10 +196,7 @@ class MultiCameraDetector:
             # Process cameras in parallel threads
             threads = []
             for camera_index in sorted(self.calibrations.keys()):
-                thread = threading.Thread(
-                    target=self.process_camera,
-                    args=(camera_index, duration, display)
-                )
+                thread = threading.Thread(target=self.process_camera, args=(camera_index, duration, display))
                 threads.append(thread)
                 thread.start()
 
@@ -208,7 +213,7 @@ class MultiCameraDetector:
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Multi-camera ArUco detection with calibrations',
+        description="Multi-camera ArUco detection with calibrations",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -223,17 +228,15 @@ Examples:
 
   # Run for 30 seconds then exit
   python detect_with_multiple_calibrations.py --calibration-dir ./camera_calibrations --duration 30
-        """
+        """,
     )
 
-    parser.add_argument('--calibration-dir', '-c', required=True,
-                       help='Directory containing calibration files')
-    parser.add_argument('--tag-size', type=int, default=18, help='Tag size in mm (default: 18)')
-    parser.add_argument('--camera', type=int, help='Process specific camera index only')
-    parser.add_argument('--sequential', action='store_true',
-                       help='Process cameras sequentially instead of in parallel')
-    parser.add_argument('--duration', type=int, help='Run for N seconds then exit')
-    parser.add_argument('--no-display', action='store_true', help='Run without display')
+    parser.add_argument("--calibration-dir", "-c", required=True, help="Directory containing calibration files")
+    parser.add_argument("--tag-size", type=int, default=18, help="Tag size in mm (default: 18)")
+    parser.add_argument("--camera", type=int, help="Process specific camera index only")
+    parser.add_argument("--sequential", action="store_true", help="Process cameras sequentially instead of in parallel")
+    parser.add_argument("--duration", type=int, help="Run for N seconds then exit")
+    parser.add_argument("--no-display", action="store_true", help="Run without display")
 
     args = parser.parse_args()
 
@@ -248,21 +251,15 @@ Examples:
     if args.camera is not None:
         # Process single camera
         logger.info(f"Processing camera {args.camera} only")
-        success = detector.process_camera(
-            args.camera,
-            duration=args.duration,
-            display=not args.no_display
-        )
+        success = detector.process_camera(args.camera, duration=args.duration, display=not args.no_display)
     else:
         # Process all cameras
         success = detector.process_all_cameras(
-            duration=args.duration,
-            display=not args.no_display,
-            threaded=not args.sequential
+            duration=args.duration, display=not args.no_display, threaded=not args.sequential
         )
 
     return 0 if success else 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     exit(main())

@@ -121,9 +121,7 @@ class GNSSProcessor:
         # Return east, north, up coordinates
         return (0.0, 0.0, 0.0)  # Placeholder
 
-    def get_local_position(
-        self, origin_lat: float, origin_lon: float, origin_alt: float
-    ) -> Tuple[float, float, float]:
+    def get_local_position(self, origin_lat: float, origin_lon: float, origin_alt: float) -> Tuple[float, float, float]:
         """Get current position in local ENU frame"""
         if not self.current_position:
             return (0.0, 0.0, 0.0)

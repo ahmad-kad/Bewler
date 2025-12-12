@@ -9,14 +9,6 @@ from typing import Any, Callable, Dict, List, Optional
 
 import structlog
 
-from .exceptions import (
-    BatteryError,
-    EmergencyError,
-    SystemHealthError,
-    ThermalError,
-    validate_data_range,
-)
-
 # Configure structured logging
 logger = structlog.get_logger(__name__)
 

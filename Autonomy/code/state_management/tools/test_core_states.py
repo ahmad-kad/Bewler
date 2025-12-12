@@ -8,9 +8,7 @@ Tests state definitions, transitions, and validation logic without ROS2 dependen
 import os
 import sys
 
-sys.path.insert(
-    0, os.path.join(os.path.dirname(__file__), "..", "autonomy_state_machine")
-)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "autonomy_state_machine"))
 
 
 def test_state_definitions():
@@ -76,9 +74,7 @@ def test_state_transitions():
     assert not is_valid_transition(
         SystemState.SAFETY, SystemState.AUTONOMOUS
     )  # Can't go directly to autonomous from safety
-    assert not is_valid_transition(
-        SystemState.CALIBRATION, SystemState.TELEOPERATION
-    )  # Can't skip IDLE
+    assert not is_valid_transition(SystemState.CALIBRATION, SystemState.TELEOPERATION)  # Can't skip IDLE
 
     print("✓ State transition validation works correctly")
 

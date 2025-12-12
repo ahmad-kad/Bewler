@@ -7,7 +7,6 @@ Author: [Your Name]
 Date: [Date]
 """
 
-
 from launch_ros.actions import Node, PushRosNamespace
 from launch_ros.substitutions import FindPackageShare
 
@@ -34,13 +33,9 @@ def generate_launch_description():
     """
 
     # Declare launch arguments
-    namespace_arg = DeclareLaunchArgument(
-        "namespace", default_value="", description="Namespace for all nodes"
-    )
+    namespace_arg = DeclareLaunchArgument("namespace", default_value="", description="Namespace for all nodes")
 
-    use_sim_time_arg = DeclareLaunchArgument(
-        "use_sim_time", default_value="false", description="Use simulation time"
-    )
+    use_sim_time_arg = DeclareLaunchArgument("use_sim_time", default_value="false", description="Use simulation time")
 
     log_level_arg = DeclareLaunchArgument(
         "log_level",

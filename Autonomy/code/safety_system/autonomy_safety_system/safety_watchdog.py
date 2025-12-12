@@ -217,14 +217,10 @@ class SafetyWatchdog(Node):
             )
 
         # Status publishing timer
-        self.status_timer = self.create_timer(
-            1.0, self._publish_watchdog_status, callback_group=self.monitoring_group
-        )
+        self.status_timer = self.create_timer(1.0, self._publish_watchdog_status, callback_group=self.monitoring_group)
 
         # Diagnostics publishing timer
-        self.diagnostics_timer = self.create_timer(
-            5.0, self._publish_diagnostics, callback_group=self.monitoring_group
-        )
+        self.diagnostics_timer = self.create_timer(5.0, self._publish_diagnostics, callback_group=self.monitoring_group)
 
     def _heartbeat_callback(self, msg: String):
         """Handle heartbeat messages from state machine."""
@@ -258,11 +254,7 @@ class SafetyWatchdog(Node):
             self.last_subsystem_update_time = time.time()
 
             # Check for subsystem failures
-            failed_subsystems = [
-                name
-                for name, status in subsystem_data.items()
-                if not status.get("healthy", True)
-            ]
+            failed_subsystems = [name for name, status in subsystem_data.items() if not status.get("healthy", True)]
 
             if failed_subsystems:
                 self._handle_subsystem_failure(failed_subsystems, subsystem_data)
@@ -338,17 +330,11 @@ class SafetyWatchdog(Node):
                 {"time_since_sensor_update": time_since_sensor_update},
             )
 
-    def _handle_subsystem_failure(
-        self, failed_subsystems: List[str], subsystem_data: Dict
-    ):
+    def _handle_subsystem_failure(self, failed_subsystems: List[str], subsystem_data: Dict):
         """Handle subsystem failure detection."""
         for subsystem in failed_subsystems:
             failure_info = subsystem_data[subsystem]
-            severity = (
-                SafetySeverity.CRITICAL
-                if failure_info.get("critical", False)
-                else SafetySeverity.WARNING
-            )
+            severity = SafetySeverity.CRITICAL if failure_info.get("critical", False) else SafetySeverity.WARNING
 
             self._trigger_safety_violation(
                 f"subsystem_failure_{subsystem}",
@@ -370,10 +356,7 @@ class SafetyWatchdog(Node):
             self.active_violations[violation_id].update(
                 {
                     "last_triggered": time.time(),
-                    "trigger_count": self.active_violations[violation_id][
-                        "trigger_count"
-                    ]
-                    + 1,
+                    "trigger_count": self.active_violations[violation_id]["trigger_count"] + 1,
                     "context": context,
                 }
             )
@@ -390,9 +373,7 @@ class SafetyWatchdog(Node):
             }
 
             # Log violation
-            self.logger.warning(
-                f"Safety violation triggered: {violation_id} - {description}"
-            )
+            self.logger.warning(f"Safety violation triggered: {violation_id} - {description}")
 
             # Record in history
             self.violation_history.append(
@@ -414,9 +395,7 @@ class SafetyWatchdog(Node):
             if self.config.enable_emergency_stop:
                 self._execute_safety_stop(violation_id, severity, description)
 
-    def _execute_safety_stop(
-        self, violation_id: str, severity: SafetySeverity, description: str
-    ):
+    def _execute_safety_stop(self, violation_id: str, severity: SafetySeverity, description: str):
         """Execute unified safety stop procedure (sets all systems to safe values)."""
         self.logger.error(f"SAFETY STOP triggered by {violation_id}: {description}")
 
@@ -491,14 +470,10 @@ class SafetyWatchdog(Node):
             for v in self.active_violations.values()
         ):
             watchdog_status.level = DiagnosticStatus.ERROR
-            watchdog_status.message = (
-                f"Critical safety violations: {len(self.active_violations)}"
-            )
+            watchdog_status.message = f"Critical safety violations: {len(self.active_violations)}"
         else:
             watchdog_status.level = DiagnosticStatus.WARN
-            watchdog_status.message = (
-                f"Warning safety violations: {len(self.active_violations)}"
-            )
+            watchdog_status.message = f"Warning safety violations: {len(self.active_violations)}"
 
         # Add violation details
         for violation_id, violation_data in self.active_violations.items():

@@ -18,7 +18,6 @@ This enhanced version provides:
 
 import json
 import random
-import threading
 import time
 
 import rclpy
@@ -141,7 +140,7 @@ class EnhancedStandaloneSafetySystem(Node):
 
             # Clear emergency alerts
             self.active_alerts = [alert for alert in self.active_alerts
-                                if alert.get('severity') != 'CRITICAL']
+                                  if alert.get('severity') != 'CRITICAL']
 
             response.success = True
             response.message = f'Safety recovery successful (attempt {self.recovery_attempts})'
@@ -286,6 +285,7 @@ class EnhancedStandaloneSafetySystem(Node):
 
         self.sensor_health_pub.publish(String(data=json.dumps(sensor_data)))
 
+
 def main():
     rclpy.init()
     node = EnhancedStandaloneSafetySystem()
@@ -297,6 +297,7 @@ def main():
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

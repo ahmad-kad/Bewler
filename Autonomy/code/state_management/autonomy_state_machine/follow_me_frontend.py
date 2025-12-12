@@ -44,12 +44,8 @@ class FollowMeFrontend:
         )
 
         # Service clients
-        self.change_state_client: Client = node.create_client(
-            ChangeState, "/state_machine/change_state"
-        )
-        self.follow_control_client: Client = node.create_client(
-            FollowMeControl, "/state_machine/follow_me_control"
-        )
+        self.change_state_client: Client = node.create_client(ChangeState, "/state_machine/change_state")
+        self.follow_control_client: Client = node.create_client(FollowMeControl, "/state_machine/follow_me_control")
 
         # Subscribers
         self.status_subscriber = node.create_subscription(
@@ -107,9 +103,7 @@ class FollowMeFrontend:
         time.sleep(1.0)
 
         # Start follow me behavior
-        if not self._start_follow_behavior(
-            target_tag_id, safety_distance, max_speed, operator_id
-        ):
+        if not self._start_follow_behavior(target_tag_id, safety_distance, max_speed, operator_id):
             logger.error("Failed to start follow me behavior")
             return False
 
@@ -199,9 +193,7 @@ class FollowMeFrontend:
 
         try:
             future = self.change_state_client.call_async(request)
-            self.node.get_executor().spin_until_future_complete(
-                future, timeout_sec=10.0
-            )
+            self.node.get_executor().spin_until_future_complete(future, timeout_sec=10.0)
 
             if not future.done():
                 logger.error("State change request timed out")
@@ -234,9 +226,7 @@ class FollowMeFrontend:
 
         try:
             future = self.change_state_client.call_async(request)
-            self.node.get_executor().spin_until_future_complete(
-                future, timeout_sec=10.0
-            )
+            self.node.get_executor().spin_until_future_complete(future, timeout_sec=10.0)
 
             if not future.done():
                 logger.error("State change request timed out")
@@ -276,9 +266,7 @@ class FollowMeFrontend:
 
         try:
             future = self.follow_control_client.call_async(request)
-            self.node.get_executor().spin_until_future_complete(
-                future, timeout_sec=10.0
-            )
+            self.node.get_executor().spin_until_future_complete(future, timeout_sec=10.0)
 
             if not future.done():
                 logger.error("Follow control request timed out")
@@ -312,9 +300,7 @@ class FollowMeFrontend:
 
         try:
             future = self.follow_control_client.call_async(request)
-            self.node.get_executor().spin_until_future_complete(
-                future, timeout_sec=10.0
-            )
+            self.node.get_executor().spin_until_future_complete(future, timeout_sec=10.0)
 
             if not future.done():
                 logger.error("Follow control request timed out")

@@ -4,7 +4,6 @@ Calibration Data Manager
 Handles persistence, versioning, and backup of calibration data
 """
 
-import os
 import yaml
 import json
 import shutil
@@ -12,7 +11,6 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 import hashlib
-import numpy as np
 
 
 class CalibrationDataManager:
@@ -42,22 +40,17 @@ class CalibrationDataManager:
         """Load metadata file or create default."""
         if self.metadata_file.exists():
             try:
-                with open(self.metadata_file, 'r') as f:
+                with open(self.metadata_file, "r") as f:
                     return json.load(f)
             except Exception:
                 pass
 
         # Create default metadata
-        return {
-            "version": "1.0",
-            "created": datetime.now().isoformat(),
-            "calibrations": {},
-            "last_backup": None
-        }
+        return {"version": "1.0", "created": datetime.now().isoformat(), "calibrations": {}, "last_backup": None}
 
     def _save_metadata(self):
         """Save metadata to file."""
-        with open(self.metadata_file, 'w') as f:
+        with open(self.metadata_file, "w") as f:
             json.dump(self.metadata, f, indent=2)
 
     def _calculate_checksum(self, data: Dict) -> str:
@@ -65,8 +58,7 @@ class CalibrationDataManager:
         data_str = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(data_str.encode()).hexdigest()
 
-    def save_calibration(self, calibration_data: Dict, calibration_type: str,
-                        description: str = "") -> str:
+    def save_calibration(self, calibration_data: Dict, calibration_type: str, description: str = "") -> str:
         """
         Save calibration data with versioning.
 
@@ -80,12 +72,12 @@ class CalibrationDataManager:
         """
         # Add metadata
         timestamp = datetime.now()
-        calibration_data['metadata'] = {
-            'calibration_type': calibration_type,
-            'timestamp': timestamp.isoformat(),
-            'description': description,
-            'version': '1.0',
-            'checksum': self._calculate_checksum(calibration_data)
+        calibration_data["metadata"] = {
+            "calibration_type": calibration_type,
+            "timestamp": timestamp.isoformat(),
+            "description": description,
+            "version": "1.0",
+            "checksum": self._calculate_checksum(calibration_data),
         }
 
         # Generate filename
@@ -93,27 +85,29 @@ class CalibrationDataManager:
         filepath = self.data_directory / filename
 
         # Save to YAML
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             yaml.dump(calibration_data, f, default_flow_style=False)
 
         # Update metadata
-        if calibration_type not in self.metadata['calibrations']:
-            self.metadata['calibrations'][calibration_type] = []
+        if calibration_type not in self.metadata["calibrations"]:
+            self.metadata["calibrations"][calibration_type] = []
 
-        self.metadata['calibrations'][calibration_type].append({
-            'filename': filename,
-            'timestamp': timestamp.isoformat(),
-            'description': description,
-            'checksum': calibration_data['metadata']['checksum']
-        })
+        self.metadata["calibrations"][calibration_type].append(
+            {
+                "filename": filename,
+                "timestamp": timestamp.isoformat(),
+                "description": description,
+                "checksum": calibration_data["metadata"]["checksum"],
+            }
+        )
 
         # Keep only recent calibrations (limit to max_backups)
-        if len(self.metadata['calibrations'][calibration_type]) > self.max_backups:
+        if len(self.metadata["calibrations"][calibration_type]) > self.max_backups:
             # Move oldest to backups
-            oldest = self.metadata['calibrations'][calibration_type].pop(0)
-            oldest_path = self.data_directory / oldest['filename']
+            oldest = self.metadata["calibrations"][calibration_type].pop(0)
+            oldest_path = self.data_directory / oldest["filename"]
             if oldest_path.exists():
-                backup_path = self.backups_directory / oldest['filename']
+                backup_path = self.backups_directory / oldest["filename"]
                 shutil.move(str(oldest_path), str(backup_path))
 
         self._save_metadata()
@@ -131,22 +125,22 @@ class CalibrationDataManager:
         Returns:
             Calibration data dictionary or None if not found
         """
-        if calibration_type not in self.metadata['calibrations']:
+        if calibration_type not in self.metadata["calibrations"]:
             return None
 
-        calibrations = self.metadata['calibrations'][calibration_type]
+        calibrations = self.metadata["calibrations"][calibration_type]
         if not calibrations:
             return None
 
         if version == "latest":
             # Get most recent
-            filename = calibrations[-1]['filename']
+            filename = calibrations[-1]["filename"]
         else:
             # Find specific version
-            matching = [c for c in calibrations if c['filename'] == version]
+            matching = [c for c in calibrations if c["filename"] == version]
             if not matching:
                 return None
-            filename = matching[0]['filename']
+            filename = matching[0]["filename"]
 
         filepath = self.data_directory / filename
         if not filepath.exists():
@@ -158,12 +152,12 @@ class CalibrationDataManager:
                 return None
 
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath, "r") as f:
                 data = yaml.safe_load(f)
 
             # Verify checksum
-            if 'metadata' in data and 'checksum' in data['metadata']:
-                if data['metadata']['checksum'] != self._calculate_checksum(data):
+            if "metadata" in data and "checksum" in data["metadata"]:
+                if data["metadata"]["checksum"] != self._calculate_checksum(data):
                     raise ValueError("Checksum mismatch - data may be corrupted")
 
             return data
@@ -183,8 +177,8 @@ class CalibrationDataManager:
             Dictionary of calibration types and their versions
         """
         if calibration_type:
-            return {calibration_type: self.metadata['calibrations'].get(calibration_type, [])}
-        return self.metadata['calibrations']
+            return {calibration_type: self.metadata["calibrations"].get(calibration_type, [])}
+        return self.metadata["calibrations"]
 
     def validate_calibration(self, calibration_data: Dict) -> Dict[str, Any]:
         """
@@ -196,56 +190,51 @@ class CalibrationDataManager:
         Returns:
             Validation results dictionary
         """
-        results = {
-            'valid': True,
-            'errors': [],
-            'warnings': [],
-            'quality_score': 0.0
-        }
+        results = {"valid": True, "errors": [], "warnings": [], "quality_score": 0.0}
 
         try:
             # Check required fields
-            if 'metadata' not in calibration_data:
-                results['errors'].append("Missing metadata section")
-                results['valid'] = False
+            if "metadata" not in calibration_data:
+                results["errors"].append("Missing metadata section")
+                results["valid"] = False
                 return results
 
-            metadata = calibration_data['metadata']
+            metadata = calibration_data["metadata"]
 
             # Check calibration type
-            if 'calibration_type' not in metadata:
-                results['errors'].append("Missing calibration type")
-                results['valid'] = False
+            if "calibration_type" not in metadata:
+                results["errors"].append("Missing calibration type")
+                results["valid"] = False
 
             # Check checksum
-            if 'checksum' in metadata:
-                if metadata['checksum'] != self._calculate_checksum(calibration_data):
-                    results['errors'].append("Checksum mismatch")
-                    results['valid'] = False
+            if "checksum" in metadata:
+                if metadata["checksum"] != self._calculate_checksum(calibration_data):
+                    results["errors"].append("Checksum mismatch")
+                    results["valid"] = False
 
             # Quality assessment
-            if metadata.get('calibration_type') == 'camera_intrinsics':
-                if 'reprojection_error' in calibration_data:
-                    error = calibration_data['reprojection_error']
+            if metadata.get("calibration_type") == "camera_intrinsics":
+                if "reprojection_error" in calibration_data:
+                    error = calibration_data["reprojection_error"]
                     if error < 0.3:
-                        results['quality_score'] = 1.0  # Excellent
+                        results["quality_score"] = 1.0  # Excellent
                     elif error < 0.5:
-                        results['quality_score'] = 0.8  # Good
+                        results["quality_score"] = 0.8  # Good
                     elif error < 1.0:
-                        results['quality_score'] = 0.6  # Acceptable
+                        results["quality_score"] = 0.6  # Acceptable
                     else:
-                        results['quality_score'] = 0.2  # Poor
-                        results['warnings'].append(f"High reprojection error: {error:.4f}px")
+                        results["quality_score"] = 0.2  # Poor
+                        results["warnings"].append(f"High reprojection error: {error:.4f}px")
 
-            elif metadata.get('calibration_type') == 'hand_eye':
-                if 'calibration_success' in calibration_data and calibration_data['calibration_success']:
-                    results['quality_score'] = 0.8  # Good if completed successfully
+            elif metadata.get("calibration_type") == "hand_eye":
+                if "calibration_success" in calibration_data and calibration_data["calibration_success"]:
+                    results["quality_score"] = 0.8  # Good if completed successfully
                 else:
-                    results['quality_score'] = 0.3  # Poor if failed
+                    results["quality_score"] = 0.3  # Poor if failed
 
         except Exception as e:
-            results['errors'].append(f"Validation error: {str(e)}")
-            results['valid'] = False
+            results["errors"].append(f"Validation error: {str(e)}")
+            results["valid"] = False
 
         return results
 
@@ -262,6 +251,7 @@ class CalibrationDataManager:
 
         # Create backup archive
         import tarfile
+
         with tarfile.open(backup_path, "w:gz") as tar:
             # Add current calibrations
             for item in self.data_directory.glob("*.yaml"):
@@ -271,7 +261,7 @@ class CalibrationDataManager:
             tar.add(str(self.metadata_file), arcname=f"{backup_name}/metadata.json")
 
         # Update metadata
-        self.metadata['last_backup'] = timestamp
+        self.metadata["last_backup"] = timestamp
         self._save_metadata()
 
         return str(backup_path)
@@ -299,26 +289,26 @@ class CalibrationDataManager:
             Statistics dictionary
         """
         stats = {
-            'total_calibrations': 0,
-            'calibration_types': {},
-            'newest_calibration': None,
-            'oldest_calibration': None,
-            'backup_count': 0
+            "total_calibrations": 0,
+            "calibration_types": {},
+            "newest_calibration": None,
+            "oldest_calibration": None,
+            "backup_count": 0,
         }
 
         # Count calibrations by type
-        for cal_type, calibrations in self.metadata['calibrations'].items():
-            stats['calibration_types'][cal_type] = len(calibrations)
-            stats['total_calibrations'] += len(calibrations)
+        for cal_type, calibrations in self.metadata["calibrations"].items():
+            stats["calibration_types"][cal_type] = len(calibrations)
+            stats["total_calibrations"] += len(calibrations)
 
             # Find newest and oldest
             for cal in calibrations:
-                if stats['newest_calibration'] is None or cal['timestamp'] > stats['newest_calibration']:
-                    stats['newest_calibration'] = cal['timestamp']
-                if stats['oldest_calibration'] is None or cal['timestamp'] < stats['oldest_calibration']:
-                    stats['oldest_calibration'] = cal['timestamp']
+                if stats["newest_calibration"] is None or cal["timestamp"] > stats["newest_calibration"]:
+                    stats["newest_calibration"] = cal["timestamp"]
+                if stats["oldest_calibration"] is None or cal["timestamp"] < stats["oldest_calibration"]:
+                    stats["oldest_calibration"] = cal["timestamp"]
 
         # Count backups
-        stats['backup_count'] = len(list(self.backups_directory.glob("*")))
+        stats["backup_count"] = len(list(self.backups_directory.glob("*")))
 
         return stats

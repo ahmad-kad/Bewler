@@ -23,9 +23,7 @@ def generate_launch_description():
     # Declare launch arguments
     config_file_arg = DeclareLaunchArgument(
         "config_file",
-        default_value=os.path.join(
-            state_machine_dir, "config", "state_machine_config.yaml"
-        ),
+        default_value=os.path.join(state_machine_dir, "config", "state_machine_config.yaml"),
         description="Path to state machine configuration file",
     )
 

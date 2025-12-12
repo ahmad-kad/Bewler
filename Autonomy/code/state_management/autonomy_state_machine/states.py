@@ -69,9 +69,7 @@ class CalibrationSubstate(Enum):
     SETUP = "SETUP"  # Environment setup and target preparation
     INTRINSIC_CAPTURE = "INTRINSIC_CAPTURE"  # Capture images for intrinsic calibration
     INTRINSIC_CALIBRATION = "INTRINSIC_CALIBRATION"  # Compute intrinsic parameters
-    INTRINSIC_VALIDATION = (
-        "INTRINSIC_VALIDATION"  # Validate intrinsic calibration quality
-    )
+    INTRINSIC_VALIDATION = "INTRINSIC_VALIDATION"  # Validate intrinsic calibration quality
     EXTRINSIC_SETUP = "EXTRINSIC_SETUP"  # Prepare for hand-eye calibration
     EXTRINSIC_CAPTURE = "EXTRINSIC_CAPTURE"  # Capture robot-camera pose pairs
     EXTRINSIC_CALIBRATION = "EXTRINSIC_CALIBRATION"  # Compute hand-eye transformation
@@ -265,9 +263,7 @@ def is_valid_transition(from_state: SystemState, to_state: SystemState) -> bool:
     return to_state in metadata.allowed_transitions
 
 
-def get_required_subsystems(
-    state: SystemState, substate: Optional[AutonomousMode] = None
-) -> List[str]:
+def get_required_subsystems(state: SystemState, substate: Optional[AutonomousMode] = None) -> List[str]:
     """
     Get list of required subsystems for a state/substate combination.
 

@@ -6,7 +6,6 @@ Tests the complete rover communication system under extreme conditions harsher
 than real-world scenarios, combining network, CAN bus, and movement control stress.
 """
 
-import asyncio
 import concurrent.futures
 import os
 import statistics
@@ -16,10 +15,9 @@ import threading
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import psutil
-import rclpy
 
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -76,19 +74,19 @@ class IntegratedStressConfig:
             self.can_bus_load = 80              # 80% bus load
             self.movement_command_frequency = 150.0  # 150Hz commands
             self.movement_fault_rate = 0.15     # 15% movement faults
-            self.movement_emergency_rate = 0.08 # 8% emergency stops
+            self.movement_emergency_rate = 0.08  # 8% emergency stops
             self.cross_system_conflicts = True
             self.resource_contention = True
         elif self.stress_level == IntegratedStressLevel.EXTREME:
             self.network_packet_loss = 0.25    # 25% packet loss
             self.network_latency_ms = 300       # 300ms latency
             self.network_bandwidth_mbps = 10    # 10Mbps bandwidth limit
-            self.can_message_frequency = 1000.0 # 1000Hz CAN
+            self.can_message_frequency = 1000.0  # 1000Hz CAN
             self.can_fault_rate = 0.35          # 35% CAN faults
             self.can_bus_load = 130             # 130% bus overload
             self.movement_command_frequency = 300.0  # 300Hz commands
             self.movement_fault_rate = 0.40     # 40% movement faults
-            self.movement_emergency_rate = 0.25 # 25% emergency stops
+            self.movement_emergency_rate = 0.25  # 25% emergency stops
             self.cross_system_conflicts = True
             self.resource_contention = True
 
@@ -177,7 +175,7 @@ class NetworkEmulator:
         """Clear all network stress rules."""
         try:
             subprocess.run(['sudo', 'tc', 'qdisc', 'del', 'dev', 'lo', 'root'],
-                         capture_output=True)
+                           capture_output=True)
         except subprocess.CalledProcessError:
             pass
         self.active_rules = []
@@ -208,7 +206,8 @@ class IntegratedStressTest:
         print(f"   • Duration: {self.config.test_duration}s")
         print(f"   • Network: {self.config.network_packet_loss*100:.1f}% loss, {self.config.network_latency_ms}ms latency")
         print(f"   • CAN Bus: {self.config.can_message_frequency}Hz, {self.config.can_fault_rate*100:.1f}% faults")
-        print(f"   • Movement: {self.config.movement_command_frequency}Hz, {self.config.movement_fault_rate*100:.1f}% faults")
+        print(
+            f"   • Movement: {self.config.movement_command_frequency}Hz, {self.config.movement_fault_rate*100:.1f}% faults")
         print(f"   • Cross-system conflicts: {self.config.cross_system_conflicts}")
         print(f"   • Resource contention: {self.config.resource_contention}")
 

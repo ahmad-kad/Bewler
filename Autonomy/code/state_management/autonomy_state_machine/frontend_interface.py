@@ -42,15 +42,9 @@ class FrontendInterface:
         self._last_state_update: Optional[SystemStateMsg] = None
 
         # Service clients
-        self.change_state_client: Client = node.create_client(
-            ChangeState, "/state_machine/change_state"
-        )
-        self.get_state_client: Client = node.create_client(
-            GetSystemState, "/state_machine/get_system_state"
-        )
-        self.recover_safety_client: Client = node.create_client(
-            RecoverFromSafety, "/state_machine/recover_from_safety"
-        )
+        self.change_state_client: Client = node.create_client(ChangeState, "/state_machine/change_state")
+        self.get_state_client: Client = node.create_client(GetSystemState, "/state_machine/get_system_state")
+        self.recover_safety_client: Client = node.create_client(RecoverFromSafety, "/state_machine/recover_from_safety")
 
         # Subscribers
         self.state_subscriber = node.create_subscription(
@@ -61,9 +55,7 @@ class FrontendInterface:
         )
 
         # Publisher for acknowledgments
-        self.ack_publisher = node.create_publisher(
-            String, "/state_machine/frontend_ack", 10
-        )
+        self.ack_publisher = node.create_publisher(String, "/state_machine/frontend_ack", 10)
 
         # Connection monitoring timer
         self.connection_timer = node.create_timer(1.0, self._check_connection)
@@ -237,9 +229,7 @@ class FrontendInterface:
             msg: State message being acknowledged
         """
         ack_msg = String()
-        ack_msg.data = (
-            f"ACK:{msg.current_state}:{msg.header.stamp.sec}.{msg.header.stamp.nanosec}"
-        )
+        ack_msg.data = f"ACK:{msg.current_state}:{msg.header.stamp.sec}.{msg.header.stamp.nanosec}"
         self.ack_publisher.publish(ack_msg)
 
         logger.debug("State update acknowledged", state=msg.current_state)
@@ -254,12 +244,9 @@ class FrontendInterface:
             # Check if last update was recent
             now = self.node.get_clock().now()
             last_update_time = (
-                self._last_state_update.header.stamp.sec
-                + self._last_state_update.header.stamp.nanosec * 1e-9
+                self._last_state_update.header.stamp.sec + self._last_state_update.header.stamp.nanosec * 1e-9
             )
-            current_time = (
-                now.seconds_nanoseconds()[0] + now.seconds_nanoseconds()[1] * 1e-9
-            )
+            current_time = now.seconds_nanoseconds()[0] + now.seconds_nanoseconds()[1] * 1e-9
 
             # If no update in last 2 seconds, consider connection lost
             if current_time - last_update_time > 2.0:

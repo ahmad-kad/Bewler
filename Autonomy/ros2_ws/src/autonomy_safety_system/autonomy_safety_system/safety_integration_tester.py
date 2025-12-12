@@ -8,7 +8,6 @@ Simulates safety scenarios and validates system responses without hardware.
 import time
 import json
 import asyncio
-import threading
 from enum import Enum
 from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
@@ -17,16 +16,14 @@ from concurrent.futures import ThreadPoolExecutor
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
-from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from std_msgs.msg import String, Bool
 from sensor_msgs.msg import BatteryState, Imu, Temperature
-from nav_msgs.msg import Odometry
 from autonomy_interfaces.msg import SafetyStatus
-from autonomy_interfaces.srv import RecoverFromSafety
 
 
 class TestScenario(Enum):
     """Available safety test scenarios."""
+
     BATTERY_CRITICAL = "BATTERY_CRITICAL"
     COMMUNICATION_LOSS = "COMMUNICATION_LOSS"
     THERMAL_WARNING = "THERMAL_WARNING"
@@ -41,6 +38,7 @@ class TestScenario(Enum):
 
 class TestPhase(Enum):
     """Test execution phases."""
+
     SETUP = "SETUP"
     EXECUTION = "EXECUTION"
     VALIDATION = "VALIDATION"
@@ -51,6 +49,7 @@ class TestPhase(Enum):
 @dataclass
 class TestResult:
     """Result of a safety test scenario."""
+
     scenario: TestScenario
     test_id: str
     start_time: float
@@ -67,6 +66,7 @@ class TestResult:
 @dataclass
 class SafetyTestScenario:
     """Definition of a safety test scenario."""
+
     scenario: TestScenario
     description: str
     setup_actions: List[Callable] = field(default_factory=list)
@@ -87,7 +87,7 @@ class SafetyIntegrationTester(Node):
     """
 
     def __init__(self):
-        super().__init__('safety_integration_tester')
+        super().__init__("safety_integration_tester")
 
         self.logger = self.get_logger()
 
@@ -104,9 +104,7 @@ class SafetyIntegrationTester(Node):
 
         # QoS profiles
         self.qos_reliable = QoSProfile(
-            reliability=ReliabilityPolicy.RELIABLE,
-            durability=DurabilityPolicy.TRANSIENT_LOCAL,
-            depth=10
+            reliability=ReliabilityPolicy.RELIABLE, durability=DurabilityPolicy.TRANSIENT_LOCAL, depth=10
         )
 
         # Thread pool for concurrent test execution
@@ -117,7 +115,7 @@ class SafetyIntegrationTester(Node):
         self._setup_subscribers()
         self._setup_timers()
 
-        self.logger.info('Safety Integration Tester initialized')
+        self.logger.info("Safety Integration Tester initialized")
 
     def _define_test_scenarios(self) -> Dict[TestScenario, SafetyTestScenario]:
         """Define all available safety test scenarios."""
@@ -128,45 +126,40 @@ class SafetyIntegrationTester(Node):
                 trigger_actions=[self._simulate_battery_critical],
                 validation_checks=[self._validate_battery_critical_response],
                 expected_violations=["battery_critical"],
-                expected_alerts=["battery_critical_redundant"]
+                expected_alerts=["battery_critical_redundant"],
             ),
-
             TestScenario.COMMUNICATION_LOSS: SafetyTestScenario(
                 scenario=TestScenario.COMMUNICATION_LOSS,
                 description="Test communication loss detection and safety response",
                 trigger_actions=[self._simulate_communication_loss],
                 validation_checks=[self._validate_communication_loss_response],
                 expected_violations=["communication_timeout"],
-                expected_duration=45.0
+                expected_duration=45.0,
             ),
-
             TestScenario.THERMAL_WARNING: SafetyTestScenario(
                 scenario=TestScenario.THERMAL_WARNING,
                 description="Test thermal warning and critical temperature handling",
                 trigger_actions=[self._simulate_thermal_warning],
                 validation_checks=[self._validate_thermal_response],
                 expected_violations=["temperature_critical_redundant"],
-                expected_alerts=["thermal_warning"]
+                expected_alerts=["thermal_warning"],
             ),
-
             TestScenario.SENSOR_FAILURE: SafetyTestScenario(
                 scenario=TestScenario.SENSOR_FAILURE,
                 description="Test sensor failure detection and system response",
                 trigger_actions=[self._simulate_sensor_failure],
                 validation_checks=[self._validate_sensor_failure_response],
                 expected_violations=["imu_sensor_stuck"],
-                expected_duration=20.0
+                expected_duration=20.0,
             ),
-
             TestScenario.EMERGENCY_STOP: SafetyTestScenario(
                 scenario=TestScenario.EMERGENCY_STOP,
                 description="Test emergency stop propagation and coordination",
                 trigger_actions=[self._simulate_emergency_stop],
                 validation_checks=[self._validate_emergency_stop_response],
                 expected_violations=["emergency_active"],
-                expected_duration=15.0
+                expected_duration=15.0,
             ),
-
             TestScenario.RECOVERY_TEST: SafetyTestScenario(
                 scenario=TestScenario.RECOVERY_TEST,
                 description="Test safety system recovery procedures",
@@ -174,68 +167,56 @@ class SafetyIntegrationTester(Node):
                 trigger_actions=[self._simulate_recovery_scenario],
                 validation_checks=[self._validate_recovery_response],
                 cleanup_actions=[self._cleanup_recovery_test],
-                expected_duration=60.0
+                expected_duration=60.0,
             ),
-
             TestScenario.CONSISTENCY_CHECK: SafetyTestScenario(
                 scenario=TestScenario.CONSISTENCY_CHECK,
                 description="Test consistency between primary and redundant safety systems",
                 trigger_actions=[self._simulate_consistency_scenario],
                 validation_checks=[self._validate_consistency_response],
-                expected_duration=25.0
+                expected_duration=25.0,
             ),
-
             TestScenario.PERFORMANCE_LOAD: SafetyTestScenario(
                 scenario=TestScenario.PERFORMANCE_LOAD,
                 description="Test safety system performance under load",
                 trigger_actions=[self._simulate_performance_load],
                 validation_checks=[self._validate_performance_response],
-                expected_duration=45.0
-            )
+                expected_duration=45.0,
+            ),
         }
 
     def _setup_publishers(self):
         """Setup ROS2 publishers for test control."""
-        self.test_status_pub = self.create_publisher(
-            String, '/safety/test_status', 10)
+        self.test_status_pub = self.create_publisher(String, "/safety/test_status", 10)
 
-        self.test_control_pub = self.create_publisher(
-            String, '/safety/test_control', 10)
+        self.test_control_pub = self.create_publisher(String, "/safety/test_control", 10)
 
         # Simulated sensor publishers for testing
-        self.battery_sim_pub = self.create_publisher(
-            BatteryState, '/battery/status', 10, qos_profile=self.qos_reliable)
+        self.battery_sim_pub = self.create_publisher(BatteryState, "/battery/status", 10, qos_profile=self.qos_reliable)
 
-        self.imu_sim_pub = self.create_publisher(
-            Imu, '/imu/data', 10, qos_profile=self.qos_reliable)
+        self.imu_sim_pub = self.create_publisher(Imu, "/imu/data", 10, qos_profile=self.qos_reliable)
 
         self.temperature_sim_pub = self.create_publisher(
-            Temperature, '/temperature/data', 10, qos_profile=self.qos_reliable)
+            Temperature, "/temperature/data", 10, qos_profile=self.qos_reliable
+        )
 
-        self.emergency_sim_pub = self.create_publisher(
-            Bool, '/safety/emergency_stop', 10)
+        self.emergency_sim_pub = self.create_publisher(Bool, "/safety/emergency_stop", 10)
 
     def _setup_subscribers(self):
         """Setup ROS2 subscribers for monitoring test responses."""
         # Safety system monitoring
-        self.create_subscription(
-            SafetyStatus, '/state_machine/safety_status', self._safety_status_callback, 10)
+        self.create_subscription(SafetyStatus, "/state_machine/safety_status", self._safety_status_callback, 10)
 
-        self.create_subscription(
-            SafetyStatus, '/safety/violations', self._violations_callback, 10)
+        self.create_subscription(SafetyStatus, "/safety/violations", self._violations_callback, 10)
 
-        self.create_subscription(
-            SafetyStatus, '/safety/redundant_status', self._redundant_safety_callback, 10)
+        self.create_subscription(SafetyStatus, "/safety/redundant_status", self._redundant_safety_callback, 10)
 
-        self.create_subscription(
-            String, '/safety/active_alerts', self._alerts_callback, 10)
+        self.create_subscription(String, "/safety/active_alerts", self._alerts_callback, 10)
 
-        self.create_subscription(
-            String, '/safety/emergency_status', self._emergency_callback, 10)
+        self.create_subscription(String, "/safety/emergency_status", self._emergency_callback, 10)
 
         # Dashboard monitoring
-        self.create_subscription(
-            String, '/safety/dashboard_status', self._dashboard_callback, 10)
+        self.create_subscription(String, "/safety/dashboard_status", self._dashboard_callback, 10)
 
     def _setup_timers(self):
         """Setup test monitoring and control timers."""
@@ -257,15 +238,10 @@ class SafetyIntegrationTester(Node):
         test_id = f"{scenario.value}_{int(time.time())}"
 
         # Create test result
-        test_result = TestResult(
-            scenario=scenario,
-            test_id=test_id,
-            start_time=time.time(),
-            phase=TestPhase.SETUP
-        )
+        test_result = TestResult(scenario=scenario, test_id=test_id, start_time=time.time(), phase=TestPhase.SETUP)
 
         self.active_tests[test_id] = test_result
-        self.logger.info(f'Starting test scenario: {scenario.value} ({test_id})')
+        self.logger.info(f"Starting test scenario: {scenario.value} ({test_id})")
 
         try:
             # Setup phase
@@ -292,13 +268,13 @@ class SafetyIntegrationTester(Node):
             test_result.end_time = time.time()
             test_result.success = True
 
-            self.logger.info(f'Test scenario completed successfully: {test_id}')
+            self.logger.info(f"Test scenario completed successfully: {test_id}")
 
         except Exception as e:
             test_result.success = False
             test_result.error_message = str(e)
             test_result.end_time = time.time()
-            self.logger.error(f'Test scenario failed: {test_id} - {e}')
+            self.logger.error(f"Test scenario failed: {test_id} - {e}")
 
         finally:
             # Move to completed tests
@@ -317,7 +293,7 @@ class SafetyIntegrationTester(Node):
                 else:
                     action(test_result)
             except Exception as e:
-                self.logger.error(f'Test action failed: {action.__name__} - {e}')
+                self.logger.error(f"Test action failed: {action.__name__} - {e}")
                 raise
 
     async def _execute_validation_phase(self, checks: List[Callable], test_result: TestResult):
@@ -330,10 +306,10 @@ class SafetyIntegrationTester(Node):
                     result = check(test_result)
 
                 if not result:
-                    raise AssertionError(f'Validation check failed: {check.__name__}')
+                    raise AssertionError(f"Validation check failed: {check.__name__}")
 
             except Exception as e:
-                self.logger.error(f'Validation check failed: {check.__name__} - {e}')
+                self.logger.error(f"Validation check failed: {check.__name__} - {e}")
                 raise
 
     # Test scenario implementations
@@ -348,12 +324,12 @@ class SafetyIntegrationTester(Node):
         msg.temperature = 35.0
 
         self.battery_sim_pub.publish(msg)
-        self.logger.info('Simulated critical battery level')
+        self.logger.info("Simulated critical battery level")
 
     def _simulate_communication_loss(self, test_result: TestResult):
         """Simulate communication loss by stopping heartbeat simulation."""
         # Stop publishing simulated data to trigger timeouts
-        self.logger.info('Simulating communication loss (stopping data publication)')
+        self.logger.info("Simulating communication loss (stopping data publication)")
 
         # This test relies on natural timeouts rather than explicit triggers
         # In a real scenario, this would test the system's response to lost communication
@@ -366,7 +342,7 @@ class SafetyIntegrationTester(Node):
         msg.variance = 1.0
 
         self.temperature_sim_pub.publish(msg)
-        self.logger.info('Simulated critical temperature')
+        self.logger.info("Simulated critical temperature")
 
     def _simulate_sensor_failure(self, test_result: TestResult):
         """Simulate sensor failure by publishing constant IMU data."""
@@ -382,7 +358,7 @@ class SafetyIntegrationTester(Node):
             self.imu_sim_pub.publish(msg)
             time.sleep(0.1)
 
-        self.logger.info('Simulated stuck IMU sensor')
+        self.logger.info("Simulated stuck IMU sensor")
 
     def _simulate_emergency_stop(self, test_result: TestResult):
         """Simulate emergency stop trigger."""
@@ -390,7 +366,7 @@ class SafetyIntegrationTester(Node):
         msg.data = True
 
         self.emergency_sim_pub.publish(msg)
-        self.logger.info('Simulated emergency stop trigger')
+        self.logger.info("Simulated emergency stop trigger")
 
     def _setup_for_recovery_test(self, test_result: TestResult):
         """Setup for recovery test scenario."""
@@ -405,7 +381,7 @@ class SafetyIntegrationTester(Node):
         msg = Bool()
         msg.data = False
         self.emergency_sim_pub.publish(msg)
-        self.logger.info('Simulated emergency recovery')
+        self.logger.info("Simulated emergency recovery")
 
     def _simulate_consistency_scenario(self, test_result: TestResult):
         """Simulate scenario to test system consistency."""
@@ -437,23 +413,21 @@ class SafetyIntegrationTester(Node):
 
             time.sleep(0.01)  # 100Hz publication rate
 
-        self.logger.info('Completed performance load simulation')
+        self.logger.info("Completed performance load simulation")
 
     # Validation check implementations
 
     def _validate_battery_critical_response(self, test_result: TestResult) -> bool:
         """Validate response to battery critical scenario."""
         # Check that violations were detected
-        battery_violations = [v for v in self.observed_violations
-                            if 'battery' in v.get('violation_id', '').lower()]
+        battery_violations = [v for v in self.observed_violations if "battery" in v.get("violation_id", "").lower()]
 
         if len(battery_violations) == 0:
             test_result.error_message = "No battery violations detected"
             return False
 
         # Check that emergency response was triggered
-        emergency_responses = [r for r in self.system_responses
-                             if r.get('emergency_active', False)]
+        emergency_responses = [r for r in self.system_responses if r.get("emergency_active", False)]
 
         if len(emergency_responses) == 0:
             test_result.error_message = "No emergency response triggered"
@@ -464,9 +438,11 @@ class SafetyIntegrationTester(Node):
     def _validate_communication_loss_response(self, test_result: TestResult) -> bool:
         """Validate response to communication loss."""
         # Check for communication-related violations
-        comm_violations = [v for v in self.observed_violations
-                          if 'communication' in v.get('violation_id', '').lower() or
-                             'timeout' in v.get('violation_id', '').lower()]
+        comm_violations = [
+            v
+            for v in self.observed_violations
+            if "communication" in v.get("violation_id", "").lower() or "timeout" in v.get("violation_id", "").lower()
+        ]
 
         if len(comm_violations) == 0:
             test_result.error_message = "No communication violations detected"
@@ -476,8 +452,7 @@ class SafetyIntegrationTester(Node):
 
     def _validate_thermal_response(self, test_result: TestResult) -> bool:
         """Validate response to thermal warning."""
-        thermal_violations = [v for v in self.observed_violations
-                            if 'temperature' in v.get('violation_id', '').lower()]
+        thermal_violations = [v for v in self.observed_violations if "temperature" in v.get("violation_id", "").lower()]
 
         if len(thermal_violations) == 0:
             test_result.error_message = "No thermal violations detected"
@@ -487,9 +462,11 @@ class SafetyIntegrationTester(Node):
 
     def _validate_sensor_failure_response(self, test_result: TestResult) -> bool:
         """Validate response to sensor failure."""
-        sensor_violations = [v for v in self.observed_violations
-                           if 'sensor' in v.get('violation_id', '').lower() and
-                              'stuck' in v.get('violation_id', '').lower()]
+        sensor_violations = [
+            v
+            for v in self.observed_violations
+            if "sensor" in v.get("violation_id", "").lower() and "stuck" in v.get("violation_id", "").lower()
+        ]
 
         if len(sensor_violations) == 0:
             test_result.error_message = "No sensor failure violations detected"
@@ -499,8 +476,7 @@ class SafetyIntegrationTester(Node):
 
     def _validate_emergency_stop_response(self, test_result: TestResult) -> bool:
         """Validate emergency stop response."""
-        emergency_responses = [r for r in self.system_responses
-                             if r.get('emergency_active', False)]
+        emergency_responses = [r for r in self.system_responses if r.get("emergency_active", False)]
 
         if len(emergency_responses) == 0:
             test_result.error_message = "No emergency stop response detected"
@@ -511,12 +487,10 @@ class SafetyIntegrationTester(Node):
     def _validate_recovery_response(self, test_result: TestResult) -> bool:
         """Validate recovery response."""
         # Check that emergency was initially triggered
-        emergency_triggered = any(r.get('emergency_active', False)
-                                for r in self.system_responses)
+        emergency_triggered = any(r.get("emergency_active", False) for r in self.system_responses)
 
         # Check that recovery was successful
-        recovery_complete = any(r.get('recovery_complete', False)
-                              for r in self.system_responses)
+        recovery_complete = any(r.get("recovery_complete", False) for r in self.system_responses)
 
         if not emergency_triggered:
             test_result.error_message = "Emergency was not properly triggered"
@@ -531,11 +505,9 @@ class SafetyIntegrationTester(Node):
     def _validate_consistency_response(self, test_result: TestResult) -> bool:
         """Validate consistency between safety systems."""
         # Check that both primary and redundant systems detected the issue
-        primary_violations = [v for v in self.observed_violations
-                            if 'state_machine' in v.get('source', '')]
+        primary_violations = [v for v in self.observed_violations if "state_machine" in v.get("source", "")]
 
-        redundant_violations = [v for v in self.observed_violations
-                              if 'redundant' in v.get('source', '')]
+        redundant_violations = [v for v in self.observed_violations if "redundant" in v.get("source", "")]
 
         if len(primary_violations) == 0:
             test_result.error_message = "Primary safety system did not detect issue"
@@ -552,12 +524,16 @@ class SafetyIntegrationTester(Node):
         # Check that system remained responsive during load test
         # This would check metrics like processing time, dropped messages, etc.
         # For now, just verify no critical failures occurred during test
-        critical_violations = [v for v in self.observed_violations
-                             if 'critical' in v.get('violation_id', '').lower() or
-                                'emergency' in v.get('violation_id', '').lower()]
+        critical_violations = [
+            v
+            for v in self.observed_violations
+            if "critical" in v.get("violation_id", "").lower() or "emergency" in v.get("violation_id", "").lower()
+        ]
 
         if len(critical_violations) > 0:
-            test_result.error_message = f"Critical violations occurred during performance test: {len(critical_violations)}"
+            test_result.error_message = (
+                f"Critical violations occurred during performance test: {len(critical_violations)}"
+            )
             return False
 
         return True
@@ -573,39 +549,45 @@ class SafetyIntegrationTester(Node):
 
     def _safety_status_callback(self, msg: SafetyStatus):
         """Monitor safety status updates."""
-        self.observed_violations.append({
-            'timestamp': time.time(),
-            'source': 'state_machine',
-            'violation_id': msg.trigger_type,
-            'description': msg.trigger_description,
-            'severity': msg.safety_level
-        })
+        self.observed_violations.append(
+            {
+                "timestamp": time.time(),
+                "source": "state_machine",
+                "violation_id": msg.trigger_type,
+                "description": msg.trigger_description,
+                "severity": msg.safety_level,
+            }
+        )
 
     def _violations_callback(self, msg: SafetyStatus):
         """Monitor safety violations."""
-        self.observed_violations.append({
-            'timestamp': time.time(),
-            'source': 'safety_watchdog',
-            'violation_id': msg.trigger_type,
-            'description': msg.trigger_description,
-            'severity': msg.safety_level
-        })
+        self.observed_violations.append(
+            {
+                "timestamp": time.time(),
+                "source": "safety_watchdog",
+                "violation_id": msg.trigger_type,
+                "description": msg.trigger_description,
+                "severity": msg.safety_level,
+            }
+        )
 
     def _redundant_safety_callback(self, msg: SafetyStatus):
         """Monitor redundant safety system."""
-        self.observed_violations.append({
-            'timestamp': time.time(),
-            'source': 'redundant_safety_monitor',
-            'violation_id': msg.trigger_type,
-            'description': msg.trigger_description,
-            'severity': msg.safety_level
-        })
+        self.observed_violations.append(
+            {
+                "timestamp": time.time(),
+                "source": "redundant_safety_monitor",
+                "violation_id": msg.trigger_type,
+                "description": msg.trigger_description,
+                "severity": msg.safety_level,
+            }
+        )
 
     def _alerts_callback(self, msg: String):
         """Monitor active alerts."""
         try:
             alerts_data = json.loads(msg.data)
-            self.observed_alerts.extend(alerts_data.get('active_alerts', []))
+            self.observed_alerts.extend(alerts_data.get("active_alerts", []))
         except json.JSONDecodeError:
             pass
 
@@ -628,12 +610,12 @@ class SafetyIntegrationTester(Node):
     def _publish_test_status(self):
         """Publish current test status."""
         status_data = {
-            'timestamp': time.time(),
-            'active_tests': len(self.active_tests),
-            'completed_tests': len(self.completed_tests),
-            'active_test_ids': list(self.active_tests.keys()),
-            'recent_violations': len(self.observed_violations),
-            'recent_alerts': len(self.observed_alerts)
+            "timestamp": time.time(),
+            "active_tests": len(self.active_tests),
+            "completed_tests": len(self.completed_tests),
+            "active_test_ids": list(self.active_tests.keys()),
+            "recent_violations": len(self.observed_violations),
+            "recent_alerts": len(self.observed_alerts),
         }
 
         status_msg = String()
@@ -651,14 +633,13 @@ class SafetyIntegrationTester(Node):
                 test_result.error_message = f"Test timeout after {elapsed_time:.1f}s"
                 test_result.end_time = time.time()
 
-                self.logger.error(f'Test timeout: {test_id}')
+                self.logger.error(f"Test timeout: {test_id}")
                 self.completed_tests.append(test_result)
                 del self.active_tests[test_id]
 
     def _check_test_completion(self):
         """Check for completed tests and cleanup."""
         # This is handled in the test execution logic
-        pass
 
     def get_test_results(self, limit: int = 10) -> List[TestResult]:
         """Get recent test results."""
@@ -678,7 +659,7 @@ class SafetyIntegrationTester(Node):
         # Run all test scenarios sequentially
         for scenario in TestScenario:
             if scenario != TestScenario.RECOVERY_TEST:  # Skip recovery test for now
-                self.logger.info(f'Running test scenario: {scenario.value}')
+                self.logger.info(f"Running test scenario: {scenario.value}")
                 result = await self.run_test_scenario(scenario)
                 test_results[scenario.value] = result
 
@@ -698,12 +679,12 @@ def main(args=None):
     try:
         rclpy.spin(tester)
     except KeyboardInterrupt:
-        tester.logger.info('Safety Integration Tester shutting down')
+        tester.logger.info("Safety Integration Tester shutting down")
     finally:
         tester.executor.shutdown(wait=True)
         tester.destroy_node()
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

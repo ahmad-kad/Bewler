@@ -25,19 +25,19 @@ class DailyVelocityCheck:
         print("=" * 30)
 
         results = {
-            'date': datetime.now().strftime("%Y-%m-%d"),
-            'velocity_score': self._check_velocity(),
-            'blockers': self._identify_blockers(),
-            'progress': self._assess_progress(),
-            'recommendations': self._generate_recommendations(),
-            'risk_level': 'LOW'
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "velocity_score": self._check_velocity(),
+            "blockers": self._identify_blockers(),
+            "progress": self._assess_progress(),
+            "recommendations": self._generate_recommendations(),
+            "risk_level": "LOW",
         }
 
         # Calculate risk level
-        if len(results['blockers']) > 2:
-            results['risk_level'] = 'HIGH'
-        elif len(results['blockers']) > 0 or results['velocity_score'] < 50:
-            results['risk_level'] = 'MEDIUM'
+        if len(results["blockers"]) > 2:
+            results["risk_level"] = "HIGH"
+        elif len(results["blockers"]) > 0 or results["velocity_score"] < 50:
+            results["risk_level"] = "MEDIUM"
 
         self._display_results(results)
         self._save_results(results)
@@ -51,25 +51,24 @@ class DailyVelocityCheck:
             yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
             result = subprocess.run(
-                ["git", "log", "--oneline", f"--since={yesterday}"],
-                capture_output=True, text=True, cwd=self.repo_path
+                ["git", "log", "--oneline", f"--since={yesterday}"], capture_output=True, text=True, cwd=self.repo_path
             )
 
-            commit_count = len([line for line in result.stdout.split('\n') if line.strip()])
+            commit_count = len([line for line in result.stdout.split("\n") if line.strip()])
 
             # Velocity score based on commits (ideal: 3-8 per day)
             if commit_count >= 8:
                 return 100.0  # Excellent velocity
             elif commit_count >= 5:
-                return 80.0   # Good velocity
+                return 80.0  # Good velocity
             elif commit_count >= 3:
-                return 60.0   # Acceptable velocity
+                return 60.0  # Acceptable velocity
             elif commit_count >= 1:
-                return 40.0   # Slow but moving
+                return 40.0  # Slow but moving
             else:
-                return 20.0   # No progress
+                return 20.0  # No progress
 
-        except:
+        except BaseException:
             return 0.0
 
     def _identify_blockers(self) -> List[str]:
@@ -108,22 +107,23 @@ class DailyVelocityCheck:
         try:
             result = subprocess.run(
                 ["git", "log", "--oneline", "--grep=conflict", "-n", "3"],
-                capture_output=True, text=True, cwd=self.repo_path
+                capture_output=True,
+                text=True,
+                cwd=self.repo_path,
             )
             return "conflict" in result.stdout.lower()
-        except:
+        except BaseException:
             return False
 
     def _check_uncommitted_work(self) -> bool:
         """Check for large amounts of uncommitted work."""
         try:
             result = subprocess.run(
-                ["git", "status", "--porcelain"],
-                capture_output=True, text=True, cwd=self.repo_path
+                ["git", "status", "--porcelain"], capture_output=True, text=True, cwd=self.repo_path
             )
-            lines = len([line for line in result.stdout.split('\n') if line.strip()])
+            lines = len([line for line in result.stdout.split("\n") if line.strip()])
             return lines > 10  # More than 10 uncommitted files
-        except:
+        except BaseException:
             return False
 
     def _check_outdated_dependencies(self) -> bool:
@@ -147,25 +147,21 @@ class DailyVelocityCheck:
         progress_file = self.repo_path / "progress_analysis.json"
         if progress_file.exists():
             try:
-                with open(progress_file, 'r') as f:
+                with open(progress_file, "r") as f:
                     data = json.load(f)
 
-                total_progress = sum(p.get('overall_progress', 0) for p in data.values())
+                total_progress = sum(p.get("overall_progress", 0) for p in data.values())
                 avg_progress = total_progress / len(data) if data else 0
 
                 return {
-                    'overall_progress': avg_progress * 100,
-                    'subsystems': len(data),
-                    'on_track': avg_progress >= 0.7  # 70% progress target
+                    "overall_progress": avg_progress * 100,
+                    "subsystems": len(data),
+                    "on_track": avg_progress >= 0.7,  # 70% progress target
                 }
-            except:
+            except BaseException:
                 pass
 
-        return {
-            'overall_progress': 0,
-            'subsystems': 0,
-            'on_track': False
-        }
+        return {"overall_progress": 0, "subsystems": 0, "on_track": False}
 
     def _generate_recommendations(self) -> List[str]:
         """Generate daily recommendations."""
@@ -173,15 +169,15 @@ class DailyVelocityCheck:
             "🎯 Focus on MVP completion today",
             "🔗 Test integration points early",
             "📝 Commit small, frequent changes",
-            "👥 Communicate blockers immediately"
+            "👥 Communicate blockers immediately",
         ]
 
         # Add specific recommendations based on current state
         progress = self._assess_progress()
-        if progress['overall_progress'] < 50:
+        if progress["overall_progress"] < 50:
             recommendations.append("⚡ Increase development velocity - aim for 5+ commits today")
 
-        if not progress['on_track']:
+        if not progress["on_track"]:
             recommendations.append("🎯 Prioritize critical path items over nice-to-have features")
 
         blockers = self._identify_blockers()
@@ -192,9 +188,9 @@ class DailyVelocityCheck:
 
     def _display_results(self, results: Dict[str, Any]):
         """Display results in a readable format."""
-        velocity = results['velocity_score']
-        risk_level = results['risk_level']
-        progress = results['progress']['overall_progress']
+        velocity = results["velocity_score"]
+        risk_level = results["risk_level"]
+        progress = results["progress"]["overall_progress"]
 
         # Velocity indicator
         if velocity >= 80:
@@ -218,13 +214,13 @@ class DailyVelocityCheck:
         print(f"{vel_icon} VELOCITY: {velocity:.1f}% ({vel_status})")
         print(f"📈 PROGRESS: {progress:.1f}%")
 
-        if results['blockers']:
+        if results["blockers"]:
             print(f"\n🚨 BLOCKERS ({len(results['blockers'])}):")
-            for blocker in results['blockers']:
+            for blocker in results["blockers"]:
                 print(f"  {blocker}")
 
-        print(f"\n💡 RECOMMENDATIONS:")
-        for rec in results['recommendations']:
+        print("\n💡 RECOMMENDATIONS:")
+        for rec in results["recommendations"]:
             print(f"  {rec}")
 
         # Timeline warning
@@ -241,9 +237,9 @@ class DailyVelocityCheck:
         history = []
         if history_file.exists():
             try:
-                with open(history_file, 'r') as f:
+                with open(history_file, "r") as f:
                     history = json.load(f)
-            except:
+            except BaseException:
                 history = []
 
         # Add new results
@@ -253,8 +249,9 @@ class DailyVelocityCheck:
         history = history[-30:]
 
         # Save
-        with open(history_file, 'w') as f:
+        with open(history_file, "w") as f:
             json.dump(history, f, indent=2, default=str)
+
 
 def main():
     """Run daily velocity check."""
@@ -262,8 +259,9 @@ def main():
     results = checker.run_daily_check()
 
     # Save to environment for CI/CD
-    with open('data/daily_check_results.json', 'w') as f:
+    with open("data/daily_check_results.json", "w") as f:
         json.dump(results, f, indent=2)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

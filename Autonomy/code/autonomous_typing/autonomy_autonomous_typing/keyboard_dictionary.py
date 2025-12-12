@@ -188,9 +188,7 @@ class KeyboardDictionary:
 
         return self.keyboard_layout[key_lower].xy_offset
 
-    def get_key_3d_position(
-        self, key: str, z_offset: float = 0.0
-    ) -> Optional[np.ndarray]:
+    def get_key_3d_position(self, key: str, z_offset: float = 0.0) -> Optional[np.ndarray]:
         """
         Get 3D position of a key relative to keyboard frame origin.
 
@@ -308,9 +306,7 @@ class KeyboardTransformManager:
             return None
 
         # Transform to world frame
-        return self.keyboard_to_world(
-            key_pos, keyboard_pose_position, keyboard_pose_orientation
-        )
+        return self.keyboard_to_world(key_pos, keyboard_pose_position, keyboard_pose_orientation)
 
     @staticmethod
     def _quaternion_to_rotation_matrix(q: np.ndarray) -> np.ndarray:

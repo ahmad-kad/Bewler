@@ -10,12 +10,13 @@ import time
 from typing import Dict, List, Optional, Tuple
 from collections import deque
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 
 class FreshnessStatus(Enum):
     """AoI freshness categories."""
+
     FRESH = "FRESH"
     ACCEPTABLE = "ACCEPTABLE"
     STALE = "STALE"
@@ -25,11 +26,12 @@ class FreshnessStatus(Enum):
 @dataclass
 class AOIConfig:
     """Configuration for AoI monitoring."""
+
     acceptable_threshold: float = 1.0  # seconds
-    optimal_threshold: float = 0.2     # seconds
-    critical_threshold: float = 5.0    # seconds
-    history_window: int = 32           # samples to keep
-    update_interval: float = 1.0       # seconds between status updates
+    optimal_threshold: float = 0.2  # seconds
+    critical_threshold: float = 5.0  # seconds
+    history_window: int = 32  # samples to keep
+    update_interval: float = 1.0  # seconds between status updates
 
 
 class AOITracker:
@@ -72,7 +74,7 @@ class AOITracker:
     def get_current_aoi(self) -> float:
         """Get current age of information."""
         if self.last_timestamp is None:
-            return float('inf')
+            return float("inf")
         return time.time() - self.last_timestamp
 
     def get_freshness_status(self) -> FreshnessStatus:
@@ -105,11 +107,11 @@ class AOITracker:
         """Get AoI statistics (computed on demand)."""
         if not self.aoi_history:
             return {
-                'current_aoi': float('inf'),
-                'average_aoi': float('inf'),
-                'max_aoi': float('inf'),
-                'min_aoi': float('inf'),
-                'freshness_ratio': 0.0
+                "current_aoi": float("inf"),
+                "average_aoi": float("inf"),
+                "max_aoi": float("inf"),
+                "min_aoi": float("inf"),
+                "freshness_ratio": 0.0,
             }
 
         current_time = time.time()
@@ -124,11 +126,11 @@ class AOITracker:
         freshness_ratio = fresh_count / len(recent_aois)
 
         return {
-            'current_aoi': current_aoi,
-            'average_aoi': average_aoi,
-            'max_aoi': max(recent_aois),
-            'min_aoi': min(recent_aois),
-            'freshness_ratio': freshness_ratio
+            "current_aoi": current_aoi,
+            "average_aoi": average_aoi,
+            "max_aoi": max(recent_aois),
+            "min_aoi": min(recent_aois),
+            "freshness_ratio": freshness_ratio,
         }
 
 
@@ -224,7 +226,7 @@ class SharedAOIBuffer:
     def get_system_stats(self) -> Dict[str, float]:
         """Get system-wide AoI statistics."""
         if not self.sensor_ids:
-            return {'average_aoi': 0.0, 'fresh_sensors': 0, 'total_sensors': 0}
+            return {"average_aoi": 0.0, "fresh_sensors": 0, "total_sensors": 0}
 
         current_aois = []
         for sensor_name in self.sensor_ids.keys():
@@ -233,17 +235,17 @@ class SharedAOIBuffer:
                 current_aois.append(aoi)
 
         if not current_aois:
-            return {'average_aoi': 0.0, 'fresh_sensors': 0, 'total_sensors': len(self.sensor_ids)}
+            return {"average_aoi": 0.0, "fresh_sensors": 0, "total_sensors": len(self.sensor_ids)}
 
         average_aoi = sum(current_aois) / len(current_aois)
         fresh_threshold = 1.0  # 1 second
         fresh_count = sum(1 for a in current_aois if a <= fresh_threshold)
 
         return {
-            'average_aoi': average_aoi,
-            'fresh_sensors': fresh_count,
-            'total_sensors': len(self.sensor_ids),
-            'freshness_ratio': fresh_count / len(self.sensor_ids)
+            "average_aoi": average_aoi,
+            "fresh_sensors": fresh_count,
+            "total_sensors": len(self.sensor_ids),
+            "freshness_ratio": fresh_count / len(self.sensor_ids),
         }
 
 
@@ -255,36 +257,36 @@ class AOIQualityAssessor:
     def __init__(self):
         # Quality profiles per sensor type
         self.quality_profiles = {
-            'imu': {
-                'optimal': 0.05,    # 50ms
-                'acceptable': 0.1,  # 100ms
-                'degraded': 0.2,    # 200ms
-                'unusable': 0.5,    # 500ms
+            "imu": {
+                "optimal": 0.05,  # 50ms
+                "acceptable": 0.1,  # 100ms
+                "degraded": 0.2,  # 200ms
+                "unusable": 0.5,  # 500ms
             },
-            'camera': {
-                'optimal': 0.1,     # 100ms
-                'acceptable': 0.2,  # 200ms
-                'degraded': 0.5,    # 500ms
-                'unusable': 1.0,    # 1s
+            "camera": {
+                "optimal": 0.1,  # 100ms
+                "acceptable": 0.2,  # 200ms
+                "degraded": 0.5,  # 500ms
+                "unusable": 1.0,  # 1s
             },
-            'lidar': {
-                'optimal': 0.1,     # 100ms
-                'acceptable': 0.15, # 150ms
-                'degraded': 0.3,    # 300ms
-                'unusable': 0.6,    # 600ms
+            "lidar": {
+                "optimal": 0.1,  # 100ms
+                "acceptable": 0.15,  # 150ms
+                "degraded": 0.3,  # 300ms
+                "unusable": 0.6,  # 600ms
             },
-            'gps': {
-                'optimal': 0.5,     # 500ms
-                'acceptable': 1.0,  # 1s
-                'degraded': 2.0,    # 2s
-                'unusable': 5.0,    # 5s
+            "gps": {
+                "optimal": 0.5,  # 500ms
+                "acceptable": 1.0,  # 1s
+                "degraded": 2.0,  # 2s
+                "unusable": 5.0,  # 5s
             },
-            'slam_pose': {
-                'optimal': 0.2,     # 200ms
-                'acceptable': 0.5,  # 500ms
-                'degraded': 1.0,    # 1s
-                'unusable': 2.0,    # 2s
-            }
+            "slam_pose": {
+                "optimal": 0.2,  # 200ms
+                "acceptable": 0.5,  # 500ms
+                "degraded": 1.0,  # 1s
+                "unusable": 2.0,  # 2s
+            },
         }
 
     def assess_quality(self, sensor_type: str, aoi: float) -> Tuple[float, str]:
@@ -294,15 +296,15 @@ class AOIQualityAssessor:
         Returns:
             Tuple of (quality_score, quality_category)
         """
-        profile = self.quality_profiles.get(sensor_type, self.quality_profiles['imu'])
+        profile = self.quality_profiles.get(sensor_type, self.quality_profiles["imu"])
 
-        if aoi <= profile['optimal']:
+        if aoi <= profile["optimal"]:
             return 1.0, "OPTIMAL"
-        elif aoi <= profile['acceptable']:
+        elif aoi <= profile["acceptable"]:
             return 0.8, "ACCEPTABLE"
-        elif aoi <= profile['degraded']:
+        elif aoi <= profile["degraded"]:
             return 0.5, "DEGRADED"
-        elif aoi <= profile['unusable']:
+        elif aoi <= profile["unusable"]:
             return 0.2, "POOR"
         else:
             return 0.0, "UNUSABLE"

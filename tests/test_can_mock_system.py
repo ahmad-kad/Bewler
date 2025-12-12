@@ -3,8 +3,6 @@
 Tests for CAN Mock Simulator and Priority Message Router
 """
 
-import json
-import time
 import unittest
 
 from bridges.can_mock_simulator import CANBusMockSimulator

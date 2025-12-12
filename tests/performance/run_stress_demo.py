@@ -111,7 +111,8 @@ def run_intra_vs_inter_demo():
         print(".1f")
         print(".1f")
         if intra_results['avg_latency_ms'] > 0 and inter_results['avg_latency_ms'] > 0:
-            improvement = ((inter_results['avg_latency_ms'] - intra_results['avg_latency_ms']) / inter_results['avg_latency_ms']) * 100
+            improvement = ((inter_results['avg_latency_ms'] - intra_results['avg_latency_ms']
+                            ) / inter_results['avg_latency_ms']) * 100
             print(".1f")
             if improvement > 50:
                 print("   ✅ Excellent performance improvement with intra-process communication!")

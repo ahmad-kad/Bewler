@@ -12,6 +12,7 @@ Instead of a one-size-fits-all emergency stop, this system:
 This makes the system more user-friendly and reduces mechanical stress.
 """
 
+import asyncio
 import time
 from enum import Enum
 from typing import Callable, Dict, List
@@ -62,8 +63,7 @@ class ContextSafestop:
             return {
                 "executed": False,
                 "reason": "cooldown_active",
-                "cooldown_remaining": self.safestop_cooldown
-                - (current_time - self.last_safestop_time),
+                "cooldown_remaining": self.safestop_cooldown - (current_time - self.last_safestop_time),
             }
 
         executed_actions = []
@@ -108,9 +108,7 @@ class ContextSafestop:
             "active_contexts": self.active_contexts.copy(),
             "recommended_behaviors": behaviors,
             "will_freeze_arm": any(b["behavior"] == "freeze_arm" for b in behaviors),
-            "will_decelerate_motion": any(
-                b["behavior"] == "decelerate_motion" for b in behaviors
-            ),
+            "will_decelerate_motion": any(b["behavior"] == "decelerate_motion" for b in behaviors),
         }
 
     def _get_behavior_description(self, behavior: SafetyBehavior) -> str:
@@ -222,4 +220,3 @@ class BootValidator:
 
 
 # Import asyncio for the BootValidator
-import asyncio

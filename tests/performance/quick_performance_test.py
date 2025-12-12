@@ -369,7 +369,8 @@ def main():
     print("\n⚡ PERFORMANCE COMPARISON:")
 
     if coupled_results['avg_latency_ms'] > 0 and decoupled_results['avg_latency_ms'] > 0:
-        latency_improvement = ((decoupled_results['avg_latency_ms'] - coupled_results['avg_latency_ms']) / decoupled_results['avg_latency_ms']) * 100
+        latency_improvement = (
+            (decoupled_results['avg_latency_ms'] - coupled_results['avg_latency_ms']) / decoupled_results['avg_latency_ms']) * 100
         print(".1f")
 
         if latency_improvement > 50:
@@ -379,7 +380,9 @@ def main():
         else:
             print("  🤔 Limited performance improvement observed")
 
-    throughput_improvement = ((coupled_results['throughput_msgs_per_sec'] - decoupled_results['throughput_msgs_per_sec']) / max(decoupled_results['throughput_msgs_per_sec'], 1)) * 100
+    throughput_improvement = (
+        (coupled_results['throughput_msgs_per_sec'] - decoupled_results['throughput_msgs_per_sec']) / max(
+            decoupled_results['throughput_msgs_per_sec'], 1)) * 100
     print(".1f")
 
     cpu_savings = decoupled_results['final_cpu'] - coupled_results['final_cpu']

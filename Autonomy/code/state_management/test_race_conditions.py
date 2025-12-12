@@ -10,10 +10,10 @@ import sys
 import threading
 import time
 
+from states import SystemState
+
 # Add the state machine to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "autonomy_state_machine"))
-
-from states import SystemState
 
 
 class MockStateMachine:
@@ -39,9 +39,7 @@ class MockStateMachine:
 
         # This could be corrupted by concurrent access
         if str(from_state) == str(to_state):
-            self.errors.append(
-                f"Thread {thread_id}: Invalid transition {from_state} -> {to_state}"
-            )
+            self.errors.append(f"Thread {thread_id}: Invalid transition {from_state} -> {to_state}")
 
         return True
 
@@ -65,9 +63,7 @@ def test_race_conditions():
                 elif i % 4 == 2:
                     state_machine.unsafe_transition(SystemState.SAFETY, thread_id)
                 else:
-                    state_machine.unsafe_transition(
-                        SystemState.TELEOPERATION, thread_id
-                    )
+                    state_machine.unsafe_transition(SystemState.TELEOPERATION, thread_id)
             except Exception as e:
                 errors_found.append(f"Thread {thread_id}: {str(e)}")
 

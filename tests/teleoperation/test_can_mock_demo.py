@@ -105,7 +105,7 @@ async def demo_priority_routing():
     """Demonstrate priority-based message routing"""
     print("\n🔄 Testing Priority Message Routing...")
 
-    from bridges.priority_message_router import MessagePriority, PriorityMessageRouter
+    from bridges.priority_message_router import PriorityMessageRouter
 
     router = PriorityMessageRouter(max_queue_size=20)
 

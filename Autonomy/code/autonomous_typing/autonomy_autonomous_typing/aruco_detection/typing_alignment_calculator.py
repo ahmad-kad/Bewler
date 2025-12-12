@@ -70,9 +70,7 @@ class TypingAlignmentCalculator:
             result["mission_type"] = "AUTONOMOUS_TYPING"
             result["mission_ready"] = self._evaluate_typing_readiness(result)
             result["alignment_warnings"] = self._generate_typing_warnings(result)
-            result["typing_recommendations"] = self._generate_typing_recommendations(
-                result
-            )
+            result["typing_recommendations"] = self._generate_typing_recommendations(result)
 
             return result
 
@@ -80,14 +78,10 @@ class TypingAlignmentCalculator:
             self.logger.error("Typing alignment calculation failed", error=str(e))
             return self._create_error_result(f"Alignment calculation failed: {str(e)}")
 
-    def _calculate_keyboard_alignment(
-        self, detected_tags: List[Dict[str, Any]], target_depth: float
-    ) -> Dict[str, Any]:
+    def _calculate_keyboard_alignment(self, detected_tags: List[Dict[str, Any]], target_depth: float) -> Dict[str, Any]:
         """Calculate alignment for keyboard typing (rectangular layout)."""
         if len(detected_tags) < 3:
-            return self._create_error_result(
-                "Need at least 3 tags for keyboard alignment"
-            )
+            return self._create_error_result("Need at least 3 tags for keyboard alignment")
 
         # Extract positions
         positions = [tag["position"] for tag in detected_tags]
@@ -134,9 +128,7 @@ class TypingAlignmentCalculator:
         center.z = sum(pos.z for pos in positions) / len(positions)
         return center
 
-    def _calculate_plane_normal(
-        self, positions: List[Point]
-    ) -> Tuple[np.ndarray, Quaternion]:
+    def _calculate_plane_normal(self, positions: List[Point]) -> Tuple[np.ndarray, Quaternion]:
         """Calculate plane normal using Principal Component Analysis."""
         # Convert to numpy array
         points = np.array([[pos.x, pos.y, pos.z] for pos in positions])
@@ -185,9 +177,7 @@ class TypingAlignmentCalculator:
 
         return quat
 
-    def _calculate_keyboard_alignment_quality(
-        self, positions: List[Point], center: Point, normal: np.ndarray
-    ) -> float:
+    def _calculate_keyboard_alignment_quality(self, positions: List[Point], center: Point, normal: np.ndarray) -> float:
         """Calculate alignment quality score for keyboard typing (0.0-1.0)."""
         if len(positions) < 3:
             return 0.0
@@ -218,16 +208,12 @@ class TypingAlignmentCalculator:
         # Check if keyboard size is reasonable
         keyboard_size = self._estimate_keyboard_size(positions)
         expected_size = self.typing_config["keyboard_size_estimate"]
-        size_ratio = min(keyboard_size, expected_size) / max(
-            keyboard_size, expected_size
-        )
+        size_ratio = min(keyboard_size, expected_size) / max(keyboard_size, expected_size)
         quality *= 0.5 + 0.5 * size_ratio  # 50-100% based on size match
 
         return min(1.0, max(0.0, quality))
 
-    def _calculate_tag_errors(
-        self, positions: List[Point], center: Point, normal: np.ndarray
-    ) -> List[float]:
+    def _calculate_tag_errors(self, positions: List[Point], center: Point, normal: np.ndarray) -> List[float]:
         """Calculate individual tag alignment errors."""
         errors = []
         for pos in positions:
@@ -284,11 +270,7 @@ class TypingAlignmentCalculator:
             for j in range(i + 1, len(positions)):
                 pos1 = positions[i]
                 pos2 = positions[j]
-                distance = math.sqrt(
-                    (pos2.x - pos1.x) ** 2
-                    + (pos2.y - pos1.y) ** 2
-                    + (pos2.z - pos1.z) ** 2
-                )
+                distance = math.sqrt((pos2.x - pos1.x) ** 2 + (pos2.y - pos1.y) ** 2 + (pos2.z - pos1.z) ** 2)
                 max_distance = max(max_distance, distance)
 
         return max_distance
@@ -342,9 +324,7 @@ class TypingAlignmentCalculator:
             max_error = max(errors)
             tolerance = self.typing_config["alignment_tolerance"]
             if max_error > tolerance:
-                warnings.append(
-                    f"High alignment error: {max_error:.3f}m > {tolerance:.3f}m"
-                )
+                warnings.append(f"High alignment error: {max_error:.3f}m > {tolerance:.3f}m")
 
         # Check keyboard size
         keyboard_info = result.get("keyboard_info", {})
@@ -352,9 +332,7 @@ class TypingAlignmentCalculator:
         expected_size = self.typing_config["keyboard_size_estimate"]
         size_ratio = estimated_size / expected_size
         if size_ratio < 0.7 or size_ratio > 1.5:
-            warnings.append(
-                f"Unusual keyboard size: {estimated_size:.2f}m (expected ~{expected_size:.2f}m)"
-            )
+            warnings.append(f"Unusual keyboard size: {estimated_size:.2f}m (expected ~{expected_size:.2f}m)")
 
         return warnings
 
@@ -364,13 +342,9 @@ class TypingAlignmentCalculator:
 
         quality = result.get("alignment_quality", 0.0)
         if quality < 0.9:
-            recommendations.append(
-                "Improve camera positioning for better tag visibility"
-            )
+            recommendations.append("Improve camera positioning for better tag visibility")
             recommendations.append("Ensure adequate lighting on ArUco tags")
-            recommendations.append(
-                "Position tags at keyboard corners for better alignment"
-            )
+            recommendations.append("Position tags at keyboard corners for better alignment")
 
         detected_tags = len(result.get("detected_tag_ids", []))
         optimal_tags = self.typing_config["optimal_tags"]

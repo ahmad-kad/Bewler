@@ -14,14 +14,9 @@ This launch file demonstrates the integration of submodules for complete system 
 
 import os
 
-from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
-
-import launch
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess, IncludeLaunchDescription, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import PathJoinSubstitution
 
 
 def generate_launch_description():

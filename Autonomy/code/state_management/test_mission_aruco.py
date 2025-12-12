@@ -64,18 +64,14 @@ class MissionArUcoTester(Node):
 
             if result["success"]:
                 self.test_results.append("✅ Autonomous typing detection: PASSED")
-                self.get_logger().info(
-                    f"Alignment quality: {result['alignment_quality']:.2f}"
-                )
+                self.get_logger().info(f"Alignment quality: {result['alignment_quality']:.2f}")
                 self.get_logger().info(f"Mission ready: {result['mission_ready']}")
             else:
                 self.test_results.append("❌ Autonomous typing detection: FAILED")
                 self.get_logger().error(f"Error: {result['message']}")
 
         except Exception as e:
-            self.test_results.append(
-                f"❌ Autonomous typing detection: ERROR - {str(e)}"
-            )
+            self.test_results.append(f"❌ Autonomous typing detection: ERROR - {str(e)}")
 
     def _test_usb_connection(self):
         """Test USB connection mission detection."""
@@ -93,9 +89,7 @@ class MissionArUcoTester(Node):
 
             if result["success"]:
                 self.test_results.append("✅ USB connection detection: PASSED")
-                self.get_logger().info(
-                    f"Alignment quality: {result['alignment_quality']:.2f}"
-                )
+                self.get_logger().info(f"Alignment quality: {result['alignment_quality']:.2f}")
                 self.get_logger().info(f"Mission ready: {result['mission_ready']}")
             else:
                 self.test_results.append("❌ USB connection detection: FAILED")
@@ -120,9 +114,7 @@ class MissionArUcoTester(Node):
 
             if result["success"]:
                 self.test_results.append("✅ Panel operations detection: PASSED")
-                self.get_logger().info(
-                    f"Alignment quality: {result['alignment_quality']:.2f}"
-                )
+                self.get_logger().info(f"Alignment quality: {result['alignment_quality']:.2f}")
                 self.get_logger().info(f"Mission ready: {result['mission_ready']}")
             else:
                 self.test_results.append("❌ Panel operations detection: FAILED")
@@ -167,22 +159,14 @@ class MissionArUcoTester(Node):
                     quality = result["alignment_quality"]
                     expected = case["expected_quality"]
                     if quality >= expected * 0.8:  # Allow 20% tolerance
-                        self.test_results.append(
-                            f"✅ {case['name']}: PASSED (quality: {quality:.2f})"
-                        )
+                        self.test_results.append(f"✅ {case['name']}: PASSED (quality: {quality:.2f})")
                     else:
-                        self.test_results.append(
-                            f"❌ {case['name']}: FAILED (quality: {quality:.2f} < {expected:.2f})"
-                        )
+                        self.test_results.append(f"❌ {case['name']}: FAILED (quality: {quality:.2f} < {expected:.2f})")
                 else:
-                    self.test_results.append(
-                        f"❌ {case['name']}: FAILED - {result['message']}"
-                    )
+                    self.test_results.append(f"❌ {case['name']}: FAILED - {result['message']}")
 
         except Exception as e:
-            self.test_results.append(
-                f"❌ Alignment quality assessment: ERROR - {str(e)}"
-            )
+            self.test_results.append(f"❌ Alignment quality assessment: ERROR - {str(e)}")
 
     def _print_test_results(self):
         """Print test results."""
@@ -230,9 +214,7 @@ class MissionArUcoTester(Node):
                 response = future.result()
                 self.get_logger().info(f"Service call result: {response.success}")
                 self.get_logger().info(f"Message: {response.message}")
-                self.get_logger().info(
-                    f"Alignment quality: {response.alignment_quality}"
-                )
+                self.get_logger().info(f"Alignment quality: {response.alignment_quality}")
             else:
                 self.get_logger().error("Service call timed out")
 

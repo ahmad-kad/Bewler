@@ -18,7 +18,7 @@ import time
 from typing import Any, Callable, Dict, Optional
 
 import rclpy
-from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
@@ -181,7 +181,7 @@ class WebSocketSLAMBridge(Node):
         if self.websocket:
             try:
                 self.websocket.close()
-            except:
+            except BaseException:
                 pass
             self.websocket = None
 
@@ -365,12 +365,10 @@ class WebSocketSLAMBridge(Node):
     def slam_pose_callback(self, msg: PoseWithCovarianceStamped):
         """Handle SLAM pose updates"""
         # Could use this for feedback or validation
-        pass
 
     def slam_status_callback(self, msg: String):
         """Handle SLAM status updates"""
         # Could use this for monitoring SLAM health
-        pass
 
     # Service callbacks
     def connect_callback(self, request, response):

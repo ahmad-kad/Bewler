@@ -6,7 +6,7 @@ Provides realistic mock implementations of sensor interfaces for testing.
 """
 
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -156,7 +156,7 @@ class MockLiDAR:
 
         # Generate synthetic scan data
         num_points = int(self.fov / self.angle_increment)
-        angles = np.linspace(-self.fov/2, self.fov/2, num_points)
+        angles = np.linspace(-self.fov / 2, self.fov / 2, num_points)
 
         # Create distances with some obstacles
         distances = np.full(num_points, self.range_max)
@@ -318,7 +318,7 @@ class SensorFusionMock:
         scan = self.lidar.get_scan()
 
         obstacles = []
-        angles = np.linspace(-self.lidar.fov/2, self.lidar.fov/2, len(scan))
+        angles = np.linspace(-self.lidar.fov / 2, self.lidar.fov / 2, len(scan))
 
         for i, distance in enumerate(scan):
             if distance < self.lidar.range_max:

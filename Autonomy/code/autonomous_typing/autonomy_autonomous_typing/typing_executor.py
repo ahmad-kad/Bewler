@@ -157,18 +157,10 @@ class TypingExecutor:
                 time.sleep(0.3)
 
             # Determine overall success (80% threshold)
-            success_rate = (
-                self.typing_stats["successful_presses"] / len(sequence)
-                if sequence
-                else 0
-            )
+            success_rate = self.typing_stats["successful_presses"] / len(sequence) if sequence else 0
             overall_success = success_rate >= 0.8
 
-            self.current_status = (
-                TypingSequenceStatus.COMPLETED
-                if overall_success
-                else TypingSequenceStatus.FAILED
-            )
+            self.current_status = TypingSequenceStatus.COMPLETED if overall_success else TypingSequenceStatus.FAILED
 
             result = {
                 "success": overall_success,
@@ -220,9 +212,7 @@ class TypingExecutor:
             # Get key world position
             key_world_pos = self._get_key_world_position(char)
             if key_world_pos is None:
-                self.logger.error(
-                    f'Could not determine world position for key: "{char}"'
-                )
+                self.logger.error(f'Could not determine world position for key: "{char}"')
                 return False
 
             self.logger.debug(f'Key "{char}" world position: {key_world_pos}')
@@ -242,16 +232,12 @@ class TypingExecutor:
                 self.logger.info(f'Successfully pressed key: "{char}"')
                 return True
             elif retry_count < self.max_retries_per_key:
-                self.logger.warn(
-                    f"Key press failed, retrying ({retry_count + 1}/{self.max_retries_per_key})"
-                )
+                self.logger.warn(f"Key press failed, retrying ({retry_count + 1}/{self.max_retries_per_key})")
                 self.typing_stats["retried_presses"] += 1
                 time.sleep(self.retry_delay)
                 return self._press_character(char, retry_count + 1)
             else:
-                self.logger.error(
-                    f"Key press failed after {self.max_retries_per_key} retries"
-                )
+                self.logger.error(f"Key press failed after {self.max_retries_per_key} retries")
                 return False
 
         except Exception as e:
@@ -269,10 +255,7 @@ class TypingExecutor:
             3D position in world frame or None
         """
         # Check preconditions
-        if (
-            self.keyboard_pose_position is None
-            or self.keyboard_pose_orientation is None
-        ):
+        if self.keyboard_pose_position is None or self.keyboard_pose_orientation is None:
             self.logger.error("Keyboard pose not available")
             return None
 
@@ -310,10 +293,7 @@ class TypingExecutor:
             checks.append(True)
 
         # Check keyboard pose is available
-        if (
-            self.keyboard_pose_position is None
-            or self.keyboard_pose_orientation is None
-        ):
+        if self.keyboard_pose_position is None or self.keyboard_pose_orientation is None:
             self.logger.error("Keyboard pose not available")
             checks.append(False)
         else:
@@ -337,9 +317,7 @@ class TypingExecutor:
 
         return all(checks)
 
-    def validate_key_press(
-        self, char: str, validation_method: str = "position"
-    ) -> bool:
+    def validate_key_press(self, char: str, validation_method: str = "position") -> bool:
         """
         Validate that a key press was successful.
 
@@ -403,9 +381,7 @@ if __name__ == "__main__":
         if kb.is_valid_key(char):
             pos = kb.get_key_position(char)
             traj = kb.get_key_press_trajectory(char)
-            print(
-                f"  '{char}' -> pos: {pos}, traj keys: {traj.keys() if traj else 'None'}"
-            )
+            print(f"  '{char}' -> pos: {pos}, traj keys: {traj.keys() if traj else 'None'}")
         else:
             print(f"  '{char}' -> INVALID")
 

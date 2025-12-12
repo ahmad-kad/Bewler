@@ -4,12 +4,7 @@ URC 2026 System Integration Test - Software Level
 Tests ROS2 node communication and system-wide functionality
 """
 
-import asyncio
-import signal
-import sys
-import threading
 import time
-from typing import Any, Dict, List
 
 import rclpy
 from autonomy_interfaces.msg import SafetyStatus, SystemState, VisionDetection
@@ -140,7 +135,7 @@ class SystemIntegrationTester(Node):
         import subprocess
         try:
             result = subprocess.run(['ros2', 'topic', 'list'],
-                                  capture_output=True, text=True, timeout=5)
+                                    capture_output=True, text=True, timeout=5)
             discovered_topics = set(result.stdout.strip().split('\n'))
 
             expected_topics = {
@@ -179,7 +174,7 @@ class SystemIntegrationTester(Node):
         import subprocess
         try:
             result = subprocess.run(['ros2', 'service', 'list'],
-                                  capture_output=True, text=True, timeout=5)
+                                    capture_output=True, text=True, timeout=5)
             discovered_services = set(result.stdout.strip().split('\n'))
 
             expected_services = {
@@ -302,10 +297,11 @@ Test Duration: {runtime:.1f} seconds
             assessment = " NEEDS ATTENTION - Some errors detected"
 
         report += f"\n OVERALL ASSESSMENT: {assessment}\n"
-        report += '='*60
+        report += '=' * 60
 
         print(report)
         return report
+
 
 def main():
     """Main test function."""
@@ -339,6 +335,7 @@ def main():
     finally:
         tester.generate_report()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

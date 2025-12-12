@@ -11,7 +11,7 @@ import math
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import List
 
 import numpy as np
 import psutil
@@ -20,7 +20,6 @@ from geometry_msgs.msg import PoseStamped, Twist
 from nav_msgs.msg import Odometry, Path
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
-from sensor_msgs.msg import Imu, LaserScan, NavSatFix
 from std_msgs.msg import String
 
 
@@ -83,23 +82,15 @@ class EnduranceSLAMTester(Node):
 
         # QoS profiles
         self.qos_reliable = QoSProfile(
-            reliability=ReliabilityPolicy.RELIABLE,
-            history=HistoryPolicy.KEEP_LAST,
-            depth=10
+            reliability=ReliabilityPolicy.RELIABLE, history=HistoryPolicy.KEEP_LAST, depth=10
         )
 
         # Subscribers
-        self.pose_sub = self.create_subscription(
-            PoseStamped, "/slam/pose/fused", self.pose_callback, self.qos_reliable
-        )
+        self.pose_sub = self.create_subscription(PoseStamped, "/slam/pose/fused", self.pose_callback, self.qos_reliable)
 
-        self.odom_sub = self.create_subscription(
-            Odometry, "/odom", self.odom_callback, self.qos_reliable
-        )
+        self.odom_sub = self.create_subscription(Odometry, "/odom", self.odom_callback, self.qos_reliable)
 
-        self.map_sub = self.create_subscription(
-            Path, "/slam/map_path", self.map_callback, self.qos_reliable
-        )
+        self.map_sub = self.create_subscription(Path, "/slam/map_path", self.map_callback, self.qos_reliable)
 
         # Publishers
         self.cmd_vel_pub = self.create_publisher(Twist, "/cmd_vel", 10)
@@ -120,15 +111,14 @@ class EnduranceSLAMTester(Node):
         self.pose_update_count += 1
 
         # Extract confidence if available (would depend on SLAM implementation)
-        confidence = getattr(msg, 'confidence', 0.8)  # Placeholder
+        confidence = getattr(msg, "confidence", 0.8)  # Placeholder
         self.confidence_readings.append(confidence)
 
         # Check for loop closure (simplified: distance from start)
         if self.start_position:
             current_pos = (msg.pose.position.x, msg.pose.position.y)
             distance_from_start = math.sqrt(
-                (current_pos[0] - self.start_position[0])**2 +
-                (current_pos[1] - self.start_position[1])**2
+                (current_pos[0] - self.start_position[0]) ** 2 + (current_pos[1] - self.start_position[1]) ** 2
             )
 
             if distance_from_start < self.distance_threshold:
@@ -137,22 +127,15 @@ class EnduranceSLAMTester(Node):
     def odom_callback(self, msg):
         """Handle odometry updates for distance calculation."""
         if not self.start_position:
-            self.start_position = (
-                msg.pose.pose.position.x,
-                msg.pose.pose.position.y
-            )
+            self.start_position = (msg.pose.pose.position.x, msg.pose.pose.position.y)
             self.last_position = self.start_position
 
-        current_pos = (
-            msg.pose.pose.position.x,
-            msg.pose.pose.position.y
-        )
+        current_pos = (msg.pose.pose.position.x, msg.pose.pose.position.y)
 
         # Calculate distance traveled
         if self.last_position:
             distance = math.sqrt(
-                (current_pos[0] - self.last_position[0])**2 +
-                (current_pos[1] - self.last_position[1])**2
+                (current_pos[0] - self.last_position[0]) ** 2 + (current_pos[1] - self.last_position[1]) ** 2
             )
             self.total_distance += distance
 
@@ -188,7 +171,7 @@ class EnduranceSLAMTester(Node):
             cpu_percent=cpu_percent,
             temperature_c=self.get_system_temperature(),
             process_count=len(psutil.pids()),
-            thread_count=process.num_threads()
+            thread_count=process.num_threads(),
         )
 
         self.system_health.append(health)
@@ -218,13 +201,13 @@ class EnduranceSLAMTester(Node):
         """Get system temperature (simplified)."""
         try:
             temps = psutil.sensors_temperatures()
-            if 'coretemp' in temps:
-                return temps['coretemp'][0].current
-            elif 'cpu_thermal' in temps:
-                return temps['cpu_thermal'][0].current
+            if "coretemp" in temps:
+                return temps["coretemp"][0].current
+            elif "cpu_thermal" in temps:
+                return temps["cpu_thermal"][0].current
             else:
                 return 45.0  # Default temperature
-        except:
+        except BaseException:
             return 45.0  # Default if sensors unavailable
 
     def update_navigation(self):
@@ -243,11 +226,11 @@ class EnduranceSLAMTester(Node):
         if elapsed <= period * 2:  # First two loops
             # First loop: clockwise
             vx = scale * math.cos(t)
-            vy = scale * math.sin(2*t) / 2  # Figure-8 shape
+            vy = scale * math.sin(2 * t) / 2  # Figure-8 shape
         else:
             # Second loop: counter-clockwise
             vx = -scale * math.cos(t)
-            vy = -scale * math.sin(2*t) / 2
+            vy = -scale * math.sin(2 * t) / 2
 
         # Convert to velocity commands
         linear_velocity = 0.3  # Slow movement
@@ -284,26 +267,26 @@ class EnduranceSLAMTester(Node):
             memory_usage_mb=self.memory_readings,
             cpu_usage_percent=self.cpu_readings,
             slam_confidence=self.confidence_readings,
-            temperature_celsius=[h.temperature_c for h in self.system_health]
+            temperature_celsius=[h.temperature_c for h in self.system_health],
         )
 
         # Save detailed results
         result_data = {
-            'test_info': {
-                'name': 'Endurance SLAM Test',
-                'duration_hours': elapsed_hours,
-                'start_time': datetime.fromtimestamp(self.start_time).isoformat(),
-                'end_time': datetime.now().isoformat()
+            "test_info": {
+                "name": "Endurance SLAM Test",
+                "duration_hours": elapsed_hours,
+                "start_time": datetime.fromtimestamp(self.start_time).isoformat(),
+                "end_time": datetime.now().isoformat(),
             },
-            'performance_metrics': asdict(metrics),
-            'system_health': [asdict(h) for h in self.system_health],
-            'test_results': {
-                'memory_growth_acceptable': memory_growth < 50.0,  # <50MB per 10min
-                'cpu_usage_acceptable': max_cpu < 80.0,  # <80% CPU
-                'slam_stable': avg_confidence > 0.7,  # >70% confidence
-                'distance_covered': self.total_distance,
-                'loop_closures': self.loop_closures
-            }
+            "performance_metrics": asdict(metrics),
+            "system_health": [asdict(h) for h in self.system_health],
+            "test_results": {
+                "memory_growth_acceptable": memory_growth < 50.0,  # <50MB per 10min
+                "cpu_usage_acceptable": max_cpu < 80.0,  # <80% CPU
+                "slam_stable": avg_confidence > 0.7,  # >70% confidence
+                "distance_covered": self.total_distance,
+                "loop_closures": self.loop_closures,
+            },
         }
 
         with open("/tmp/endurance_slam_test_results.json", "w") as f:
@@ -311,13 +294,15 @@ class EnduranceSLAMTester(Node):
 
         # Publish completion status
         completion_msg = String()
-        completion_msg.data = f"ENDURANCE_TEST_COMPLETE|Duration:{elapsed_hours:.2f}h|Distance:{self.total_distance:.1f}m"
+        completion_msg.data = (
+            f"ENDURANCE_TEST_COMPLETE|Duration:{elapsed_hours:.2f}h|Distance:{self.total_distance:.1f}m"
+        )
         self.test_status_pub.publish(completion_msg)
 
         # Print comprehensive results
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("ENDURANCE SLAM TEST RESULTS")
-        print("="*80)
+        print("=" * 80)
         print(".2f")
         print(f"Total Distance: {self.total_distance:.1f} meters")
         print(f"Loop Closures: {self.loop_closures}")
@@ -345,7 +330,7 @@ class EnduranceSLAMTester(Node):
 
         overall_success = memory_ok and cpu_ok and slam_ok
         print(f"\nOVERALL RESULT: {' SUCCESS' if overall_success else '  ISSUES DETECTED'}")
-        print("="*80)
+        print("=" * 80)
 
         self.get_logger().info("Endurance SLAM Test completed")
         self.get_logger().info("Results saved to /tmp/endurance_slam_test_results.json")
@@ -364,5 +349,5 @@ def main():
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

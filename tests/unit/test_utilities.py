@@ -12,9 +12,6 @@ import sys
 from typing import Any, Dict
 
 import pytest
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Autonomy', 'code'))
-
 from utilities import (
     Failure,
     MessagePipeline,
@@ -26,6 +23,8 @@ from utilities import (
     safe_execute,
     success,
 )
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Autonomy', 'code'))
 
 
 class TestCoreUtilities:
@@ -237,6 +236,7 @@ class TestParameterValidation:
 # Mock classes for testing without ROS2
 class MockNode:
     """Mock ROS2 node for testing."""
+
     def __init__(self, param_values=None):
         self.param_values = param_values or {}
 
@@ -252,6 +252,7 @@ class MockNode:
 
 class MockLogger:
     """Mock logger for testing."""
+
     def info(self, msg, **kwargs): pass
     def error(self, msg, **kwargs): pass
     def warn(self, msg, **kwargs): pass

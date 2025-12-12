@@ -18,8 +18,9 @@ import cv2
 import numpy as np
 
 
-def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
-                           square_size=0.030, marker_size=0.018, output_file="camera_calib.json"):
+def calibrate_single_camera(
+    camera_index, duration=30, cols=7, rows=5, square_size=0.030, marker_size=0.018, output_file="camera_calib.json"
+):
     """Calibrate a single camera."""
 
     print(f"\n{'='*70}")
@@ -35,10 +36,7 @@ def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
     detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
 
     board = cv2.aruco.CharucoBoard(
-        (cols, rows),
-        squareLength=square_size,
-        markerLength=marker_size,
-        dictionary=aruco_dict
+        (cols, rows), squareLength=square_size, markerLength=marker_size, dictionary=aruco_dict
     )
 
     # Open camera
@@ -80,10 +78,8 @@ def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
                 try:
                     # Try interpolating ChArUco corners
                     try:
-                        charuco_corners, charuco_ids = cv2.aruco.interpolateCornersCharuco(
-                            corners, ids, frame, board
-                        )
-                    except:
+                        charuco_corners, charuco_ids = cv2.aruco.interpolateCornersCharuco(corners, ids, frame, board)
+                    except BaseException:
                         # Fallback: use raw marker corners
                         charuco_corners = corners
                         charuco_ids = ids
@@ -96,10 +92,12 @@ def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
                             all_ids.append(charuco_ids)
                             collected_frames += 1
 
-                            print(f"  ✅ Frame {frame_count}: Collected {n_corners} corners (total: {collected_frames})")
+                            print(
+                                f"  ✅ Frame {frame_count}: Collected {n_corners} corners (total: {collected_frames})"
+                            )
 
                             if collected_frames >= 15:
-                                print(f"\n✅ Collected enough frames!")
+                                print("\n✅ Collected enough frames!")
                                 break
 
                     # Draw for visualization
@@ -112,18 +110,18 @@ def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
                 if frame_count % 30 == 0:
                     print(f"  ⏳ Frame {frame_count}: Searching for board...")
 
-            cv2.imshow(f'Camera {camera_index} - Calibration', frame)
+            cv2.imshow(f"Camera {camera_index} - Calibration", frame)
 
             key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
-                print(f"\n⏹️  User interrupted")
+            if key == ord("q"):
+                print("\n⏹️  User interrupted")
                 break
 
     finally:
         cap.release()
         cv2.destroyAllWindows()
 
-    print(f"\n📊 Results:")
+    print("\n📊 Results:")
     print(f"   Frames processed: {frame_count}")
     print(f"   Frames collected: {collected_frames}")
 
@@ -132,7 +130,7 @@ def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
         return False
 
     # Calibrate
-    print(f"\n🔧 Calibrating...")
+    print("\n🔧 Calibrating...")
     try:
         camera_matrix = np.zeros((3, 3))
         dist_coeffs = np.zeros((5, 1))
@@ -150,12 +148,15 @@ def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
 
             for i, marker_id in enumerate(ids_frame.flatten()):
                 # 3D coordinates for ArUco marker corners
-                marker_obj_pt = np.array([
-                    [-marker_size/2, -marker_size/2, 0],
-                    [marker_size/2, -marker_size/2, 0],
-                    [marker_size/2, marker_size/2, 0],
-                    [-marker_size/2, marker_size/2, 0]
-                ], dtype=np.float32)
+                marker_obj_pt = np.array(
+                    [
+                        [-marker_size / 2, -marker_size / 2, 0],
+                        [marker_size / 2, -marker_size / 2, 0],
+                        [marker_size / 2, marker_size / 2, 0],
+                        [-marker_size / 2, marker_size / 2, 0],
+                    ],
+                    dtype=np.float32,
+                )
 
                 frame_obj_pts.append(marker_obj_pt)
                 frame_img_pts.append(corners_frame[i].reshape(4, 2).astype(np.float32))
@@ -181,24 +182,16 @@ def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
         # Save
         calib_data = {
             "camera_index": camera_index,
-            "camera_matrix": {
-                "rows": 3,
-                "cols": 3,
-                "data": camera_matrix.flatten().tolist()
-            },
-            "distortion_coefficients": {
-                "rows": 1,
-                "cols": 5,
-                "data": dist_coeffs.flatten().tolist()
-            },
+            "camera_matrix": {"rows": 3, "cols": 3, "data": camera_matrix.flatten().tolist()},
+            "distortion_coefficients": {"rows": 1, "cols": 5, "data": dist_coeffs.flatten().tolist()},
             "image_width": width,
             "image_height": height,
             "frames_used": collected_frames,
             "board_size": f"{cols}x{rows}",
-            "calibration_quality": "good"
+            "calibration_quality": "good",
         }
 
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(calib_data, f, indent=2)
 
         print(f"💾 Calibration saved to: {output_file}")
@@ -210,13 +203,14 @@ def calibrate_single_camera(camera_index, duration=30, cols=7, rows=5,
     except Exception as e:
         print(f"❌ Calibration error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Multi-camera calibration system',
+        description="Multi-camera calibration system",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -228,29 +222,26 @@ Examples:
 
   # Calibrate 5 cameras with custom square and marker sizes
   python calibrate_multiple_cameras.py --num-cameras 5 --square-size 0.025 --marker-size 0.015
-        """
+        """,
     )
 
-    parser.add_argument('--num-cameras', type=int, default=5,
-                       help='Number of cameras to calibrate (default: 5)')
-    parser.add_argument('--cols', type=int, default=7, help='Board columns (default: 7)')
-    parser.add_argument('--rows', type=int, default=5, help='Board rows (default: 5)')
+    parser.add_argument("--num-cameras", type=int, default=5, help="Number of cameras to calibrate (default: 5)")
+    parser.add_argument("--cols", type=int, default=7, help="Board columns (default: 7)")
+    parser.add_argument("--rows", type=int, default=5, help="Board rows (default: 5)")
     parser.add_argument(
-        '--square-size', type=float, default=0.030,
-        help='Square size in meters (default: 0.030 = 30mm)'
+        "--square-size", type=float, default=0.030, help="Square size in meters (default: 0.030 = 30mm)"
     )
     parser.add_argument(
-        '--marker-size', type=float, default=0.018,
-        help='Marker size in meters (default: 0.018 = 18mm)'
+        "--marker-size", type=float, default=0.018, help="Marker size in meters (default: 0.018 = 18mm)"
     )
+    parser.add_argument("--duration", type=int, default=30, help="Capture duration per camera in seconds (default: 30)")
     parser.add_argument(
-        '--duration', type=int, default=30,
-        help='Capture duration per camera in seconds (default: 30)'
+        "--output-dir",
+        "-o",
+        default="./camera_calibrations",
+        help="Output directory for calibration files (default: ./camera_calibrations)",
     )
-    parser.add_argument('--output-dir', '-o', default='./camera_calibrations',
-                       help='Output directory for calibration files (default: ./camera_calibrations)')
-    parser.add_argument('--start-camera', type=int, default=0,
-                       help='Starting camera index (default: 0)')
+    parser.add_argument("--start-camera", type=int, default=0, help="Starting camera index (default: 0)")
 
     args = parser.parse_args()
 
@@ -278,7 +269,7 @@ Examples:
             rows=args.rows,
             square_size=args.square_size,
             marker_size=args.marker_size,
-            output_file=str(output_file)
+            output_file=str(output_file),
         )
 
         if success:
@@ -299,7 +290,7 @@ Examples:
 
     # Summary
     print(f"\n{'='*70}")
-    print(f"📊 CALIBRATION SUMMARY")
+    print("📊 CALIBRATION SUMMARY")
     print(f"{'='*70}")
     print(f"Total cameras: {args.num_cameras}")
     print(f"✅ Successful: {successful}")
@@ -314,13 +305,13 @@ Examples:
             try:
                 with open(calib_file) as f:
                     data = json.load(f)
-                    cam_idx = data.get('camera_index', '?')
+                    cam_idx = data.get("camera_index", "?")
                     print(f"   - {calib_file.name} (Camera {cam_idx})")
-            except:
+            except BaseException:
                 print(f"   - {calib_file.name}")
 
     return 0 if failed == 0 else 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     exit(main())

@@ -161,7 +161,7 @@ def mock_state_machine():
 
 @pytest.fixture
 def integration_test_setup(mock_safety_manager, mock_navigation,
-                          mock_vision, mock_control, mock_state_machine):
+                           mock_vision, mock_control, mock_state_machine):
     """Provide complete integration test setup."""
     return {
         'safety': mock_safety_manager,

@@ -35,12 +35,10 @@ from .emergency_response_coordinator import EmergencyResponseCoordinator, Emerge
 # Non-invasive monitoring
 from .monitoring_system import (
     MonitoringConfig,
-    MonitoringEvent,
     SamplingRate,
     get_monitor,
     record_detection,
     record_emergency,
-    record_failure,
 )
 from .system_health_monitor import SystemHealthMonitor
 

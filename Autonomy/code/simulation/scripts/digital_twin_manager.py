@@ -100,54 +100,32 @@ class DigitalTwinManager(Node):
         )
 
         # Subscribers - Physical system inputs
-        self.gps_sub = self.create_subscription(
-            NavSatFix, "/rover/gps/fix", self.gps_callback, sensor_qos
-        )
-        self.imu_sub = self.create_subscription(
-            Imu, "/rover/imu/data", self.imu_callback, sensor_qos
-        )
-        self.odom_sub = self.create_subscription(
-            Odometry, "/odom", self.odom_callback, sensor_qos
-        )
+        self.gps_sub = self.create_subscription(NavSatFix, "/rover/gps/fix", self.gps_callback, sensor_qos)
+        self.imu_sub = self.create_subscription(Imu, "/rover/imu/data", self.imu_callback, sensor_qos)
+        self.odom_sub = self.create_subscription(Odometry, "/odom", self.odom_callback, sensor_qos)
 
         # PLACEHOLDER: Additional physical system subscribers would go here
         # self.health_sub = self.create_subscription(SystemHealth, '/system/health', ...)
         # self.state_sub = self.create_subscription(RoverState, '/rover/state', ...)
 
         # Publishers
-        self.twin_state_pub = self.create_publisher(
-            DigitalTwinState, "/digital_twin/state", control_qos
-        )
-        self.prediction_pub = self.create_publisher(
-            Path, "/digital_twin/prediction", control_qos
-        )
-        self.sync_status_pub = self.create_publisher(
-            String, "/digital_twin/sync_status", control_qos
-        )
-        self.health_pub = self.create_publisher(
-            String, "/digital_twin/health", control_qos
-        )
+        self.twin_state_pub = self.create_publisher(DigitalTwinState, "/digital_twin/state", control_qos)
+        self.prediction_pub = self.create_publisher(Path, "/digital_twin/prediction", control_qos)
+        self.sync_status_pub = self.create_publisher(String, "/digital_twin/sync_status", control_qos)
+        self.health_pub = self.create_publisher(String, "/digital_twin/health", control_qos)
 
         # PLACEHOLDER: Control command publishers for real-to-virtual sync
-        self.control_cmd_pub = self.create_publisher(
-            TwinSyncCommand, "/digital_twin/control_command", control_qos
-        )
+        self.control_cmd_pub = self.create_publisher(TwinSyncCommand, "/digital_twin/control_command", control_qos)
 
         # Timers
         self.sync_timer = self.create_timer(1.0 / self.sync_rate, self.sync_callback)
-        self.health_timer = self.create_timer(
-            self.health_check_interval, self.health_check_callback
-        )
+        self.health_timer = self.create_timer(self.health_check_interval, self.health_check_callback)
 
         # PLACEHOLDER: Prediction timer (would run physics/model prediction)
         self.prediction_timer = self.create_timer(0.5, self.prediction_callback)
 
-        self.get_logger().info(
-            "Digital Twin Manager initialized with PLACEHOLDER values"
-        )
-        self.get_logger().warn(
-            "WARNING: Using PLACEHOLDER values - Real implementation required for production use"
-        )
+        self.get_logger().info("Digital Twin Manager initialized with PLACEHOLDER values")
+        self.get_logger().warn("WARNING: Using PLACEHOLDER values - Real implementation required for production use")
 
     def gps_callback(self, msg: NavSatFix):
         """Handle GPS data from physical system."""
@@ -206,12 +184,8 @@ class DigitalTwinManager(Node):
         # PLACEHOLDER: Simple sync logic - Real implementation would be more sophisticated
         if self.physical_state and self.virtual_state:
             # Calculate sync delay (PLACEHOLDER calculation)
-            physical_time = max(
-                [v.get("timestamp", 0) for v in self.physical_state.values()]
-            )
-            virtual_time = max(
-                [v.get("timestamp", 0) for v in self.virtual_state.values()]
-            )
+            physical_time = max([v.get("timestamp", 0) for v in self.physical_state.values()])
+            virtual_time = max([v.get("timestamp", 0) for v in self.virtual_state.values()])
             sync_delay = abs(current_time - max(physical_time, virtual_time))
 
             if sync_delay < self.max_sync_delay:

@@ -13,7 +13,6 @@ import threading
 import time
 
 import rclpy
-from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from std_msgs.msg import Float32, String

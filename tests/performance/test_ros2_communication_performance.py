@@ -6,27 +6,22 @@ Tests the performance difference between intra-process and inter-process communi
 for ROS2 topics, measuring latency, throughput, and resource usage.
 """
 
-import asyncio
 import os
 import statistics
 import sys
-import threading
 import time
 import unittest
-from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import psutil
 import rclpy
-
-# Add project paths
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-
-from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Imu
 from std_msgs.msg import String
+
+# Add project paths
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
 class ROS2CommunicationPerformanceTest(unittest.TestCase):
@@ -129,7 +124,8 @@ class ROS2CommunicationPerformanceTest(unittest.TestCase):
 
         # Print results
         for msg_size, results in latency_results.items():
-            print(f"    {msg_size} bytes: {results['avg_latency_ms']:.3f}ms avg, {results['p95_latency_ms']:.3f}ms p95, {results['throughput_msg_per_sec']:.1f} msg/s")
+            print(
+                f"    {msg_size} bytes: {results['avg_latency_ms']:.3f}ms avg, {results['p95_latency_ms']:.3f}ms p95, {results['throughput_msg_per_sec']:.1f} msg/s")
 
     def test_inter_process_latency(self):
         """Test latency for inter-process communication."""
@@ -190,7 +186,8 @@ class ROS2CommunicationPerformanceTest(unittest.TestCase):
 
         # Print results
         for msg_size, results in latency_results.items():
-            print(f"    {msg_size} bytes: {results['avg_latency_ms']:.3f}ms avg, {results['p95_latency_ms']:.3f}ms p95, {results['throughput_msg_per_sec']:.1f} msg/s")
+            print(
+                f"    {msg_size} bytes: {results['avg_latency_ms']:.3f}ms avg, {results['p95_latency_ms']:.3f}ms p95, {results['throughput_msg_per_sec']:.1f} msg/s")
 
     def test_high_frequency_throughput(self):
         """Test throughput for high-frequency topics like IMU and cmd_vel."""
@@ -273,7 +270,8 @@ class ROS2CommunicationPerformanceTest(unittest.TestCase):
 
         # Print results
         for comm_type, results in throughput_results.items():
-            print(f"    {comm_type}: {results['send_rate_hz']:.1f} Hz sent, {results['receive_rate_hz']:.1f} Hz received, {results['loss_rate_percent']:.2f}% loss")
+            print(
+                f"    {comm_type}: {results['send_rate_hz']:.1f} Hz sent, {results['receive_rate_hz']:.1f} Hz received, {results['loss_rate_percent']:.2f}% loss")
 
     def test_resource_usage_comparison(self):
         """Test resource usage difference between intra-process and inter-process."""
@@ -387,7 +385,8 @@ class ROS2CommunicationPerformanceTest(unittest.TestCase):
             print(f"  Loss rate: {inter['loss_rate_percent']:.2f}%")
 
             if intra['receive_rate_hz'] > 0 and inter['receive_rate_hz'] > 0:
-                throughput_improvement = ((intra['receive_rate_hz'] - inter['receive_rate_hz']) / inter['receive_rate_hz']) * 100
+                throughput_improvement = (
+                    (intra['receive_rate_hz'] - inter['receive_rate_hz']) / inter['receive_rate_hz']) * 100
                 print(f"  Throughput improvement: {throughput_improvement:+.1f}%")
 
         if 'resource_usage' in self.results:

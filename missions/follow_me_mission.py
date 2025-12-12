@@ -15,7 +15,7 @@ Author: URC 2026 Autonomy Team
 import math
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional
 
 import cv2
 import cv2.aruco as aruco
@@ -23,12 +23,12 @@ import numpy as np
 import rclpy
 
 # ROS2 Messages
-from geometry_msgs.msg import Point, Pose, PoseStamped, Twist, Vector3
+from geometry_msgs.msg import Point, PoseStamped, Twist
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import CameraInfo, Image
-from std_msgs.msg import Bool, Float32, String
+from std_msgs.msg import Float32, String
 from std_srvs.srv import Trigger
 from visualization_msgs.msg import Marker, MarkerArray
 

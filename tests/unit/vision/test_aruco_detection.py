@@ -6,9 +6,8 @@ Tests marker detection, pose estimation, and keyboard mapping.
 """
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
-import cv2
 import numpy as np
 
 
@@ -59,7 +58,7 @@ class TestArucoDetection(unittest.TestCase):
         # Mock multiple markers
         mock_corners = [
             np.array([[[50, 50], [150, 50], [150, 150], [50, 150]]]),   # Marker 0
-            np.array([[[300, 100], [400, 100], [400, 200], [300, 200]]]) # Marker 1
+            np.array([[[300, 100], [400, 100], [400, 200], [300, 200]]])  # Marker 1
         ]
         mock_ids = np.array([0, 1])
         mock_rejected = [np.array([[[500, 500], [550, 500], [550, 550], [500, 550]]])]
@@ -211,12 +210,12 @@ class TestArucoDetection(unittest.TestCase):
 
         # Test pose continuity (shouldn't jump suddenly)
         for i in range(1, len(poses_over_time)):
-            prev_pos = np.array(poses_over_time[i-1]['position'])
+            prev_pos = np.array(poses_over_time[i - 1]['position'])
             curr_pos = np.array(poses_over_time[i]['position'])
             distance = np.linalg.norm(curr_pos - prev_pos)
 
             # Pose changes should be gradual (< 5cm per second)
-            time_diff = poses_over_time[i]['timestamp'] - poses_over_time[i-1]['timestamp']
+            time_diff = poses_over_time[i]['timestamp'] - poses_over_time[i - 1]['timestamp']
             velocity = distance / time_diff if time_diff > 0 else float('inf')
 
             self.assertLess(velocity, 0.5)  # Less than 50 cm/s movement

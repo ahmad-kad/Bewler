@@ -15,7 +15,7 @@ import base64
 import json
 import time
 import zlib
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 # Data processing
 import numpy as np
@@ -26,8 +26,8 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
-from sensor_msgs.msg import Image, PointCloud2
-from std_msgs.msg import Float32, String
+from sensor_msgs.msg import PointCloud2
+from std_msgs.msg import String
 from std_srvs.srv import Trigger
 
 
@@ -151,7 +151,6 @@ class MapDataBridge(Node):
     def slam_status_callback(self, msg: String):
         """Handle SLAM status updates"""
         # Could use this to validate map data
-        pass
 
     # Service callbacks
     def request_map_callback(self, request, response):
@@ -168,7 +167,6 @@ class MapDataBridge(Node):
             response.success = False
             response.message = "No map data available"
         return response
-
 
     # Publishing methods
     def publish_map_update(self):

@@ -107,9 +107,7 @@ class WebSocketSensorBridgeNode(Node):
         self.connection_timeout = self.get_parameter("connection_timeout").value
         self.health_check_interval = self.get_parameter("health_check_interval").value
         self.message_timeout = self.get_parameter("message_timeout").value
-        self.enable_graceful_degradation = self.get_parameter(
-            "enable_graceful_degradation"
-        ).value
+        self.enable_graceful_degradation = self.get_parameter("enable_graceful_degradation").value
 
         # Connection state and metrics
         self.connection_state = ConnectionState.DISCONNECTED
@@ -312,38 +310,24 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 # Create publisher based on sensor type
                 if sensor_name == "imu":
-                    publisher = self.create_publisher(
-                        Imu, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(Imu, config.topic_name, config.qos_profile)
                 elif sensor_name == "gps":
-                    publisher = self.create_publisher(
-                        NavSatFix, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(NavSatFix, config.topic_name, config.qos_profile)
                 elif sensor_name == "battery":
-                    publisher = self.create_publisher(
-                        BatteryState, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(BatteryState, config.topic_name, config.qos_profile)
                 elif sensor_name == "wheel_odom":
-                    publisher = self.create_publisher(
-                        Odometry, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(Odometry, config.topic_name, config.qos_profile)
                 elif sensor_name == "temperature":
-                    publisher = self.create_publisher(
-                        Temperature, config.topic_name, config.qos_profile
-                    )
+                    publisher = self.create_publisher(Temperature, config.topic_name, config.qos_profile)
                 else:
                     self.get_logger().warn(f"Unknown sensor type: {sensor_name}")
                     continue
 
                 self.publishers[sensor_name] = publisher
-                self.get_logger().info(
-                    f"Setup publisher for {sensor_name} on topic {config.topic_name}"
-                )
+                self.get_logger().info(f"Setup publisher for {sensor_name} on topic {config.topic_name}")
 
             except Exception as e:
-                self.get_logger().error(
-                    f"Failed to create publisher for {sensor_name}: {e}"
-                )
+                self.get_logger().error(f"Failed to create publisher for {sensor_name}: {e}")
 
     def _schedule_connection_attempt(self):
         """Schedule a WebSocket connection attempt using ROS2 timer."""
@@ -368,9 +352,7 @@ class WebSocketSensorBridgeNode(Node):
 
             # Exponential backoff with max limit
             max_reconnect_interval = self.get_parameter("max_reconnect_interval").value
-            backoff_multiplier = self.get_parameter(
-                "reconnect_backoff_multiplier"
-            ).value
+            backoff_multiplier = self.get_parameter("reconnect_backoff_multiplier").value
 
             self.current_reconnect_interval = min(
                 self.current_reconnect_interval * backoff_multiplier,
@@ -455,9 +437,7 @@ class WebSocketSensorBridgeNode(Node):
                 self._schedule_reconnection()
             else:
                 self.connection_state = ConnectionState.FAILED
-                self.get_logger().error(
-                    f"Max reconnection attempts ({self.max_reconnect_attempts}) reached"
-                )
+                self.get_logger().error(f"Max reconnection attempts ({self.max_reconnect_attempts}) reached")
 
             # Publish connection status
             self._publish_connection_status()
@@ -484,7 +464,7 @@ class WebSocketSensorBridgeNode(Node):
                 self.logger.error(
                     "Invalid JSON message received",
                     error=error,
-                    message_preview=message[:100] if len(message) > 100 else message
+                    message_preview=message[:100] if len(message) > 100 else message,
                 )
                 self.metrics.messages_failed += 1
                 return
@@ -494,9 +474,7 @@ class WebSocketSensorBridgeNode(Node):
             # Validate message structure
             validation_result = self._validate_message_structure(data)
             if not validation_result["valid"]:
-                self.get_logger().error(
-                    f'Invalid message structure: {validation_result["error"]}'
-                )
+                self.get_logger().error(f'Invalid message structure: {validation_result["error"]}')
                 self.metrics.messages_failed += 1
                 return
 
@@ -509,17 +487,13 @@ class WebSocketSensorBridgeNode(Node):
 
             for sensor_name, sensor_data in sensors.items():
                 try:
-                    success = self._process_sensor_data(
-                        sensor_name, sensor_data, timestamp
-                    )
+                    success = self._process_sensor_data(sensor_name, sensor_data, timestamp)
                     if success:
                         processed_sensors += 1
                     else:
                         failed_sensors += 1
                 except Exception as e:
-                    self.get_logger().error(
-                        f"Error processing sensor {sensor_name}: {e}"
-                    )
+                    self.get_logger().error(f"Error processing sensor {sensor_name}: {e}")
                     failed_sensors += 1
 
             # Update metrics
@@ -532,14 +506,11 @@ class WebSocketSensorBridgeNode(Node):
             if self.metrics.avg_processing_time == 0:
                 self.metrics.avg_processing_time = processing_time
             else:
-                self.metrics.avg_processing_time = (
-                    self.metrics.avg_processing_time + processing_time
-                ) / 2.0
+                self.metrics.avg_processing_time = (self.metrics.avg_processing_time + processing_time) / 2.0
 
             if processed_sensors > 0:
                 self.get_logger().debug(
-                    f"Processed {processed_sensors} sensors, {failed_sensors} failed "
-                    f"({processing_time:.3f}s)"
+                    f"Processed {processed_sensors} sensors, {failed_sensors} failed " f"({processing_time:.3f}s)"
                 )
 
         except Exception as e:
@@ -589,9 +560,7 @@ class WebSocketSensorBridgeNode(Node):
         except Exception as e:
             return {"valid": False, "error": f"Validation error: {str(e)}"}
 
-    def _process_sensor_data(
-        self, sensor_name: str, sensor_data: Any, timestamp: float
-    ) -> bool:
+    def _process_sensor_data(self, sensor_name: str, sensor_data: Any, timestamp: float) -> bool:
         """Process individual sensor data with validation and error handling."""
         try:
             # Check if sensor is enabled and configured
@@ -610,17 +579,13 @@ class WebSocketSensorBridgeNode(Node):
             # Validate sensor data
             validation_result = self._validate_sensor_data(sensor_name, sensor_data)
             if not validation_result["valid"]:
-                self.get_logger().error(
-                    f'Invalid data for sensor {sensor_name}: {validation_result["error"]}'
-                )
+                self.get_logger().error(f'Invalid data for sensor {sensor_name}: {validation_result["error"]}')
                 return False
 
             # Convert to ROS2 message
             ros_message = config.message_converter(sensor_data, timestamp)
             if ros_message is None:
-                self.get_logger().error(
-                    f"Failed to convert data for sensor {sensor_name}"
-                )
+                self.get_logger().error(f"Failed to convert data for sensor {sensor_name}")
                 return False
 
             # Publish message
@@ -635,9 +600,7 @@ class WebSocketSensorBridgeNode(Node):
             self.get_logger().error(f"Unexpected error processing {sensor_name}: {e}")
             return False
 
-    def _validate_sensor_data(
-        self, sensor_name: str, sensor_data: Any
-    ) -> Dict[str, Any]:
+    def _validate_sensor_data(self, sensor_name: str, sensor_data: Any) -> Dict[str, Any]:
         """Validate sensor-specific data with range and type checking."""
         try:
             if not isinstance(sensor_data, dict):
@@ -681,9 +644,7 @@ class WebSocketSensorBridgeNode(Node):
                     "error": f"Accelerometer {axis} must be numeric",
                 }
             if abs(accel[axis]) > 100:  # Reasonable range check
-                self.get_logger().warn(
-                    f"Unusual accelerometer value: {axis}={accel[axis]}"
-                )
+                self.get_logger().warn(f"Unusual accelerometer value: {axis}={accel[axis]}")
 
         # Validate gyroscope data
         gyro = data["gyro"]
@@ -854,9 +815,7 @@ class WebSocketSensorBridgeNode(Node):
         try:
             # Reset to normal operation
             status_msg = String()
-            status_msg.data = json.dumps(
-                {"state": "normal_operation", "timestamp": time.time()}
-            )
+            status_msg.data = json.dumps({"state": "normal_operation", "timestamp": time.time()})
             self.status_publisher.publish(status_msg)
 
         except Exception as e:
@@ -929,19 +888,13 @@ class WebSocketSensorBridgeNode(Node):
             conn_status.values.extend(
                 [
                     KeyValue(key="connection_state", value=self.connection_state.value),
-                    KeyValue(
-                        key="reconnect_attempts", value=str(self.reconnect_attempts)
-                    ),
+                    KeyValue(key="reconnect_attempts", value=str(self.reconnect_attempts)),
                     KeyValue(
                         key="messages_received",
                         value=str(self.metrics.messages_received),
                     ),
-                    KeyValue(
-                        key="messages_failed", value=str(self.metrics.messages_failed)
-                    ),
-                    KeyValue(
-                        key="uptime_seconds", value=f"{self.metrics.uptime_seconds:.1f}"
-                    ),
+                    KeyValue(key="messages_failed", value=str(self.metrics.messages_failed)),
+                    KeyValue(key="uptime_seconds", value=f"{self.metrics.uptime_seconds:.1f}"),
                     KeyValue(
                         key="avg_processing_time",
                         value=f"{self.metrics.avg_processing_time:.3f}",
@@ -957,9 +910,7 @@ class WebSocketSensorBridgeNode(Node):
             # Calculate performance metrics
             success_rate = 0.0
             if self.metrics.messages_received > 0:
-                success_rate = (
-                    self.metrics.messages_processed / self.metrics.messages_received
-                ) * 100
+                success_rate = (self.metrics.messages_processed / self.metrics.messages_received) * 100
 
             if success_rate > 95:
                 perf_status.level = DiagnosticStatus.OK
@@ -1061,9 +1012,7 @@ class WebSocketSensorBridgeNode(Node):
     # These convert JSON sensor data to ROS2 messages
     # When migrating to direct ROS2, keep these methods but change input source
 
-    def _convert_imu_data(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[Imu]:
+    def _convert_imu_data(self, data: Dict[str, Any], timestamp: float) -> Optional[Imu]:
         """Convert IMU JSON data to ROS2 Imu message with comprehensive error handling."""
         try:
             # Validate input data structure
@@ -1090,9 +1039,7 @@ class WebSocketSensorBridgeNode(Node):
                         ("z", msg.linear_acceleration.z),
                     ]:
                         if abs(value) > 100:  # More than 100 m/s² is suspicious
-                            self.get_logger().warn(
-                                f"Unusual IMU acceleration {axis}: {value} m/s²"
-                            )
+                            self.get_logger().warn(f"Unusual IMU acceleration {axis}: {value} m/s²")
 
                 except (ValueError, TypeError) as e:
                     self.get_logger().error(f"Invalid accelerometer data: {e}")
@@ -1115,9 +1062,7 @@ class WebSocketSensorBridgeNode(Node):
                         ("z", msg.angular_velocity.z),
                     ]:
                         if abs(value) > 50:  # More than 50 rad/s is suspicious
-                            self.get_logger().warn(
-                                f"Unusual IMU angular velocity {axis}: {value} rad/s"
-                            )
+                            self.get_logger().warn(f"Unusual IMU angular velocity {axis}: {value} rad/s")
 
                 except (ValueError, TypeError) as e:
                     self.get_logger().error(f"Invalid gyroscope data: {e}")
@@ -1136,15 +1081,10 @@ class WebSocketSensorBridgeNode(Node):
 
                     # Basic quaternion normalization check
                     norm = (
-                        msg.orientation.x**2
-                        + msg.orientation.y**2
-                        + msg.orientation.z**2
-                        + msg.orientation.w**2
+                        msg.orientation.x**2 + msg.orientation.y**2 + msg.orientation.z**2 + msg.orientation.w**2
                     ) ** 0.5
                     if abs(norm - 1.0) > 0.1:  # Allow some tolerance
-                        self.get_logger().warn(
-                            f"Quaternion not normalized: norm={norm:.3f}"
-                        )
+                        self.get_logger().warn(f"Quaternion not normalized: norm={norm:.3f}")
 
                 except (ValueError, TypeError) as e:
                     self.get_logger().error(f"Invalid orientation data: {e}")
@@ -1154,27 +1094,15 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 accel_cov = data.get("accel_covariance", [0.01, 0.01, 0.01])
                 gyro_cov = data.get("gyro_covariance", [0.01, 0.01, 0.01])
-                orientation_cov = data.get(
-                    "orientation_covariance", [0.01, 0.01, 0.01, 0.01]
-                )
+                orientation_cov = data.get("orientation_covariance", [0.01, 0.01, 0.01, 0.01])
 
                 # Validate covariance dimensions
-                if (
-                    len(accel_cov) == 3
-                    and len(gyro_cov) == 3
-                    and len(orientation_cov) == 4
-                ):
-                    msg.linear_acceleration_covariance = (
-                        accel_cov + [0.0] * 6 + [0.0] * 3
-                    )
-                    msg.angular_velocity_covariance = (
-                        [0.0] * 3 + gyro_cov + [0.0] * 3 + [0.0] * 3
-                    )
+                if len(accel_cov) == 3 and len(gyro_cov) == 3 and len(orientation_cov) == 4:
+                    msg.linear_acceleration_covariance = accel_cov + [0.0] * 6 + [0.0] * 3
+                    msg.angular_velocity_covariance = [0.0] * 3 + gyro_cov + [0.0] * 3 + [0.0] * 3
                     msg.orientation_covariance = orientation_cov + [0.0] * 5 + [0.0] * 6
                 else:
-                    self.get_logger().warn(
-                        "Invalid covariance dimensions, using defaults"
-                    )
+                    self.get_logger().warn("Invalid covariance dimensions, using defaults")
                     # Use default covariances
                     msg.linear_acceleration_covariance = [
                         0.01,
@@ -1211,9 +1139,7 @@ class WebSocketSensorBridgeNode(Node):
                     ]
 
             except Exception as e:
-                self.get_logger().warn(
-                    f"Error setting covariances, using defaults: {e}"
-                )
+                self.get_logger().warn(f"Error setting covariances, using defaults: {e}")
                 # Use safe defaults
                 msg.linear_acceleration_covariance = [0.01] * 9
                 msg.angular_velocity_covariance = [0.01] * 9
@@ -1225,9 +1151,7 @@ class WebSocketSensorBridgeNode(Node):
             self.get_logger().error(f"Unexpected error converting IMU data: {e}")
             return None
 
-    def _convert_gps_data(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[NavSatFix]:
+    def _convert_gps_data(self, data: Dict[str, Any], timestamp: float) -> Optional[NavSatFix]:
         """Convert GPS JSON data to ROS2 NavSatFix message with comprehensive error handling."""
         try:
             # Validate input data structure
@@ -1243,9 +1167,7 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 latitude = float(data.get("lat", 0.0))
                 if not -90 <= latitude <= 90:
-                    self.get_logger().error(
-                        f"Invalid GPS latitude: {latitude} (must be -90 to 90)"
-                    )
+                    self.get_logger().error(f"Invalid GPS latitude: {latitude} (must be -90 to 90)")
                     return None
                 msg.latitude = latitude
             except (ValueError, TypeError) as e:
@@ -1256,9 +1178,7 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 longitude = float(data.get("lon", 0.0))
                 if not -180 <= longitude <= 180:
-                    self.get_logger().error(
-                        f"Invalid GPS longitude: {longitude} (must be -180 to 180)"
-                    )
+                    self.get_logger().error(f"Invalid GPS longitude: {longitude} (must be -180 to 180)")
                     return None
                 msg.longitude = longitude
             except (ValueError, TypeError) as e:
@@ -1280,47 +1200,33 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 status = int(data.get("status", 0))
                 if not 0 <= status <= 2:  # Valid NavSatStatus values
-                    self.get_logger().warn(
-                        f"Invalid GPS status: {status}, using STATUS_NO_FIX"
-                    )
+                    self.get_logger().warn(f"Invalid GPS status: {status}, using STATUS_NO_FIX")
                     status = -1  # STATUS_NO_FIX
                 msg.status.status = status
 
                 service = int(data.get("service", 1))
                 if service < 0:
-                    self.get_logger().warn(
-                        f"Invalid GPS service: {service}, using SERVICE_NONE"
-                    )
+                    self.get_logger().warn(f"Invalid GPS service: {service}, using SERVICE_NONE")
                     service = 0  # SERVICE_NONE
                 msg.status.service = service
 
             except (ValueError, TypeError) as e:
-                self.get_logger().warn(
-                    f"Invalid GPS status/service values: {e}, using defaults"
-                )
+                self.get_logger().warn(f"Invalid GPS status/service values: {e}, using defaults")
                 msg.status.status = -1  # STATUS_NO_FIX
                 msg.status.service = 0  # SERVICE_NONE
 
             # Position covariance validation
             try:
-                covariance = data.get(
-                    "position_covariance", [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 2.0]
-                )
+                covariance = data.get("position_covariance", [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 2.0])
                 if isinstance(covariance, list) and len(covariance) == 9:
                     # Validate that diagonal elements are positive
                     if covariance[0] <= 0 or covariance[4] <= 0 or covariance[8] <= 0:
-                        self.get_logger().warn(
-                            "GPS covariance diagonal elements must be positive, using defaults"
-                        )
+                        self.get_logger().warn("GPS covariance diagonal elements must be positive, using defaults")
                         covariance = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 2.0]
                     msg.position_covariance = covariance
-                    msg.position_covariance_type = (
-                        NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
-                    )
+                    msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
                 else:
-                    self.get_logger().warn(
-                        "Invalid GPS covariance format, using defaults"
-                    )
+                    self.get_logger().warn("Invalid GPS covariance format, using defaults")
                     msg.position_covariance = [
                         1.0,
                         0.0,
@@ -1332,14 +1238,10 @@ class WebSocketSensorBridgeNode(Node):
                         0.0,
                         2.0,
                     ]
-                    msg.position_covariance_type = (
-                        NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
-                    )
+                    msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
 
             except Exception as e:
-                self.get_logger().warn(
-                    f"Error setting GPS covariance: {e}, using defaults"
-                )
+                self.get_logger().warn(f"Error setting GPS covariance: {e}, using defaults")
                 msg.position_covariance = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 2.0]
                 msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
 
@@ -1349,9 +1251,7 @@ class WebSocketSensorBridgeNode(Node):
             self.get_logger().error(f"Unexpected error converting GPS data: {e}")
             return None
 
-    def _convert_battery_data(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[BatteryState]:
+    def _convert_battery_data(self, data: Dict[str, Any], timestamp: float) -> Optional[BatteryState]:
         """Convert battery JSON data to ROS2 BatteryState message with comprehensive error handling."""
         try:
             # Validate input data structure
@@ -1367,9 +1267,7 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 voltage = float(data.get("voltage", 0.0))
                 if voltage < 0 or voltage > 50:
-                    self.get_logger().error(
-                        f"Invalid battery voltage: {voltage}V (must be 0-50V)"
-                    )
+                    self.get_logger().error(f"Invalid battery voltage: {voltage}V (must be 0-50V)")
                     return None
                 msg.voltage = voltage
             except (ValueError, TypeError) as e:
@@ -1380,9 +1278,7 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 percentage = float(data.get("percentage", 0.0))
                 if not 0 <= percentage <= 100:
-                    self.get_logger().error(
-                        f"Invalid battery percentage: {percentage}% (must be 0-100%)"
-                    )
+                    self.get_logger().error(f"Invalid battery percentage: {percentage}% (must be 0-100%)")
                     return None
                 msg.percentage = percentage
             except (ValueError, TypeError) as e:
@@ -1392,16 +1288,12 @@ class WebSocketSensorBridgeNode(Node):
             # Current validation (reasonable range: -100A to 100A)
             try:
                 current = float(data.get("current", float("nan")))
-                if (
-                    not (current != current) and abs(current) > 100
-                ):  # Check if not NaN and within range
+                if not (current != current) and abs(current) > 100:  # Check if not NaN and within range
                     self.get_logger().warn(f"Unusual battery current: {current}A")
                     # Don't fail, just warn
                 msg.current = current
             except (ValueError, TypeError) as e:
-                self.get_logger().warn(
-                    f"Invalid battery current value: {e}, setting to NaN"
-                )
+                self.get_logger().warn(f"Invalid battery current value: {e}, setting to NaN")
                 msg.current = float("nan")
 
             # Charge validation (0 to capacity)
@@ -1409,88 +1301,58 @@ class WebSocketSensorBridgeNode(Node):
                 charge = float(data.get("charge", float("nan")))
                 if not (charge != charge):  # If not NaN
                     if charge < 0:
-                        self.get_logger().warn(
-                            f"Negative battery charge: {charge}Ah, setting to 0"
-                        )
+                        self.get_logger().warn(f"Negative battery charge: {charge}Ah, setting to 0")
                         charge = 0.0
                     # Could validate against capacity here if available
                 msg.charge = charge
             except (ValueError, TypeError) as e:
-                self.get_logger().warn(
-                    f"Invalid battery charge value: {e}, setting to NaN"
-                )
+                self.get_logger().warn(f"Invalid battery charge value: {e}, setting to NaN")
                 msg.charge = float("nan")
 
             # Capacity validation
             try:
                 capacity = float(data.get("capacity", float("nan")))
-                if (
-                    not (capacity != capacity) and capacity <= 0
-                ):  # If not NaN and negative/zero
-                    self.get_logger().warn(
-                        f"Invalid battery capacity: {capacity}Ah, setting to NaN"
-                    )
+                if not (capacity != capacity) and capacity <= 0:  # If not NaN and negative/zero
+                    self.get_logger().warn(f"Invalid battery capacity: {capacity}Ah, setting to NaN")
                     capacity = float("nan")
                 msg.capacity = capacity
 
                 design_capacity = float(data.get("design_capacity", float("nan")))
                 if not (design_capacity != design_capacity) and design_capacity <= 0:
-                    self.get_logger().warn(
-                        f"Invalid battery design capacity: {design_capacity}Ah, setting to NaN"
-                    )
+                    self.get_logger().warn(f"Invalid battery design capacity: {design_capacity}Ah, setting to NaN")
                     design_capacity = float("nan")
                 msg.design_capacity = design_capacity
 
             except (ValueError, TypeError) as e:
-                self.get_logger().warn(
-                    f"Invalid battery capacity values: {e}, setting to NaN"
-                )
+                self.get_logger().warn(f"Invalid battery capacity values: {e}, setting to NaN")
                 msg.capacity = float("nan")
                 msg.design_capacity = float("nan")
 
             # Power supply status validation
             try:
-                status = int(
-                    data.get("status", BatteryState.POWER_SUPPLY_STATUS_UNKNOWN)
-                )
+                status = int(data.get("status", BatteryState.POWER_SUPPLY_STATUS_UNKNOWN))
                 if not 0 <= status <= 4:  # Valid POWER_SUPPLY_STATUS_* constants
-                    self.get_logger().warn(
-                        f"Invalid power supply status: {status}, using UNKNOWN"
-                    )
+                    self.get_logger().warn(f"Invalid power supply status: {status}, using UNKNOWN")
                     status = BatteryState.POWER_SUPPLY_STATUS_UNKNOWN
                 msg.power_supply_status = status
 
-                health = int(
-                    data.get("health", BatteryState.POWER_SUPPLY_HEALTH_UNKNOWN)
-                )
+                health = int(data.get("health", BatteryState.POWER_SUPPLY_HEALTH_UNKNOWN))
                 if not 0 <= health <= 8:  # Valid POWER_SUPPLY_HEALTH_* constants
-                    self.get_logger().warn(
-                        f"Invalid power supply health: {health}, using UNKNOWN"
-                    )
+                    self.get_logger().warn(f"Invalid power supply health: {health}, using UNKNOWN")
                     health = BatteryState.POWER_SUPPLY_HEALTH_UNKNOWN
                 msg.power_supply_health = health
 
-                technology = int(
-                    data.get("technology", BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN)
-                )
-                if (
-                    not 0 <= technology <= 5
-                ):  # Valid POWER_SUPPLY_TECHNOLOGY_* constants
-                    self.get_logger().warn(
-                        f"Invalid power supply technology: {technology}, using UNKNOWN"
-                    )
+                technology = int(data.get("technology", BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN))
+                if not 0 <= technology <= 5:  # Valid POWER_SUPPLY_TECHNOLOGY_* constants
+                    self.get_logger().warn(f"Invalid power supply technology: {technology}, using UNKNOWN")
                     technology = BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN
                 msg.power_supply_technology = technology
 
             except (ValueError, TypeError) as e:
-                self.get_logger().warn(
-                    f"Invalid power supply status values: {e}, using UNKNOWN"
-                )
+                self.get_logger().warn(f"Invalid power supply status values: {e}, using UNKNOWN")
                 msg.power_supply_status = BatteryState.POWER_SUPPLY_STATUS_UNKNOWN
                 msg.power_supply_health = BatteryState.POWER_SUPPLY_HEALTH_UNKNOWN
-                msg.power_supply_technology = (
-                    BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN
-                )
+                msg.power_supply_technology = BatteryState.POWER_SUPPLY_TECHNOLOGY_UNKNOWN
 
             # Cell data validation
             try:
@@ -1502,9 +1364,7 @@ class WebSocketSensorBridgeNode(Node):
                         try:
                             v = float(voltage)
                             if v < 0 or v > 10:  # Reasonable cell voltage range
-                                self.get_logger().warn(
-                                    f"Invalid cell {i} voltage: {v}V"
-                                )
+                                self.get_logger().warn(f"Invalid cell {i} voltage: {v}V")
                                 continue
                             validated_voltages.append(v)
                         except (ValueError, TypeError):
@@ -1522,15 +1382,11 @@ class WebSocketSensorBridgeNode(Node):
                         try:
                             t = float(temp)
                             if t < -50 or t > 150:  # Reasonable temperature range
-                                self.get_logger().warn(
-                                    f"Invalid cell {i} temperature: {t}°C"
-                                )
+                                self.get_logger().warn(f"Invalid cell {i} temperature: {t}°C")
                                 continue
                             validated_temps.append(t)
                         except (ValueError, TypeError):
-                            self.get_logger().warn(
-                                f"Invalid cell {i} temperature value"
-                            )
+                            self.get_logger().warn(f"Invalid cell {i} temperature value")
                             continue
                     msg.cell_temperature = validated_temps
                 else:
@@ -1540,24 +1396,16 @@ class WebSocketSensorBridgeNode(Node):
                 # Overall temperature
                 try:
                     temperature = float(data.get("temperature", float("nan")))
-                    if not (temperature != temperature) and (
-                        temperature < -50 or temperature > 150
-                    ):
-                        self.get_logger().warn(
-                            f"Invalid battery temperature: {temperature}°C, setting to NaN"
-                        )
+                    if not (temperature != temperature) and (temperature < -50 or temperature > 150):
+                        self.get_logger().warn(f"Invalid battery temperature: {temperature}°C, setting to NaN")
                         temperature = float("nan")
                     msg.temperature = temperature
                 except (ValueError, TypeError) as e:
-                    self.get_logger().warn(
-                        f"Invalid battery temperature: {e}, setting to NaN"
-                    )
+                    self.get_logger().warn(f"Invalid battery temperature: {e}, setting to NaN")
                     msg.temperature = float("nan")
 
             except Exception as e:
-                self.get_logger().warn(
-                    f"Error processing cell data: {e}, using empty arrays"
-                )
+                self.get_logger().warn(f"Error processing cell data: {e}, using empty arrays")
                 msg.cell_voltage = []
                 msg.cell_temperature = []
                 msg.temperature = float("nan")
@@ -1568,9 +1416,7 @@ class WebSocketSensorBridgeNode(Node):
             self.get_logger().error(f"Unexpected error converting battery data: {e}")
             return None
 
-    def _convert_wheel_odom(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[Odometry]:
+    def _convert_wheel_odom(self, data: Dict[str, Any], timestamp: float) -> Optional[Odometry]:
         """Convert wheel odometry JSON data to ROS2 Odometry message with comprehensive error handling."""
         try:
             # Validate input data structure
@@ -1602,9 +1448,7 @@ class WebSocketSensorBridgeNode(Node):
                 # Basic quaternion normalization check
                 norm = (qx**2 + qy**2 + qz**2 + qw**2) ** 0.5
                 if abs(norm - 1.0) > 0.1:  # Allow some tolerance
-                    self.get_logger().warn(
-                        f"Odometry quaternion not normalized: norm={norm:.3f}"
-                    )
+                    self.get_logger().warn(f"Odometry quaternion not normalized: norm={norm:.3f}")
                     # Don't fail, just warn
 
                 msg.pose.pose.orientation.x = qx
@@ -1627,15 +1471,9 @@ class WebSocketSensorBridgeNode(Node):
 
                 # Sanity checks for velocities
                 if abs(msg.twist.twist.linear.x) > 10:  # More than 10 m/s is suspicious
-                    self.get_logger().warn(
-                        f"Unusual linear velocity: {msg.twist.twist.linear.x} m/s"
-                    )
-                if (
-                    abs(msg.twist.twist.angular.z) > 5
-                ):  # More than 5 rad/s is suspicious
-                    self.get_logger().warn(
-                        f"Unusual angular velocity: {msg.twist.twist.angular.z} rad/s"
-                    )
+                    self.get_logger().warn(f"Unusual linear velocity: {msg.twist.twist.linear.x} m/s")
+                if abs(msg.twist.twist.angular.z) > 5:  # More than 5 rad/s is suspicious
+                    self.get_logger().warn(f"Unusual angular velocity: {msg.twist.twist.angular.z} rad/s")
 
             except (ValueError, TypeError) as e:
                 self.get_logger().error(f"Invalid odometry velocity values: {e}")
@@ -1649,37 +1487,27 @@ class WebSocketSensorBridgeNode(Node):
                 if isinstance(pose_covariance, list) and len(pose_covariance) == 36:
                     msg.pose.covariance = pose_covariance
                 else:
-                    self.get_logger().warn(
-                        "Invalid pose covariance format, using defaults"
-                    )
+                    self.get_logger().warn("Invalid pose covariance format, using defaults")
                     msg.pose.covariance = [0.1] * 36
 
                 if isinstance(twist_covariance, list) and len(twist_covariance) == 36:
                     msg.twist.covariance = twist_covariance
                 else:
-                    self.get_logger().warn(
-                        "Invalid twist covariance format, using defaults"
-                    )
+                    self.get_logger().warn("Invalid twist covariance format, using defaults")
                     msg.twist.covariance = [0.1] * 36
 
             except Exception as e:
-                self.get_logger().warn(
-                    f"Error setting covariances: {e}, using defaults"
-                )
+                self.get_logger().warn(f"Error setting covariances: {e}, using defaults")
                 msg.pose.covariance = [0.1] * 36
                 msg.twist.covariance = [0.1] * 36
 
             return msg
 
         except Exception as e:
-            self.get_logger().error(
-                f"Unexpected error converting wheel odometry data: {e}"
-            )
+            self.get_logger().error(f"Unexpected error converting wheel odometry data: {e}")
             return None
 
-    def _convert_temperature(
-        self, data: Dict[str, Any], timestamp: float
-    ) -> Optional[Temperature]:
+    def _convert_temperature(self, data: Dict[str, Any], timestamp: float) -> Optional[Temperature]:
         """Convert temperature JSON data to ROS2 Temperature message with comprehensive error handling."""
         try:
             # Validate input data structure
@@ -1689,9 +1517,7 @@ class WebSocketSensorBridgeNode(Node):
 
             # Check for required temperature field
             if "temperature" not in data:
-                self.get_logger().error(
-                    'Temperature data missing required "temperature" field'
-                )
+                self.get_logger().error('Temperature data missing required "temperature" field')
                 return None
 
             msg = Temperature()
@@ -1702,9 +1528,7 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 temperature = float(data["temperature"])
                 if temperature < -50 or temperature > 150:
-                    self.get_logger().error(
-                        f"Invalid temperature: {temperature}°C (must be -50°C to 150°C)"
-                    )
+                    self.get_logger().error(f"Invalid temperature: {temperature}°C (must be -50°C to 150°C)")
                     return None
                 msg.temperature = temperature
             except (ValueError, TypeError) as e:
@@ -1715,23 +1539,17 @@ class WebSocketSensorBridgeNode(Node):
             try:
                 variance = float(data.get("variance", 0.1))
                 if variance <= 0:
-                    self.get_logger().warn(
-                        f"Invalid variance: {variance}, must be positive, using 0.1"
-                    )
+                    self.get_logger().warn(f"Invalid variance: {variance}, must be positive, using 0.1")
                     variance = 0.1
                 msg.variance = variance
             except (ValueError, TypeError) as e:
-                self.get_logger().warn(
-                    f"Invalid variance value: {e}, using default 0.1"
-                )
+                self.get_logger().warn(f"Invalid variance value: {e}, using default 0.1")
                 msg.variance = 0.1
 
             return msg
 
         except Exception as e:
-            self.get_logger().error(
-                f"Unexpected error converting temperature data: {e}"
-            )
+            self.get_logger().error(f"Unexpected error converting temperature data: {e}")
             return None
 
     def destroy_node(self):

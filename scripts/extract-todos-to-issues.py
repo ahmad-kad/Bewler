@@ -187,7 +187,7 @@ class GitHubIssueCreator:
 
             proj_data = proj_resp.json()
             if "errors" in proj_data or not proj_data.get("data", {}).get("user", {}).get("projectV2"):
-                print(f"      ⚠️ Project not found or access denied")
+                print("      ⚠️ Project not found or access denied")
                 return False
 
             project_id = proj_data["data"]["user"]["projectV2"]["id"]
@@ -237,7 +237,7 @@ class GitHubIssueCreator:
 
                 # Try to add to project
                 if self.add_issue_to_project(issue_id):
-                    print(f"      → Added to project board")
+                    print("      → Added to project board")
 
                 return True
             else:
@@ -292,7 +292,7 @@ def main():
 
     # Summary
     print(f"\n{'='*60}")
-    print(f"📈 Summary:")
+    print("📈 Summary:")
     print(f"   Created: {result['created']} new issues")
     print(f"   Added to project: {result['added_to_project']} items")
     print(f"   Skipped: {result['skipped']} (already exist)")
@@ -301,7 +301,7 @@ def main():
 
     if result['created'] > 0:
         print("✅ Issues created successfully!")
-        print(f"📊 View your project: https://github.com/users/ahmad-kad/projects/5")
+        print("📊 View your project: https://github.com/users/ahmad-kad/projects/5")
 
 
 if __name__ == "__main__":

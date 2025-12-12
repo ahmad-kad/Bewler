@@ -8,7 +8,6 @@ import signal
 import subprocess
 import sys
 import time
-from pathlib import Path
 
 
 class AutonomySystemLauncher:
@@ -88,7 +87,7 @@ class AutonomySystemLauncher:
         if nodes_to_launch is None:
             # Launch in dependency order
             nodes_to_launch = ['safety_watchdog', 'state_machine', 'computer_vision',
-                             'navigation', 'sensor_bridge', 'led_status']
+                               'navigation', 'sensor_bridge', 'led_status']
 
         print(" LAUNCHING URC 2026 AUTONOMY SYSTEM")
         print("=" * 50)
@@ -126,6 +125,7 @@ class AutonomySystemLauncher:
         self.nodes_launched.clear()
         print(" All processes terminated")
 
+
 def main():
     """Main launcher function."""
     launcher = AutonomySystemLauncher()
@@ -154,6 +154,7 @@ def main():
         print(f" Launch error: {e}")
     finally:
         launcher.shutdown()
+
 
 if __name__ == '__main__':
     main()

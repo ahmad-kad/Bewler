@@ -8,12 +8,9 @@ debugging, and maintainability across the autonomy system.
 Author: URC 2026 Autonomy Team
 """
 
-import time
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
-import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
@@ -44,45 +41,58 @@ def safe_execute(func: Callable, *args, **kwargs) -> Result:
 
 # ===== RESULT TYPES =====
 
-from typing import Generic, TypeVar, Union
 
-T = TypeVar('T')
-E = TypeVar('E')
+T = TypeVar("T")
+E = TypeVar("E")
+
 
 @dataclass(frozen=True)
 class Success(Generic[T]):
     """Successful operation result."""
+
     value: T
     operation: str = ""
+
 
 @dataclass(frozen=True)
 class Failure(Generic[E]):
     """Failed operation result."""
+
     error: E
     operation: str = ""
     details: Dict[str, Any] = field(default_factory=dict)
 
+
 OperationResult = Union[Success[T], Failure[E]]
 
 # Common error types
+
+
 @dataclass
 class ValidationError:
     """Validation error with context."""
+
     field: str
     value: Any
     reason: str
 
+
 @dataclass
 class ProcessingError:
     """Processing error with context."""
+
     operation: str
     reason: str
     context: Dict[str, Any] = field(default_factory=dict)
 
+
 # Helper functions for result types
+
+
 def success(value: T, operation: str = "") -> Success[T]:
     """Create success result."""
     return Success(value, operation)
+
 
 def failure(error: E, operation: str = "", **details) -> Failure[E]:
     """Create failure result."""
@@ -91,9 +101,11 @@ def failure(error: E, operation: str = "", **details) -> Failure[E]:
 
 # ===== LOGGING =====
 
+
 @dataclass
 class LogContext:
     """Structured logging context for consistent formatting."""
+
     component: str
     operation: Optional[str] = None
     correlation_id: Optional[str] = None
@@ -150,14 +162,13 @@ class NodeLogger:
         ctx = LogContext(self._component, operation, extra_fields=context)
         self._logger.warn(self._format_message(message, ctx))
 
-    def error(self, message: str, operation: Optional[str] = None, error: Optional[Exception] = None, **context) -> None:
+    def error(
+        self, message: str, operation: Optional[str] = None, error: Optional[Exception] = None, **context
+    ) -> None:
         """Log error message with optional exception and context."""
         ctx_fields = dict(context)
         if error:
-            ctx_fields.update({
-                "error_type": type(error).__name__,
-                "error_message": str(error)
-            })
+            ctx_fields.update({"error_type": type(error).__name__, "error_message": str(error)})
         ctx = LogContext(self._component, operation, extra_fields=ctx_fields)
         self._logger.error(self._format_message(message, ctx))
 
@@ -171,6 +182,7 @@ class NodeLogger:
 
 ValidatorFunc = Callable[[Any], bool]
 """Type alias for parameter validation functions."""
+
 
 @dataclass
 class NodeParameters:
@@ -186,49 +198,49 @@ class NodeParameters:
     node_specific_params: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def for_navigation(cls) -> 'NodeParameters':
+    def for_navigation(cls) -> "NodeParameters":
         """Navigation-specific parameters."""
         return cls(
             update_rate=20.0,  # Higher for navigation
-            timeout=30.0,      # Longer timeouts
+            timeout=30.0,  # Longer timeouts
             node_specific_params={
                 "waypoint_tolerance": 2.0,
                 "obstacle_distance": 5.0,
                 "max_linear_velocity": 1.0,
                 "max_angular_velocity": 1.0,
-            }
+            },
         )
 
     @classmethod
-    def for_vision(cls) -> 'NodeParameters':
+    def for_vision(cls) -> "NodeParameters":
         """Vision-specific parameters."""
         return cls(
             update_rate=15.0,  # Vision processing rate
-            timeout=10.0,      # Shorter timeouts
+            timeout=10.0,  # Shorter timeouts
             node_specific_params={
                 "camera_timeout": 2.0,
                 "detection_confidence": 0.7,
                 "max_detections": 10,
-            }
+            },
         )
 
     @classmethod
-    def for_led(cls) -> 'NodeParameters':
+    def for_led(cls) -> "NodeParameters":
         """LED-specific parameters."""
         return cls(
-            update_rate=5.0,   # LED update rate
-            timeout=1.0,       # Quick timeouts
+            update_rate=5.0,  # LED update rate
+            timeout=1.0,  # Quick timeouts
             node_specific_params={
                 "flash_on_duration": 0.5,
                 "flash_off_duration": 0.5,
                 "enable_hardware": True,
-            }
+            },
         )
 
     def declare_all(self, node: Node) -> None:
         """Declare all parameters on the node."""
         for name, value in self.__dict__.items():
-            if name != 'node_specific_params':
+            if name != "node_specific_params":
                 node.declare_parameter(name, value)
 
         for name, value in self.node_specific_params.items():
@@ -237,15 +249,11 @@ class NodeParameters:
     def load_all(self, node: Node, logger: NodeLogger) -> None:
         """Load and validate all parameters."""
         for name in self.__dict__.keys():
-            if name != 'node_specific_params':
-                setattr(self, name, get_validated_parameter(
-                    node, name, getattr(self, name), logger=logger
-                ))
+            if name != "node_specific_params":
+                setattr(self, name, get_validated_parameter(node, name, getattr(self, name), logger=logger))
 
         for name, default in self.node_specific_params.items():
-            self.node_specific_params[name] = get_validated_parameter(
-                node, name, default, logger=logger
-            )
+            self.node_specific_params[name] = get_validated_parameter(node, name, default, logger=logger)
 
 
 class ParameterValidator:
@@ -286,7 +294,7 @@ def get_validated_parameter(
     default_value: Any,
     validator: Optional[ValidatorFunc] = None,
     error_msg: Optional[str] = None,
-    logger: Optional[NodeLogger] = None
+    logger: Optional[NodeLogger] = None,
 ) -> Any:
     """
     Get ROS2 parameter with validation and consistent error handling.
@@ -327,6 +335,7 @@ def get_validated_parameter(
 
 
 # ===== STATE MACHINE =====
+
 
 class StateMachineNode(Node):
     """
@@ -376,13 +385,13 @@ class StateMachineNode(Node):
             "to": new_state,
             "reason": reason,
             "timestamp": self.get_clock().now().to_msg(),
-            "time_in_previous_state": self.time_in_state()
+            "time_in_previous_state": self.time_in_state(),
         }
         self._state_history.append(transition)
 
         # Maintain history size
         if len(self._state_history) > self._max_history_size:
-            self._state_history = self._state_history[-self._max_history_size//2:]
+            self._state_history = self._state_history[-self._max_history_size // 2 :]
 
         # Update state
         self._current_state = new_state
@@ -394,7 +403,7 @@ class StateMachineNode(Node):
             operation="state_transition",
             old_state=old_state,
             new_state=new_state,
-            reason=reason
+            reason=reason,
         )
 
     @property
@@ -479,6 +488,7 @@ class AutonomyNode(StateMachineNode):
 
             status_msg = String()
             import json
+
             status_msg.data = json.dumps(status_data)
             self.status_pub.publish(status_msg)
 
@@ -494,7 +504,7 @@ class AutonomyNode(StateMachineNode):
             "timestamp": self.get_clock().now().nanoseconds / 1e9,
             "operation": operation,
             "data_type": type(data).__name__,
-            "data_size": len(str(data)) if hasattr(data, '__len__') else 0,
+            "data_size": len(str(data)) if hasattr(data, "__len__") else 0,
             "context": context,
             "state": self.current_state,
         }
@@ -528,7 +538,7 @@ class AutonomyNode(StateMachineNode):
                 if self.current_state != requirements["required_state"]:
                     return failure(
                         ValidationError("state", self.current_state, f"must be {requirements['required_state']}"),
-                        operation_name
+                        operation_name,
                     )
 
             # Check interface requirements
@@ -538,7 +548,7 @@ class AutonomyNode(StateMachineNode):
                     if len(active.get(interface_type, [])) < required:
                         return failure(
                             ValidationError("interfaces", active[interface_type], f"need {required} {interface_type}"),
-                            operation_name
+                            operation_name,
                         )
 
             # Check parameter requirements
@@ -548,18 +558,12 @@ class AutonomyNode(StateMachineNode):
                     validator = param_check["validator"]
                     value = getattr(self.params, param_name, None)
                     if not validator(value):
-                        return failure(
-                            ValidationError(param_name, value, "validation failed"),
-                            operation_name
-                        )
+                        return failure(ValidationError(param_name, value, "validation failed"), operation_name)
 
             return success(True, operation_name)
 
         except Exception as e:
-            return failure(
-                ProcessingError(operation_name, f"validation_error: {str(e)}"),
-                operation_name
-            )
+            return failure(ProcessingError(operation_name, f"validation_error: {str(e)}"), operation_name)
 
 
 class MessagePipeline:
@@ -577,7 +581,7 @@ class MessagePipeline:
         self.tracer = tracer
         self.steps: List[Tuple[Callable, str]] = []
 
-    def add_step(self, step_func: Callable, step_name: str) -> 'MessagePipeline':
+    def add_step(self, step_func: Callable, step_name: str) -> "MessagePipeline":
         """Add processing step to pipeline."""
         self.steps.append((step_func, step_name))
         return self
@@ -606,7 +610,7 @@ class MessagePipeline:
                 error = ProcessingError(
                     "pipeline_processing",
                     f"step_failed: {step_name}",
-                    {"step": step_name, "exception": str(e), "completed_steps": step_results}
+                    {"step": step_name, "exception": str(e), "completed_steps": step_results},
                 )
                 self.logger.error(f"Pipeline step failed: {step_name}", error=error)
                 return Failure(error)
@@ -619,11 +623,12 @@ class MessagePipeline:
             "current_state": self.current_state,
             "time_in_state": self.time_in_state(),
             "total_transitions": len(self._state_history),
-            "recent_transitions": self.get_state_history(5)
+            "recent_transitions": self.get_state_history(5),
         }
 
 
 # ===== ROS2 INTERFACE REGISTRY =====
+
 
 class ROS2InterfaceRegistry:
     """
@@ -679,6 +684,7 @@ class ROS2InterfaceFactory:
     def create_action_server(self, action_type: Any, action_name: str, execute_callback, **kwargs):
         """Create action server with automatic registration."""
         from rclpy.action import ActionServer
+
         action_server = ActionServer(self.node, action_type, action_name, execute_callback, **kwargs)
         self.registry.add_action(action_name, action_server)
         return action_server
@@ -717,7 +723,7 @@ class ROS2InterfaceFactory:
             "subscribers": list(self._subscribers.keys()),
             "services": list(self._services.keys()),
             "actions": list(self._actions.keys()),
-            "timers": list(self._timers.keys())
+            "timers": list(self._timers.keys()),
         }
 
     def get_publisher(self, name: str) -> Optional[Any]:
@@ -739,6 +745,7 @@ class ROS2InterfaceFactory:
 
 # ===== TIMER MANAGEMENT =====
 
+
 class TimerManager:
     """
     Simple timer lifecycle management for ROS2 nodes.
@@ -756,13 +763,7 @@ class TimerManager:
         self.node = node
         self.timers: Dict[str, Any] = {}
 
-    def create_named_timer(
-        self,
-        name: str,
-        period: float,
-        callback: Callable,
-        **kwargs
-    ) -> Any:
+    def create_named_timer(self, name: str, period: float, callback: Callable, **kwargs) -> Any:
         """
         Create a named timer with automatic tracking.
 
@@ -818,18 +819,14 @@ class TimerManager:
 
     def get_timer_info(self) -> Dict[str, Any]:
         """Get detailed timer information for debugging."""
-        return {
-            "active_timers": self.get_active_timers(),
-            "total_count": len(self.timers)
-        }
+        return {"active_timers": self.get_active_timers(), "total_count": len(self.timers)}
 
 
 # ===== CONFIGURATION MANAGEMENT =====
 
+
 def load_config_file(
-    filename: str,
-    required_keys: Optional[List[str]] = None,
-    logger: Optional[NodeLogger] = None
+    filename: str, required_keys: Optional[List[str]] = None, logger: Optional[NodeLogger] = None
 ) -> Optional[Dict[str, Any]]:
     """
     Load YAML configuration file with basic validation.
@@ -845,7 +842,7 @@ def load_config_file(
     try:
         import yaml
 
-        with open(filename, 'r') as f:
+        with open(filename, "r") as f:
             config = yaml.safe_load(f) or {}
 
         # Validate required keys

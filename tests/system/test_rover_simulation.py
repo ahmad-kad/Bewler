@@ -14,19 +14,15 @@ This simulates the production rover environment for comprehensive testing.
 """
 
 import json
-import signal
 import subprocess
-import sys
-import threading
 import time
-from typing import Any, Dict, List, Optional
 
 import rclpy
 from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Odometry, Path
+from nav_msgs.msg import Odometry
 from rclpy.node import Node
-from sensor_msgs.msg import Imu, NavSatFix
-from std_msgs.msg import Float32, String
+from sensor_msgs.msg import Imu
+from std_msgs.msg import String
 
 
 class RoverSimulationTester(Node):
@@ -75,13 +71,15 @@ class RoverSimulationTester(Node):
     def imu_callback(self, msg):
         """Monitor IMU data"""
         self.received_imu = msg
-        self.get_logger().debug(f'🔄 IMU: accel=({msg.linear_acceleration.x:.2f}, {msg.linear_acceleration.y:.2f}, {msg.linear_acceleration.z:.2f})')
+        self.get_logger().debug(
+            f'🔄 IMU: accel=({msg.linear_acceleration.x:.2f}, {msg.linear_acceleration.y:.2f}, {msg.linear_acceleration.z:.2f})')
 
     def map_callback(self, msg):
         """Monitor frontend map data"""
         try:
             self.received_map_data = json.loads(msg.data)
-            self.get_logger().debug(f'🗺️ Map data received: robot at ({self.received_map_data["robot"]["x"]:.2f}, {self.received_map_data["robot"]["y"]:.2f})')
+            self.get_logger().debug(
+                f'🗺️ Map data received: robot at ({self.received_map_data["robot"]["x"]:.2f}, {self.received_map_data["robot"]["y"]:.2f})')
         except json.JSONDecodeError:
             self.get_logger().error('Invalid map data format')
 
@@ -118,7 +116,7 @@ class RoverSimulationTester(Node):
         # Check if basic ROS2 nodes are running
         try:
             result = subprocess.run(['ros2', 'node', 'list'],
-                                  capture_output=True, text=True, timeout=5)
+                                    capture_output=True, text=True, timeout=5)
             nodes = result.stdout.strip().split('\n')
 
             required_nodes = ['/robot_state_publisher', '/gazebo']
@@ -139,21 +137,21 @@ class RoverSimulationTester(Node):
         # Check odometry
         if self.received_odom:
             self.add_test_result('Odometry data received', True,
-                               f'Position: ({self.received_odom.pose.pose.position.x:.2f}, {self.received_odom.pose.pose.position.y:.2f})')
+                                 f'Position: ({self.received_odom.pose.pose.position.x:.2f}, {self.received_odom.pose.pose.position.y:.2f})')
         else:
             self.add_test_result('Odometry data', False, 'No odometry received yet')
 
         # Check IMU
         if self.received_imu:
             self.add_test_result('IMU data received', True,
-                               f'Accel: ({self.received_imu.linear_acceleration.x:.2f}, {self.received_imu.linear_acceleration.y:.2f}, {self.received_imu.linear_acceleration.z:.2f})')
+                                 f'Accel: ({self.received_imu.linear_acceleration.x:.2f}, {self.received_imu.linear_acceleration.y:.2f}, {self.received_imu.linear_acceleration.z:.2f})')
         else:
             self.add_test_result('IMU data', False, 'No IMU data received yet')
 
         # Check SLAM pose
         if self.received_slam_pose:
             self.add_test_result('SLAM pose received', True,
-                               f'Pose: ({self.received_slam_pose.pose.position.x:.2f}, {self.received_slam_pose.pose.position.y:.2f})')
+                                 f'Pose: ({self.received_slam_pose.pose.position.x:.2f}, {self.received_slam_pose.pose.position.y:.2f})')
         else:
             self.add_test_result('SLAM pose', False, 'No SLAM pose received yet')
 
@@ -193,7 +191,7 @@ class RoverSimulationTester(Node):
             robot = self.received_map_data.get('robot', {})
             if 'x' in robot and 'y' in robot:
                 self.add_test_result('Map data flow', True,
-                                   f'Robot position: ({robot["x"]:.2f}, {robot["y"]:.2f})')
+                                     f'Robot position: ({robot["x"]:.2f}, {robot["y"]:.2f})')
             else:
                 self.add_test_result('Map data structure', False, 'Missing robot position')
         else:
@@ -202,7 +200,7 @@ class RoverSimulationTester(Node):
         # Check mission status
         if self.received_mission_status:
             self.add_test_result('Mission status flow', True,
-                               f'Status: {self.received_mission_status.get("status", "unknown")}')
+                                 f'Status: {self.received_mission_status.get("status", "unknown")}')
         else:
             self.add_test_result('Mission status flow', False, 'No mission status received')
 

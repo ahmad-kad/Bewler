@@ -14,7 +14,7 @@ import asyncio
 import json
 import threading
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import rclpy
 import websockets
@@ -23,7 +23,7 @@ from std_msgs.msg import String
 
 # Import our new components
 from .can_mock_simulator import CANBusMockSimulator
-from .priority_message_router import MessagePriority, PriorityMessageRouter
+from .priority_message_router import PriorityMessageRouter
 
 
 class WebSocketMissionBridge(Node):
@@ -68,7 +68,8 @@ class WebSocketMissionBridge(Node):
         self.processing_thread.daemon = True
         self.processing_thread.start()
 
-        self.get_logger().info(f'WebSocket Mission Bridge with CAN Mock started on {self.websocket_host}:{self.websocket_port}')
+        self.get_logger().info(
+            f'WebSocket Mission Bridge with CAN Mock started on {self.websocket_host}:{self.websocket_port}')
         self.get_logger().warning('WARNING: CAN data is MOCK/SIMULATED - NOT REAL HARDWARE')
 
     def handle_can_request(self, msg):

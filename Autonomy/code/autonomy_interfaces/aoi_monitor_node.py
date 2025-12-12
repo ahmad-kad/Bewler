@@ -50,13 +50,9 @@ class AOIMonitorNode(Node):
         self.enable_logging = self.get_parameter("enable_detailed_logging").value
 
         # Initialize AoI infrastructure
-        self.aoi_config = AOIConfig(
-            history_window=history_window, update_interval=1.0 / update_rate
-        )
+        self.aoi_config = AOIConfig(history_window=history_window, update_interval=1.0 / update_rate)
 
-        self.shared_buffer = SharedAOIBuffer(
-            max_sensors=max_sensors, history_size=history_window
-        )
+        self.shared_buffer = SharedAOIBuffer(max_sensors=max_sensors, history_size=history_window)
 
         self.quality_assessor = NetworkAwareAOIAssessor()
 
@@ -71,18 +67,12 @@ class AOIMonitorNode(Node):
             durability=DurabilityPolicy.VOLATILE,
         )
 
-        self.aoi_status_pub = self.create_publisher(
-            AOIStatus, "/system/aoi_status", aoi_qos
-        )
+        self.aoi_status_pub = self.create_publisher(AOIStatus, "/system/aoi_status", aoi_qos)
 
-        self.aoi_metrics_pub = self.create_publisher(
-            AOIMetrics, "/system/aoi_metrics", aoi_qos
-        )
+        self.aoi_metrics_pub = self.create_publisher(AOIMetrics, "/system/aoi_metrics", aoi_qos)
 
         # Services for AoI queries
-        self.aoi_service = self.create_service(
-            GetAOIStatus, "/system/get_aoi_status", self.handle_aoi_query
-        )
+        self.aoi_service = self.create_service(GetAOIStatus, "/system/get_aoi_status", self.handle_aoi_query)
 
         self.network_aoi_service = self.create_service(
             GetNetworkAOIStatus,
@@ -124,9 +114,7 @@ class AOIMonitorNode(Node):
         )
 
         # Periodic status updates
-        self.status_timer = self.create_timer(
-            1.0 / update_rate, self.publish_status_updates
-        )
+        self.status_timer = self.create_timer(1.0 / update_rate, self.publish_status_updates)
 
         # Health monitoring
         self.last_update_time = time.time()
@@ -139,27 +127,19 @@ class AOIMonitorNode(Node):
 
     def on_imu_data(self, msg):
         """Track IMU AoI."""
-        self._track_sensor_aoi(
-            "imu", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
-        )
+        self._track_sensor_aoi("imu", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
 
     def on_gps_data(self, msg):
         """Track GPS AoI."""
-        self._track_sensor_aoi(
-            "gps", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
-        )
+        self._track_sensor_aoi("gps", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
 
     def on_slam_pose(self, msg):
         """Track SLAM pose AoI."""
-        self._track_sensor_aoi(
-            "slam_pose", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
-        )
+        self._track_sensor_aoi("slam_pose", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
 
     def on_wheel_odom(self, msg):
         """Track wheel odometry AoI."""
-        self._track_sensor_aoi(
-            "wheel_odom", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
-        )
+        self._track_sensor_aoi("wheel_odom", msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9)
 
     def _track_sensor_aoi(self, sensor_name: str, sensor_timestamp: float):
         """Update AoI tracking for sensor."""
@@ -202,9 +182,7 @@ class AOIMonitorNode(Node):
                 stats = self.trackers[sensor_name].get_statistics()
 
                 # Get network-aware assessment
-                network_health = self.quality_assessor.assess_network_health(
-                    sensor_name, current_aoi
-                )
+                network_health = self.quality_assessor.assess_network_health(sensor_name, current_aoi)
                 quality_score, quality_category = self.quality_assessor.assess_quality(
                     sensor_name.split("_")[0], current_aoi  # Use base sensor type
                 )
@@ -213,21 +191,13 @@ class AOIMonitorNode(Node):
                 aoi_history = list(self.trackers[sensor_name].aoi_history)
                 if len(aoi_history) >= 2:
                     recent_avg = sum(aoi_history[-5:]) / min(5, len(aoi_history))
-                    older_avg = sum(aoi_history[-10:-5]) / min(
-                        5, len(aoi_history[-10:-5]) or 1
-                    )
-                    aoi_trend = (
-                        0
-                        if abs(recent_avg - older_avg) < 0.01
-                        else (1 if recent_avg > older_avg else -1)
-                    )
+                    older_avg = sum(aoi_history[-10:-5]) / min(5, len(aoi_history[-10:-5]) or 1)
+                    aoi_trend = 0 if abs(recent_avg - older_avg) < 0.01 else (1 if recent_avg > older_avg else -1)
                 else:
                     aoi_trend = 0
 
                 # Predict next AOI (simple moving average)
-                predicted_aoi = (
-                    stats["average_aoi"] if stats["average_aoi"] > 0 else current_aoi
-                )
+                predicted_aoi = stats["average_aoi"] if stats["average_aoi"] > 0 else current_aoi
 
                 # Create enhanced status message
                 status_msg = AOIStatus()
@@ -239,9 +209,7 @@ class AOIMonitorNode(Node):
                 status_msg.average_aoi = stats["average_aoi"]
                 status_msg.max_aoi = stats["max_aoi"]
                 status_msg.min_aoi = stats["min_aoi"]
-                status_msg.is_fresh = (
-                    current_aoi <= self.aoi_config.acceptable_threshold
-                )
+                status_msg.is_fresh = current_aoi <= self.aoi_config.acceptable_threshold
                 status_msg.quality_score = quality_score
                 status_msg.freshness_status = quality_category
                 status_msg.acceptable_threshold = self.aoi_config.acceptable_threshold
@@ -274,9 +242,7 @@ class AOIMonitorNode(Node):
         metrics_msg.system_average_aoi = system_stats["average_aoi"]
         metrics_msg.total_sensors = system_stats["total_sensors"]
         metrics_msg.fresh_sensors = system_stats["fresh_sensors"]
-        metrics_msg.stale_sensors = (
-            system_stats["total_sensors"] - system_stats["fresh_sensors"]
-        )
+        metrics_msg.stale_sensors = system_stats["total_sensors"] - system_stats["fresh_sensors"]
         metrics_msg.critical_sensors = 0  # TODO: implement critical threshold tracking
 
         # AoI distribution (simplified)
@@ -307,9 +273,7 @@ class AOIMonitorNode(Node):
 
         # Performance metrics
         current_time = time.time()
-        time_since_start = (
-            current_time - self.get_clock().now().seconds_nanoseconds()[0]
-        )
+        time_since_start = current_time - self.get_clock().now().seconds_nanoseconds()[0]
         if time_since_start > 0:
             metrics_msg.update_rate_hz = self.update_count / time_since_start
 
@@ -322,9 +286,7 @@ class AOIMonitorNode(Node):
             if sensor_name in self.trackers:
                 current_aoi = self.shared_buffer.get_sensor_aoi(sensor_name)
                 if current_aoi is not None:
-                    network_health = self.quality_assessor.assess_network_health(
-                        sensor_name, current_aoi
-                    )
+                    network_health = self.quality_assessor.assess_network_health(sensor_name, current_aoi)
                     transport = network_health["transport_type"]
                     transport_counts[transport] = transport_counts.get(transport, 0) + 1
                     network_latencies.append(network_health["network_latency"])
@@ -337,14 +299,8 @@ class AOIMonitorNode(Node):
         metrics_msg.ethernet_sensors = transport_counts["ETHERNET"]
         metrics_msg.local_sensors = transport_counts["LOCAL"]
 
-        metrics_msg.avg_network_latency = (
-            sum(network_latencies) / len(network_latencies)
-            if network_latencies
-            else 0.0
-        )
-        metrics_msg.max_network_latency = (
-            max(network_latencies) if network_latencies else 0.0
-        )
+        metrics_msg.avg_network_latency = sum(network_latencies) / len(network_latencies) if network_latencies else 0.0
+        metrics_msg.max_network_latency = max(network_latencies) if network_latencies else 0.0
         metrics_msg.congested_links = congested_links
 
         # Network health score and recommendations
@@ -352,19 +308,14 @@ class AOIMonitorNode(Node):
         recommendations = []
 
         if congested_links > 0:
-            network_health_score -= 0.2 * min(
-                congested_links / metrics_msg.total_sensors, 1.0
-            )
+            network_health_score -= 0.2 * min(congested_links / metrics_msg.total_sensors, 1.0)
             recommendations.append("Reduce network congestion by optimizing data rates")
 
         if metrics_msg.avg_network_latency > 0.1:
             network_health_score -= 0.1
             recommendations.append("Consider upgrading to higher bandwidth transport")
 
-        if (
-            transport_counts["SERIAL"]
-            > transport_counts["CAN"] + transport_counts["ETHERNET"]
-        ):
+        if transport_counts["SERIAL"] > transport_counts["CAN"] + transport_counts["ETHERNET"]:
             recommendations.append("Balance sensor distribution across transport types")
 
         metrics_msg.network_health_score = max(0.0, network_health_score)
@@ -388,14 +339,9 @@ class AOIMonitorNode(Node):
                         response.sensor_status = [status]
 
                     if request.include_history and request.history_samples > 0:
-                        history = self.shared_buffer.get_sensor_history(
-                            request.sensor_name, request.history_samples
-                        )
+                        history = self.shared_buffer.get_sensor_history(request.sensor_name, request.history_samples)
                         response.aoi_history = [aoi for _, aoi in history]
-                        response.timestamp_history = [
-                            self.get_clock().now().to_msg()  # Simplified
-                            for _ in history
-                        ]
+                        response.timestamp_history = [self.get_clock().now().to_msg() for _ in history]  # Simplified
                 else:
                     response.success = False
                     response.message = f"Unknown sensor: {request.sensor_name}"
@@ -435,14 +381,9 @@ class AOIMonitorNode(Node):
                         response.sensor_status = [status]
 
                     if request.include_history and request.history_samples > 0:
-                        history = self.shared_buffer.get_sensor_history(
-                            request.sensor_name, request.history_samples
-                        )
+                        history = self.shared_buffer.get_sensor_history(request.sensor_name, request.history_samples)
                         response.aoi_history = [aoi for _, aoi in history]
-                        response.timestamp_history = [
-                            self.get_clock().now().to_msg()  # Simplified
-                            for _ in history
-                        ]
+                        response.timestamp_history = [self.get_clock().now().to_msg() for _ in history]  # Simplified
                 else:
                     response.success = False
                     response.message = f"Unknown sensor: {request.sensor_name}"
@@ -464,16 +405,9 @@ class AOIMonitorNode(Node):
             if request.include_network_stats:
                 transport_analysis = self._analyze_transport_usage()
                 response.transport_types = list(transport_analysis.keys())
-                response.transport_counts = [
-                    transport_analysis[t]["count"] for t in response.transport_types
-                ]
-                response.transport_latencies = [
-                    transport_analysis[t]["avg_latency"]
-                    for t in response.transport_types
-                ]
-                response.transport_congested = [
-                    transport_analysis[t]["congested"] for t in response.transport_types
-                ]
+                response.transport_counts = [transport_analysis[t]["count"] for t in response.transport_types]
+                response.transport_latencies = [transport_analysis[t]["avg_latency"] for t in response.transport_types]
+                response.transport_congested = [transport_analysis[t]["congested"] for t in response.transport_types]
 
         except Exception as e:
             response.success = False
@@ -495,15 +429,11 @@ class AOIMonitorNode(Node):
             if sensor_name in self.trackers:
                 current_aoi = self.shared_buffer.get_sensor_aoi(sensor_name)
                 if current_aoi is not None:
-                    network_health = self.quality_assessor.assess_network_health(
-                        sensor_name, current_aoi
-                    )
+                    network_health = self.quality_assessor.assess_network_health(sensor_name, current_aoi)
                     transport = network_health["transport_type"]
 
                     transport_stats[transport]["count"] += 1
-                    transport_stats[transport]["latencies"].append(
-                        network_health["network_latency"]
-                    )
+                    transport_stats[transport]["latencies"].append(network_health["network_latency"])
                     if network_health["congestion_detected"]:
                         transport_stats[transport]["congested"] = True
 
@@ -536,9 +466,7 @@ class AOIMonitorNode(Node):
             status.min_aoi = stats["min_aoi"]
             status.freshness_ratio = stats["freshness_ratio"]
 
-        quality_score, quality_category = self.quality_assessor.assess_quality(
-            sensor_name, current_aoi
-        )
+        quality_score, quality_category = self.quality_assessor.assess_quality(sensor_name, current_aoi)
         status.quality_score = quality_score
         status.freshness_status = quality_category
         status.is_fresh = current_aoi <= self.aoi_config.acceptable_threshold

@@ -63,17 +63,11 @@ class FollowMeBehavior:
         )
 
         # Service clients
-        self.aruco_detection_client: Client = node.create_client(
-            DetectAruco, "/aruco_detection/detect"
-        )
-        self.follow_control_client: Client = node.create_client(
-            FollowMeControl, "/follow_me/control"
-        )
+        self.aruco_detection_client: Client = node.create_client(DetectAruco, "/aruco_detection/detect")
+        self.follow_control_client: Client = node.create_client(FollowMeControl, "/follow_me/control")
 
         # Publishers
-        self.status_publisher = node.create_publisher(
-            FollowMeStatus, "/follow_me/status", self.qos
-        )
+        self.status_publisher = node.create_publisher(FollowMeStatus, "/follow_me/status", self.qos)
         self.cmd_vel_publisher = node.create_publisher(Twist, "/cmd_vel", self.qos)
 
         # Service server for follow me control
@@ -282,9 +276,7 @@ class FollowMeBehavior:
 
         return linear_vel, angular_vel
 
-    def _publish_velocity(
-        self, linear_x: float, linear_y: float, angular_z: float
-    ) -> None:
+    def _publish_velocity(self, linear_x: float, linear_y: float, angular_z: float) -> None:
         """Publish velocity command."""
         twist = Twist()
         twist.linear.x = linear_x
@@ -343,9 +335,7 @@ class FollowMeBehavior:
             )
 
             response.success = success
-            response.message = (
-                "Follow me started" if success else "Failed to start follow me"
-            )
+            response.message = "Follow me started" if success else "Failed to start follow me"
         else:
             # Stop following
             self.stop_following()

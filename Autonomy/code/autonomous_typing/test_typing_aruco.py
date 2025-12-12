@@ -57,18 +57,12 @@ class TypingArUcoTester(Node):
 
         try:
             # Test with any tags detected
-            result = self.detector.detect_typing_tags(
-                target_depth=0.3, timeout=5.0, max_detection_distance=3.0
-            )
+            result = self.detector.detect_typing_tags(target_depth=0.3, timeout=5.0, max_detection_distance=3.0)
 
             if result["success"]:
                 self.test_results.append("✅ Basic ArUco detection: PASSED")
-                self.get_logger().info(
-                    f"Detected {len(result['detected_tag_ids'])} tags"
-                )
-                self.get_logger().info(
-                    f"Alignment quality: {result['alignment_quality']:.2f}"
-                )
+                self.get_logger().info(f"Detected {len(result['detected_tag_ids'])} tags")
+                self.get_logger().info(f"Alignment quality: {result['alignment_quality']:.2f}")
             else:
                 self.test_results.append("❌ Basic ArUco detection: FAILED")
                 self.get_logger().error(f"Error: {result['message']}")
@@ -82,9 +76,7 @@ class TypingArUcoTester(Node):
 
         try:
             # Test with minimum tag requirement
-            result = self.detector.detect_typing_tags_with_minimum(
-                min_tags=3, target_depth=0.3, timeout=3.0
-            )
+            result = self.detector.detect_typing_tags_with_minimum(min_tags=3, target_depth=0.3, timeout=3.0)
 
             if result["success"]:
                 detected_count = len(result["detected_tag_ids"])
@@ -114,13 +106,9 @@ class TypingArUcoTester(Node):
                 mission_ready = result["mission_ready"]
 
                 if quality >= 0.6:  # Minimum quality threshold
-                    self.test_results.append(
-                        f"✅ Alignment quality: PASSED (quality: {quality:.2f})"
-                    )
+                    self.test_results.append(f"✅ Alignment quality: PASSED (quality: {quality:.2f})")
                 else:
-                    self.test_results.append(
-                        f"❌ Alignment quality: FAILED (quality: {quality:.2f})"
-                    )
+                    self.test_results.append(f"❌ Alignment quality: FAILED (quality: {quality:.2f})")
 
                 if mission_ready:
                     self.test_results.append("✅ Mission readiness: PASSED")
@@ -128,9 +116,7 @@ class TypingArUcoTester(Node):
                     self.test_results.append("❌ Mission readiness: FAILED")
 
             else:
-                self.test_results.append(
-                    "❌ Alignment quality: FAILED - Detection failed"
-                )
+                self.test_results.append("❌ Alignment quality: FAILED - Detection failed")
 
         except Exception as e:
             self.test_results.append(f"❌ Alignment quality: ERROR - {str(e)}")
@@ -155,13 +141,9 @@ class TypingArUcoTester(Node):
                     self.get_logger().info(f"Keyboard size: {size:.2f}m")
                     self.get_logger().info(f"Aspect ratio: {aspect_ratio:.2f}")
                 else:
-                    self.test_results.append(
-                        "❌ Keyboard estimation: FAILED - No keyboard info"
-                    )
+                    self.test_results.append("❌ Keyboard estimation: FAILED - No keyboard info")
             else:
-                self.test_results.append(
-                    "❌ Keyboard estimation: FAILED - Detection failed"
-                )
+                self.test_results.append("❌ Keyboard estimation: FAILED - Detection failed")
 
         except Exception as e:
             self.test_results.append(f"❌ Keyboard estimation: ERROR - {str(e)}")
@@ -175,9 +157,7 @@ class TypingArUcoTester(Node):
             client = self.create_client(DetectAruco, "/aruco_detection/detect")
 
             if not client.wait_for_service(timeout_sec=5.0):
-                self.test_results.append(
-                    "❌ Service integration: FAILED - Service not available"
-                )
+                self.test_results.append("❌ Service integration: FAILED - Service not available")
                 return
 
             # Create request
@@ -198,17 +178,11 @@ class TypingArUcoTester(Node):
                 response = future.result()
                 if response.success:
                     self.test_results.append("✅ Service integration: PASSED")
-                    self.get_logger().info(
-                        f"Service call successful: {len(response.detected_tag_ids)} tags"
-                    )
+                    self.get_logger().info(f"Service call successful: {len(response.detected_tag_ids)} tags")
                 else:
-                    self.test_results.append(
-                        "❌ Service integration: FAILED - Service call failed"
-                    )
+                    self.test_results.append("❌ Service integration: FAILED - Service call failed")
             else:
-                self.test_results.append(
-                    "❌ Service integration: FAILED - Service call timed out"
-                )
+                self.test_results.append("❌ Service integration: FAILED - Service call timed out")
 
         except Exception as e:
             self.test_results.append(f"❌ Service integration: ERROR - {str(e)}")

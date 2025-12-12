@@ -12,12 +12,12 @@ import math
 import time
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 import rclpy
-from geometry_msgs.msg import PoseStamped, PoseWithCovariance, Twist
-from nav_msgs.msg import OccupancyGrid, Odometry
+from geometry_msgs.msg import PoseWithCovariance, Twist
+from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image, Imu, LaserScan, NavSatFix, PointCloud2
@@ -26,6 +26,7 @@ from std_msgs.msg import Bool, String
 
 class TestStatus(Enum):
     """Test execution status."""
+
     INITIALIZING = "initializing"
     GPS_AVAILABLE = "gps_available"
     GPS_DENIED = "gps_denied"
@@ -38,6 +39,7 @@ class TestStatus(Enum):
 @dataclass
 class SLAMDriftMetrics:
     """SLAM drift metrics during GPS-denied operation."""
+
     initial_position: List[float] = None
     final_position: List[float] = None
     total_drift: float = 0.0  # meters
@@ -51,6 +53,7 @@ class SLAMDriftMetrics:
 @dataclass
 class TestResults:
     """Complete test results."""
+
     test_name: str
     start_time: float
     end_time: float
@@ -68,7 +71,7 @@ class GPSDeniedSLAMTest(Node):
     """Test node for GPS-denied SLAM operation validation."""
 
     def __init__(self):
-        super().__init__('gps_denied_slam_test')
+        super().__init__("gps_denied_slam_test")
 
         # Test configuration
         self.test_name = "gps_denied_slam"
@@ -109,40 +112,28 @@ class GPSDeniedSLAMTest(Node):
 
         # QoS profiles
         qos_profile = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
-            durability=DurabilityPolicy.VOLATILE,
-            depth=10
+            reliability=ReliabilityPolicy.BEST_EFFORT, durability=DurabilityPolicy.VOLATILE, depth=10
         )
 
         # Publishers
-        self.cmd_vel_pub = self.create_publisher(Twist, '/rover/cmd_vel', 10)
-        self.gps_enable_pub = self.create_publisher(Bool, '/rover/gps/enable', 10)
-        self.test_status_pub = self.create_publisher(String, '/test/status', 10)
+        self.cmd_vel_pub = self.create_publisher(Twist, "/rover/cmd_vel", 10)
+        self.gps_enable_pub = self.create_publisher(Bool, "/rover/gps/enable", 10)
+        self.test_status_pub = self.create_publisher(String, "/test/status", 10)
 
         # Subscribers
-        self.odom_sub = self.create_subscription(
-            Odometry, '/rover/odom', self.odom_callback, qos_profile
-        )
+        self.odom_sub = self.create_subscription(Odometry, "/rover/odom", self.odom_callback, qos_profile)
         self.slam_pose_sub = self.create_subscription(
-            PoseWithCovariance, '/slam/pose/fused', self.slam_pose_callback, qos_profile
+            PoseWithCovariance, "/slam/pose/fused", self.slam_pose_callback, qos_profile
         )
-        self.imu_sub = self.create_subscription(
-            Imu, '/rover/imu', self.imu_callback, qos_profile
-        )
-        self.gps_sub = self.create_subscription(
-            NavSatFix, '/rover/gps', self.gps_callback, qos_profile
-        )
-        self.lidar_sub = self.create_subscription(
-            LaserScan, '/rover/scan', self.lidar_callback, qos_profile
-        )
-        self.camera_sub = self.create_subscription(
-            Image, '/rover/camera/image_raw', self.camera_callback, qos_profile
-        )
+        self.imu_sub = self.create_subscription(Imu, "/rover/imu", self.imu_callback, qos_profile)
+        self.gps_sub = self.create_subscription(NavSatFix, "/rover/gps", self.gps_callback, qos_profile)
+        self.lidar_sub = self.create_subscription(LaserScan, "/rover/scan", self.lidar_callback, qos_profile)
+        self.camera_sub = self.create_subscription(Image, "/rover/camera/image_raw", self.camera_callback, qos_profile)
         self.depth_sub = self.create_subscription(
-            Image, '/rover/camera/depth/image_raw', self.depth_callback, qos_profile
+            Image, "/rover/camera/depth/image_raw", self.depth_callback, qos_profile
         )
         self.points_sub = self.create_subscription(
-            PointCloud2, '/rover/camera/depth/points', self.points_callback, qos_profile
+            PointCloud2, "/rover/camera/depth/points", self.points_callback, qos_profile
         )
 
         # Timers
@@ -157,110 +148,118 @@ class GPSDeniedSLAMTest(Node):
     def odom_callback(self, msg: Odometry):
         """Record ground truth pose from odometry."""
         pose = msg.pose.pose
-        self.ground_truth_poses.append({
-            'timestamp': time.time(),
-            'x': pose.position.x,
-            'y': pose.position.y,
-            'z': pose.position.z,
-            'qx': pose.orientation.x,
-            'qy': pose.orientation.y,
-            'qz': pose.orientation.z,
-            'qw': pose.orientation.w
-        })
+        self.ground_truth_poses.append(
+            {
+                "timestamp": time.time(),
+                "x": pose.position.x,
+                "y": pose.position.y,
+                "z": pose.position.z,
+                "qx": pose.orientation.x,
+                "qy": pose.orientation.y,
+                "qz": pose.orientation.z,
+                "qw": pose.orientation.w,
+            }
+        )
 
     def slam_pose_callback(self, msg: PoseWithCovariance):
         """Record SLAM estimated pose."""
         pose = msg.pose
-        self.slam_poses.append({
-            'timestamp': time.time(),
-            'x': pose.position.x,
-            'y': pose.position.y,
-            'z': pose.position.z,
-            'qx': pose.orientation.x,
-            'qy': pose.orientation.y,
-            'qz': pose.orientation.z,
-            'qw': pose.orientation.w,
-            'covariance': msg.covariance
-        })
+        self.slam_poses.append(
+            {
+                "timestamp": time.time(),
+                "x": pose.position.x,
+                "y": pose.position.y,
+                "z": pose.position.z,
+                "qx": pose.orientation.x,
+                "qy": pose.orientation.y,
+                "qz": pose.orientation.z,
+                "qw": pose.orientation.w,
+                "covariance": msg.covariance,
+            }
+        )
 
     def imu_callback(self, msg: Imu):
         """Record IMU data."""
-        self.imu_data.append({
-            'timestamp': time.time(),
-            'linear_acceleration': [msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.z],
-            'angular_velocity': [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z],
-            'orientation': [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]
-        })
+        self.imu_data.append(
+            {
+                "timestamp": time.time(),
+                "linear_acceleration": [
+                    msg.linear_acceleration.x,
+                    msg.linear_acceleration.y,
+                    msg.linear_acceleration.z,
+                ],
+                "angular_velocity": [msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z],
+                "orientation": [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w],
+            }
+        )
 
     def gps_callback(self, msg: NavSatFix):
         """Record GPS data and track availability."""
-        self.gps_data.append({
-            'timestamp': time.time(),
-            'latitude': msg.latitude,
-            'longitude': msg.longitude,
-            'altitude': msg.altitude,
-            'position_covariance': msg.position_covariance.tolist(),
-            'status': msg.status.status
-        })
+        self.gps_data.append(
+            {
+                "timestamp": time.time(),
+                "latitude": msg.latitude,
+                "longitude": msg.longitude,
+                "altitude": msg.altitude,
+                "position_covariance": msg.position_covariance.tolist(),
+                "status": msg.status.status,
+            }
+        )
 
         # Track GPS transitions
         if msg.status.status >= 0 and not self.gps_available:
             # GPS recovered
             self.gps_available = True
             self.gps_recovery_start_time = time.time()
-            self.gps_transitions.append({
-                'timestamp': time.time(),
-                'event': 'gps_recovered',
-                'status': msg.status.status
-            })
+            self.gps_transitions.append(
+                {"timestamp": time.time(), "event": "gps_recovered", "status": msg.status.status}
+            )
             self.get_logger().info("GPS signal recovered")
 
         elif msg.status.status < 0 and self.gps_available:
             # GPS lost
             self.gps_available = False
-            self.gps_transitions.append({
-                'timestamp': time.time(),
-                'event': 'gps_lost',
-                'status': msg.status.status
-            })
+            self.gps_transitions.append({"timestamp": time.time(), "event": "gps_lost", "status": msg.status.status})
             self.get_logger().warn("GPS signal lost")
 
     def lidar_callback(self, msg: LaserScan):
         """Record LiDAR data."""
-        self.lidar_data.append({
-            'timestamp': time.time(),
-            'ranges': msg.ranges,
-            'angle_min': msg.angle_min,
-            'angle_max': msg.angle_max,
-            'angle_increment': msg.angle_increment,
-            'range_min': msg.range_min,
-            'range_max': msg.range_max
-        })
+        self.lidar_data.append(
+            {
+                "timestamp": time.time(),
+                "ranges": msg.ranges,
+                "angle_min": msg.angle_min,
+                "angle_max": msg.angle_max,
+                "angle_increment": msg.angle_increment,
+                "range_min": msg.range_min,
+                "range_max": msg.range_max,
+            }
+        )
 
     def camera_callback(self, msg: Image):
         """Record camera data and estimate visual features."""
-        self.camera_data.append({
-            'timestamp': time.time(),
-            'width': msg.width,
-            'height': msg.height,
-            'encoding': msg.encoding,
-            'step': msg.step
-        })
+        self.camera_data.append(
+            {
+                "timestamp": time.time(),
+                "width": msg.width,
+                "height": msg.height,
+                "encoding": msg.encoding,
+                "step": msg.step,
+            }
+        )
 
         # Estimate visual features (simplified)
         # In real implementation, this would use OpenCV feature detection
         estimated_features = self.estimate_visual_features(msg)
-        self.visual_features_data.append({
-            'timestamp': time.time(),
-            'feature_count': estimated_features,
-            'gps_available': self.gps_available
-        })
+        self.visual_features_data.append(
+            {"timestamp": time.time(), "feature_count": estimated_features, "gps_available": self.gps_available}
+        )
 
     def depth_callback(self, msg: Image):
         """Record depth camera data."""
         # Analyze depth data quality
         depth_quality = self.analyze_depth_quality(msg)
-        if hasattr(self, 'depth_quality_samples'):
+        if hasattr(self, "depth_quality_samples"):
             self.depth_quality_samples.append(depth_quality)
         else:
             self.depth_quality_samples = [depth_quality]
@@ -268,16 +267,15 @@ class GPSDeniedSLAMTest(Node):
     def points_callback(self, msg: PointCloud2):
         """Record point cloud data."""
         # This would be used for more detailed 3D analysis
-        pass
 
     def estimate_visual_features(self, image_msg: Image) -> int:
         """Estimate number of visual features in image (simplified)."""
         # Simplified feature estimation based on image properties
         # In real implementation, would use OpenCV feature detection
         base_features = 100
-        if image_msg.encoding == 'rgb8':
+        if image_msg.encoding == "rgb8":
             base_features = 150
-        elif image_msg.encoding == 'bgr8':
+        elif image_msg.encoding == "bgr8":
             base_features = 150
 
         # Add some variation based on image size
@@ -288,9 +286,9 @@ class GPSDeniedSLAMTest(Node):
         """Analyze depth data quality (0-1, higher is better)."""
         # Simplified depth quality analysis
         # In real implementation, would analyze actual depth data
-        if depth_msg.encoding == '32FC1':
+        if depth_msg.encoding == "32FC1":
             return 0.9  # Good depth format
-        elif depth_msg.encoding == '16UC1':
+        elif depth_msg.encoding == "16UC1":
             return 0.7  # Decent depth format
         else:
             return 0.3  # Poor depth format
@@ -366,9 +364,9 @@ class GPSDeniedSLAMTest(Node):
             start_pose = self.gps_denied_start_pose
             current_pose = self.slam_poses[-1]
 
-            dx = current_pose['x'] - start_pose['x']
-            dy = current_pose['y'] - start_pose['y']
-            total_drift = math.sqrt(dx*dx + dy*dy)
+            dx = current_pose["x"] - start_pose["x"]
+            dy = current_pose["y"] - start_pose["y"]
+            total_drift = math.sqrt(dx * dx + dy * dy)
 
             # Calculate drift per minute
             gps_denied_duration = time.time() - self.gps_disabled_time
@@ -379,11 +377,11 @@ class GPSDeniedSLAMTest(Node):
 
         # Update visual features count
         if self.visual_features_data:
-            recent_features = [f['feature_count'] for f in self.visual_features_data[-10:]]
+            recent_features = [f["feature_count"] for f in self.visual_features_data[-10:]]
             self.slam_drift_metrics.visual_features_count = int(np.mean(recent_features))
 
         # Update depth quality
-        if hasattr(self, 'depth_quality_samples') and self.depth_quality_samples:
+        if hasattr(self, "depth_quality_samples") and self.depth_quality_samples:
             self.slam_drift_metrics.depth_quality = np.mean(self.depth_quality_samples[-10:])
 
     def complete_test(self):
@@ -406,7 +404,7 @@ class GPSDeniedSLAMTest(Node):
             gps_transitions=self.gps_transitions,
             visual_features_over_time=self.visual_features_data,
             errors=self.errors,
-            warnings=self.warnings
+            warnings=self.warnings,
         )
 
         # Save results
@@ -431,7 +429,7 @@ class GPSDeniedSLAMTest(Node):
         if len(self.slam_poses) > 10:
             pose_intervals = []
             for i in range(1, len(self.slam_poses)):
-                interval = self.slam_poses[i]['timestamp'] - self.slam_poses[i-1]['timestamp']
+                interval = self.slam_poses[i]["timestamp"] - self.slam_poses[i - 1]["timestamp"]
                 pose_intervals.append(interval)
 
             # Check for large gaps in pose updates
@@ -441,16 +439,16 @@ class GPSDeniedSLAMTest(Node):
         # Store initial and final positions
         if self.gps_denied_start_pose:
             self.slam_drift_metrics.initial_position = [
-                self.gps_denied_start_pose['x'],
-                self.gps_denied_start_pose['y'],
-                self.gps_denied_start_pose['z']
+                self.gps_denied_start_pose["x"],
+                self.gps_denied_start_pose["y"],
+                self.gps_denied_start_pose["z"],
             ]
 
         if self.gps_denied_end_pose:
             self.slam_drift_metrics.final_position = [
-                self.gps_denied_end_pose['x'],
-                self.gps_denied_end_pose['y'],
-                self.gps_denied_end_pose['z']
+                self.gps_denied_end_pose["x"],
+                self.gps_denied_end_pose["y"],
+                self.gps_denied_end_pose["z"],
             ]
 
     def save_results(self):
@@ -462,9 +460,9 @@ class GPSDeniedSLAMTest(Node):
 
         # Convert to serializable format
         results_dict = asdict(self.test_results)
-        results_dict['status'] = self.test_results.status.value
+        results_dict["status"] = self.test_results.status.value
 
-        with open(results_file, 'w') as f:
+        with open(results_file, "w") as f:
             json.dump(results_dict, f, indent=2)
 
         self.get_logger().info(f"Results saved to {results_file}")
@@ -488,10 +486,10 @@ def main(args=None):
     except Exception as e:
         test_node.get_logger().error(f"Test failed with error: {str(e)}")
     finally:
-        if 'test_node' in locals():
+        if "test_node" in locals():
             test_node.destroy_node()
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

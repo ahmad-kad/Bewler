@@ -48,9 +48,7 @@ class MissionArUcoDetector:
         )
 
         # Service clients
-        self.aruco_detection_client: Client = node.create_client(
-            DetectAruco, "/aruco_detection/detect"
-        )
+        self.aruco_detection_client: Client = node.create_client(DetectAruco, "/aruco_detection/detect")
 
         # Service servers
         self.mission_detection_service = node.create_service(
@@ -111,14 +109,10 @@ class MissionArUcoDetector:
         try:
             # Call detection service
             if not self.aruco_detection_client.wait_for_service(timeout_sec=2.0):
-                return self._create_error_result(
-                    "ArUco detection service not available"
-                )
+                return self._create_error_result("ArUco detection service not available")
 
             future = self.aruco_detection_client.call_async(request)
-            self.node.get_executor().spin_until_future_complete(
-                future, timeout_sec=timeout + 1.0
-            )
+            self.node.get_executor().spin_until_future_complete(future, timeout_sec=timeout + 1.0)
 
             if not future.done():
                 return self._create_error_result("Detection request timed out")
@@ -126,14 +120,10 @@ class MissionArUcoDetector:
             response = future.result()
 
             if not response.success:
-                return self._create_error_result(
-                    f"Detection failed: {response.message}"
-                )
+                return self._create_error_result(f"Detection failed: {response.message}")
 
             # Process detection results
-            return self._process_detection_results(
-                response, mission_type, required_tag_ids, optional_tag_ids
-            )
+            return self._process_detection_results(response, mission_type, required_tag_ids, optional_tag_ids)
 
         except Exception as e:
             logger.error("Mission detection failed", error=str(e))
@@ -159,22 +149,12 @@ class MissionArUcoDetector:
             detected_tags.append(tag_info)
 
         # Calculate alignment
-        alignment_result = self.alignment_calculator.calculate_alignment(
-            detected_tags, mission_type
-        )
+        alignment_result = self.alignment_calculator.calculate_alignment(detected_tags, mission_type)
 
         # Determine which tags were detected
-        detected_required = [
-            tag_id for tag_id in required_tag_ids if tag_id in response.detected_tag_ids
-        ]
-        detected_optional = [
-            tag_id for tag_id in optional_tag_ids if tag_id in response.detected_tag_ids
-        ]
-        missing_required = [
-            tag_id
-            for tag_id in required_tag_ids
-            if tag_id not in response.detected_tag_ids
-        ]
+        detected_required = [tag_id for tag_id in required_tag_ids if tag_id in response.detected_tag_ids]
+        detected_optional = [tag_id for tag_id in optional_tag_ids if tag_id in response.detected_tag_ids]
+        missing_required = [tag_id for tag_id in required_tag_ids if tag_id not in response.detected_tag_ids]
 
         # Create result
         result = {
@@ -196,16 +176,12 @@ class MissionArUcoDetector:
             "missing_required_tags": missing_required,
             "detected_optional_tags": detected_optional,
             "alignment_warnings": alignment_result.get("alignment_warnings", []),
-            "mission_recommendations": alignment_result.get(
-                "mission_recommendations", []
-            ),
+            "mission_recommendations": alignment_result.get("mission_recommendations", []),
         }
 
         return result
 
-    def create_arm_alignment_command(
-        self, detection_result: Dict[str, Any]
-    ) -> Optional[ArmAlignmentCommand]:
+    def create_arm_alignment_command(self, detection_result: Dict[str, Any]) -> Optional[ArmAlignmentCommand]:
         """Create arm alignment command from detection result."""
         if not detection_result.get("alignment_available", False):
             return None
@@ -213,9 +189,7 @@ class MissionArUcoDetector:
         mission_type = detection_result.get("mission_type", "UNKNOWN")
 
         # Create alignment command
-        cmd = self.alignment_calculator.create_arm_alignment_command(
-            detection_result, mission_type
-        )
+        cmd = self.alignment_calculator.create_arm_alignment_command(detection_result, mission_type)
 
         # Set header
         cmd.header = Header()

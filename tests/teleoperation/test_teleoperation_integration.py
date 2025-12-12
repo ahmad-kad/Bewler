@@ -55,14 +55,14 @@ class MockTeleoperationPublisher(Node):
         joint_state.header.stamp = current_time.to_msg()
         joint_state.header.frame_id = 'base_link'
         joint_state.name = ['swerve_front_left', 'swerve_front_right',
-                          'swerve_rear_left', 'swerve_rear_right']
+                            'swerve_rear_left', 'swerve_rear_right']
 
         # Realistic swerve module positions (simulate slow rotation)
         t = time.time() - self.time_offset
         joint_state.position = [
             math.sin(t * 0.5) * 0.5,      # FL
-            math.sin(t * 0.5 + 1.57) * 0.5, # FR
-            math.sin(t * 0.5 + 3.14) * 0.5, # RL
+            math.sin(t * 0.5 + 1.57) * 0.5,  # FR
+            math.sin(t * 0.5 + 3.14) * 0.5,  # RL
             math.sin(t * 0.5 + 4.71) * 0.5  # RR
         ]
 
@@ -118,7 +118,7 @@ class MockTeleoperationPublisher(Node):
         # Log status every 10 seconds
         if int(t) % 10 == 0 and int(t * 10) % 10 == 0:
             self.get_logger().info(".1f"
-                                 ".1f")
+                                   ".1f")
 
 
 def main():

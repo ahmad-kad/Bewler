@@ -70,19 +70,11 @@ class SensorSimulator(Node):
         )
 
         # Publishers
-        self.gps_publisher = self.create_publisher(
-            NavSatFix, "/rover/gps/fix", sensor_qos
-        )
+        self.gps_publisher = self.create_publisher(NavSatFix, "/rover/gps/fix", sensor_qos)
         self.imu_publisher = self.create_publisher(Imu, "/rover/imu/data", sensor_qos)
-        self.camera_publisher = self.create_publisher(
-            Image, "/rover/camera/image_raw", sensor_qos
-        )
-        self.camera_info_publisher = self.create_publisher(
-            CameraInfo, "/rover/camera/camera_info", sensor_qos
-        )
-        self.odom_publisher = self.create_publisher(
-            Odometry, "/odom", QoSProfile(depth=10)
-        )
+        self.camera_publisher = self.create_publisher(Image, "/rover/camera/image_raw", sensor_qos)
+        self.camera_info_publisher = self.create_publisher(CameraInfo, "/rover/camera/camera_info", sensor_qos)
+        self.odom_publisher = self.create_publisher(Odometry, "/odom", QoSProfile(depth=10))
 
         # TF broadcaster
         self.tf_broadcaster = TransformBroadcaster(self)
@@ -122,9 +114,7 @@ class SensorSimulator(Node):
 
         # Convert local offset to lat/lon (approximate)
         earth_radius = 6371000.0  # meters
-        lat_offset = (
-            (self.current_pose["y"] + noise_y) / earth_radius * (180.0 / math.pi)
-        )
+        lat_offset = (self.current_pose["y"] + noise_y) / earth_radius * (180.0 / math.pi)
         lon_offset = (
             (self.current_pose["x"] + noise_x)
             / (earth_radius * math.cos(math.radians(self.base_lat)))
@@ -133,11 +123,7 @@ class SensorSimulator(Node):
 
         msg.latitude = self.base_lat + lat_offset
         msg.longitude = self.base_lon + lon_offset
-        msg.altitude = (
-            self.base_alt
-            + self.current_pose["z"]
-            + np.random.normal(0, self.gps_noise_std * 2)
-        )
+        msg.altitude = self.base_alt + self.current_pose["z"] + np.random.normal(0, self.gps_noise_std * 2)
 
         # GPS covariance (3m horizontal, 6m vertical accuracy)
         msg.position_covariance = [9.0, 0.0, 0.0, 0.0, 9.0, 0.0, 0.0, 0.0, 36.0]
@@ -159,20 +145,18 @@ class SensorSimulator(Node):
         motion_freq = 0.1  # Hz
 
         # Angular velocity (simulate small rotations)
-        msg.angular_velocity.x = 0.01 * math.sin(
-            2 * math.pi * motion_freq * current_time
-        ) + np.random.normal(0, self.imu_noise_std)
-        msg.angular_velocity.y = 0.005 * math.cos(
-            2 * math.pi * motion_freq * current_time
-        ) + np.random.normal(0, self.imu_noise_std)
+        msg.angular_velocity.x = 0.01 * math.sin(2 * math.pi * motion_freq * current_time) + np.random.normal(
+            0, self.imu_noise_std
+        )
+        msg.angular_velocity.y = 0.005 * math.cos(2 * math.pi * motion_freq * current_time) + np.random.normal(
+            0, self.imu_noise_std
+        )
         msg.angular_velocity.z = 0.0 + np.random.normal(0, self.imu_noise_std)
 
         # Linear acceleration (gravity + motion)
         msg.linear_acceleration.x = np.random.normal(0, self.imu_noise_std)
         msg.linear_acceleration.y = np.random.normal(0, self.imu_noise_std)
-        msg.linear_acceleration.z = -3.71 + np.random.normal(
-            0, self.imu_noise_std
-        )  # Mars gravity
+        msg.linear_acceleration.z = -3.71 + np.random.normal(0, self.imu_noise_std)  # Mars gravity
 
         # Orientation (simplified - assume mostly level)
         msg.orientation.w = 1.0
@@ -223,9 +207,7 @@ class SensorSimulator(Node):
         # Add some "rocks" (dark circles)
         for i in range(5):
             center_x = np.random.randint(50, self.camera_width - 50)
-            center_y = np.random.randint(
-                self.camera_height // 2, self.camera_height - 50
-            )
+            center_y = np.random.randint(self.camera_height // 2, self.camera_height - 50)
             radius = np.random.randint(20, 50)
             cv2.circle(image, (center_x, center_y), radius, (100, 80, 60), -1)
 

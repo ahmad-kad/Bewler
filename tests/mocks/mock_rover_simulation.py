@@ -16,8 +16,6 @@ physical hardware or complex simulation setup.
 import math
 import os
 import random
-import time
-from typing import Optional
 
 import rclpy
 import yaml

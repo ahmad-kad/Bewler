@@ -7,12 +7,11 @@ and functionality.
 """
 
 import os
-import signal
 import subprocess
 import sys
 import time
 import unittest
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 
 class ROS2IntegrationTest(unittest.TestCase):
@@ -21,7 +20,7 @@ class ROS2IntegrationTest(unittest.TestCase):
     def setUp(self):
         """Set up test environment"""
         self.processes: List[subprocess.Popen] = []
-        self.workspace_path = os.path.join(os.path.dirname(__file__), '..')
+        self.workspace_path = os.path.join(os.path.dirname(__file__), "..")
 
     def tearDown(self):
         """Clean up test environment"""
@@ -35,12 +34,16 @@ class ROS2IntegrationTest(unittest.TestCase):
 
     def start_node(self, package_name: str, node_name: str, namespace: str = "") -> subprocess.Popen:
         """Start a ROS 2 node"""
-        cmd = ['bash', '-c', f'source /opt/ros/humble/setup.bash && source {self.workspace_path}/ros2_ws/install/setup.bash && ros2 run {package_name} {node_name}']
+        cmd = [
+            "bash",
+            "-c",
+            f"source /opt/ros/humble/setup.bash && source {self.workspace_path}/ros2_ws/install/setup.bash && ros2 run {package_name} {node_name}",
+        ]
         if namespace:
-            cmd[1] = cmd[1] + f' --ros-args -r __ns:={namespace}'
+            cmd[1] = cmd[1] + f" --ros-args -r __ns:={namespace}"
 
         env = os.environ.copy()
-        env['PYTHONPATH'] = self.workspace_path
+        env["PYTHONPATH"] = self.workspace_path
 
         process = subprocess.Popen(
             cmd,
@@ -49,7 +52,7 @@ class ROS2IntegrationTest(unittest.TestCase):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            shell=False
+            shell=False,
         )
 
         self.processes.append(process)
@@ -60,10 +63,14 @@ class ROS2IntegrationTest(unittest.TestCase):
         """Check if a ROS 2 node is running"""
         try:
             result = subprocess.run(
-                ['bash', '-c', f'source /opt/ros/humble/setup.bash && source {self.workspace_path}/ros2_ws/install/setup.bash && ros2 node list'],
+                [
+                    "bash",
+                    "-c",
+                    f"source /opt/ros/humble/setup.bash && source {self.workspace_path}/ros2_ws/install/setup.bash && ros2 node list",
+                ],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
             )
             return node_name in result.stdout
         except subprocess.TimeoutExpired:
@@ -71,17 +78,25 @@ class ROS2IntegrationTest(unittest.TestCase):
 
     def publish_message(self, topic: str, msg_type: str, message: str):
         """Publish a message to a ROS 2 topic"""
-        cmd = ['bash', '-c', f'source /opt/ros/humble/setup.bash && source {self.workspace_path}/ros2_ws/install/setup.bash && ros2 topic pub {topic} {msg_type} "{message}" --once']
+        cmd = [
+            "bash",
+            "-c",
+            f'source /opt/ros/humble/setup.bash && source {self.workspace_path}/ros2_ws/install/setup.bash && ros2 topic pub {topic} {msg_type} "{message}" --once',
+        ]
         subprocess.run(cmd, timeout=10)
 
     def get_topic_info(self, topic: str) -> Optional[str]:
         """Get information about a ROS 2 topic"""
         try:
             result = subprocess.run(
-                ['bash', '-c', f'source /opt/ros/humble/setup.bash && source {self.workspace_path}/ros2_ws/install/setup.bash && ros2 topic info {topic}'],
+                [
+                    "bash",
+                    "-c",
+                    f"source /opt/ros/humble/setup.bash && source {self.workspace_path}/ros2_ws/install/setup.bash && ros2 topic info {topic}",
+                ],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
             )
             return result.stdout if result.returncode == 0 else None
         except subprocess.TimeoutExpired:
@@ -93,34 +108,37 @@ class StateManagementIntegrationTest(ROS2IntegrationTest):
 
     def test_state_management_node_startup(self):
         """Test that state management node starts successfully"""
-        process = self.start_node('autonomy_state_management', 'state_management_node')
+        process = self.start_node("autonomy_state_management", "state_management_node")
 
         # Check that node is running
-        self.assertTrue(self.check_node_running('/state_management_node'))
+        self.assertTrue(self.check_node_running("/state_management_node"))
 
         # Check that required topics exist
-        topics = ['/mission_status', '/system_mode', '/emergency_stop']
+        topics = ["/mission_status", "/system_mode", "/emergency_stop"]
         for topic in topics:
-            self.assertIsNotNone(self.get_topic_info(topic),
-                               f"Topic {topic} should exist")
+            self.assertIsNotNone(self.get_topic_info(topic), f"Topic {topic} should exist")
 
     def test_mission_state_transitions(self):
         """Test mission state transitions"""
-        process = self.start_node('autonomy_state_management', 'state_management_node')
+        process = self.start_node("autonomy_state_management", "state_management_node")
 
         # Test start mission service
-        result = subprocess.run([
-            'ros2', 'service', 'call', '/start_mission',
-            'std_srvs/srv/Trigger', '{}'
-        ], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(
+            ["ros2", "service", "call", "/start_mission", "std_srvs/srv/Trigger", "{}"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
 
         self.assertEqual(result.returncode, 0, "Start mission service should succeed")
 
         # Test stop mission service
-        result = subprocess.run([
-            'ros2', 'service', 'call', '/stop_mission',
-            'std_srvs/srv/Trigger', '{}'
-        ], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(
+            ["ros2", "service", "call", "/stop_mission", "std_srvs/srv/Trigger", "{}"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
 
         self.assertEqual(result.returncode, 0, "Stop mission service should succeed")
 
@@ -131,7 +149,7 @@ class NavigationIntegrationTest(ROS2IntegrationTest):
     def test_navigation_node_startup(self):
         """Test that navigation node can be started (may fail if not fully implemented)"""
         try:
-            process = self.start_node('autonomy_navigation', 'navigation_node')
+            process = self.start_node("autonomy_navigation", "navigation_node")
 
             # Give it time to start/fail
             time.sleep(3)
@@ -142,9 +160,9 @@ class NavigationIntegrationTest(ROS2IntegrationTest):
                 # Node started successfully
                 self.assertTrue(True, "Navigation node started without immediate failure")
                 # Check that node is running if it started
-                if self.check_node_running('/navigation_node'):
+                if self.check_node_running("/navigation_node"):
                     # Check that required topics exist
-                    topics = ['/navigation/status', '/cmd_vel', '/navigation/current_waypoint']
+                    topics = ["/navigation/status", "/cmd_vel", "/navigation/current_waypoint"]
                     for topic in topics:
                         # Topics may not exist yet if node isn't fully implemented
                         pass  # Skip topic checks for now
@@ -168,17 +186,17 @@ class MultiSubsystemIntegrationTest(ROS2IntegrationTest):
     def test_state_navigation_integration(self):
         """Test integration between state management and navigation"""
         # Start state management node
-        state_process = self.start_node('autonomy_state_management', 'state_management_node')
+        state_process = self.start_node("autonomy_state_management", "state_management_node")
 
         # Start navigation node
-        nav_process = self.start_node('autonomy_navigation', 'navigation_node')
+        nav_process = self.start_node("autonomy_navigation", "navigation_node")
 
         # Verify both nodes are running
-        self.assertTrue(self.check_node_running('/state_management_node'))
-        self.assertTrue(self.check_node_running('/navigation_node'))
+        self.assertTrue(self.check_node_running("/state_management_node"))
+        self.assertTrue(self.check_node_running("/navigation_node"))
 
         # Test emergency stop propagation
-        self.publish_message('/emergency_stop_request', 'std_msgs/msg/Bool', '{data: true}')
+        self.publish_message("/emergency_stop_request", "std_msgs/msg/Bool", "{data: true}")
 
         # Give some time for message propagation
         time.sleep(2)
@@ -194,16 +212,27 @@ def run_integration_tests():
     print("🚀 Starting ROS 2 Integration Tests...")
 
     # Check if ROS 2 is available (try sourcing if not found)
-    workspace_path = os.path.join(os.path.dirname(__file__), '..')
+    workspace_path = os.path.join(os.path.dirname(__file__), "..")
     ros2_available = False
     try:
-        subprocess.run(['bash', '-c', 'source /opt/ros/humble/setup.bash && source ros2_ws/install/setup.bash && ros2 --help > /dev/null 2>&1'],
-                      capture_output=True, check=True, text=True, cwd=workspace_path)
+        subprocess.run(
+            [
+                "bash",
+                "-c",
+                "source /opt/ros/humble/setup.bash && source ros2_ws/install/setup.bash && ros2 --help > /dev/null 2>&1",
+            ],
+            capture_output=True,
+            check=True,
+            text=True,
+            cwd=workspace_path,
+        )
         ros2_available = True
         print("✓ ROS 2 environment detected and sourced")
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("✗ ROS 2 not found. Please ensure you're running in Docker environment.")
-        print("   Run tests with: cd development/docker && docker compose run --rm autonomy-dev bash -c 'cd /workspace && python3 tests/integration_test.py'")
+        print(
+            "   Run tests with: cd development/docker && docker compose run --rm autonomy-dev bash -c 'cd /workspace && python3 tests/integration_test.py'"
+        )
         return False
 
     # Run tests
@@ -211,8 +240,8 @@ def run_integration_tests():
     suite = unittest.TestSuite()
 
     # Add test cases
-    suite.addTest(StateManagementIntegrationTest('test_state_management_node_startup'))
-    suite.addTest(NavigationIntegrationTest('test_navigation_node_startup'))
+    suite.addTest(StateManagementIntegrationTest("test_state_management_node_startup"))
+    suite.addTest(NavigationIntegrationTest("test_navigation_node_startup"))
 
     # Note: Multi-subsystem tests may fail until full implementation is complete
     # suite.addTest(MultiSubsystemIntegrationTest('test_state_navigation_integration'))
@@ -226,7 +255,7 @@ def run_integration_tests():
     return success
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("🧪 ROS 2 Integration Tests")
     print("=" * 40)
     print("NOTE: This test is designed to run in the Docker development environment.")

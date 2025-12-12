@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 ArUco Tag Sheet Generator for Environment Setup - URC 2026
@@ -103,13 +102,14 @@ def create_page_with_tags(tag_specs, start_id, dpi=300, landscape=False):
     max_tag_size_px = int(max_tag_size_inches * dpi)
 
     if max_tag_size_px > usable_width_px or max_tag_size_px > usable_height_px:
-        print(f"  ⚠️  WARNING: {max_tag_size_cm}cm tag "
-              f"({max_tag_size_inches:.1f}\") too large for printable area!")
+        print(f"  ⚠️  WARNING: {max_tag_size_cm}cm tag " f'({max_tag_size_inches:.1f}") too large for printable area!')
         margin_inches = PRINT_MARGIN_INCHES
         width_inches = page_width_inches - 2 * margin_inches
         height_inches = page_height_inches - 2 * margin_inches
-        print(f"     Printable area: {usable_width_px}px x {usable_height_px}px "
-              f"({width_inches:.1f}\" x {height_inches:.1f}\")")
+        print(
+            f"     Printable area: {usable_width_px}px x {usable_height_px}px "
+            f'({width_inches:.1f}" x {height_inches:.1f}")'
+        )
         print("     Tag will be clipped. Consider using smaller tags.")
 
     # Start from top-left of usable area (no centering)
@@ -139,8 +139,9 @@ def create_page_with_tags(tag_specs, start_id, dpi=300, landscape=False):
             # Check if we're exceeding the safe printable area
             if y + tag_size_px > page_height_px - margin:
                 remaining_tags = count - tag_idx
-                print(f"  ⚠️  WARNING: Not enough vertical space for all tags. "
-                      f"{remaining_tags} tags will be omitted.")
+                print(
+                    f"  ⚠️  WARNING: Not enough vertical space for all tags. " f"{remaining_tags} tags will be omitted."
+                )
                 break
 
             # Check horizontal bounds
@@ -161,9 +162,7 @@ def create_page_with_tags(tag_specs, start_id, dpi=300, landscape=False):
             cutline_width = 2
             # Rectangle around tag
             draw.rectangle(
-                [(x - 5, y - 5), (x + tag_size_px + 5, y + tag_size_px + 5)],
-                outline=cutline_color,
-                width=cutline_width
+                [(x - 5, y - 5), (x + tag_size_px + 5, y + tag_size_px + 5)], outline=cutline_color, width=cutline_width
             )
             canvas = np.array(pil_img)
 
@@ -207,9 +206,9 @@ def create_page_with_tags(tag_specs, start_id, dpi=300, landscape=False):
         f"ArUco Tag Sheet - Generated {timestamp}",
         f"Dictionary: DICT_4X4_50, DPI: {dpi}",
         f"Tags: {', '.join([f'{count}x{size}cm' for size, count in tag_specs])}",
-        f"Page size: {page_width_inches:.1f}\" x {page_height_inches:.1f}\" "
-        f"({page_width_px}x{page_height_px}px), Margins: {PRINT_MARGIN_INCHES:.2f}\"",
-        f"IDs: {start_id} to {current_id-1}"
+        f'Page size: {page_width_inches:.1f}" x {page_height_inches:.1f}" '
+        f'({page_width_px}x{page_height_px}px), Margins: {PRINT_MARGIN_INCHES:.2f}"',
+        f"IDs: {start_id} to {current_id-1}",
     ]
 
     # Position metadata at bottom of page within safe area
@@ -222,7 +221,7 @@ def create_page_with_tags(tag_specs, start_id, dpi=300, landscape=False):
 
     canvas = np.array(pil_img)
 
-    pil_image = Image.fromarray(canvas, mode='RGB')
+    pil_image = Image.fromarray(canvas, mode="RGB")
     return pil_image, current_id
 
 
@@ -311,9 +310,7 @@ def create_page_with_tags_large_format(tag_specs, start_id, dpi=300):
             cutline_color = (200, 200, 200)
             cutline_width = 3
             draw.rectangle(
-                [(x - 8, y - 8), (x + tag_size_px + 8, y + tag_size_px + 8)],
-                outline=cutline_color,
-                width=cutline_width
+                [(x - 8, y - 8), (x + tag_size_px + 8, y + tag_size_px + 8)], outline=cutline_color, width=cutline_width
             )
             canvas = np.array(pil_img)
 
@@ -348,9 +345,9 @@ def create_page_with_tags_large_format(tag_specs, start_id, dpi=300):
 
     metadata_lines = [
         f"ArUco Large Format (Roll Paper) - {timestamp}",
-        f"Paper: 36\" × 44\" | Dictionary: DICT_4X4_50 | DPI: {dpi}",
+        f'Paper: 36" × 44" | Dictionary: DICT_4X4_50 | DPI: {dpi}',
         f"Tags: {', '.join([f'{count}x{size}cm' for size, count in tag_specs])}",
-        f"IDs: {start_id} to {current_id-1}"
+        f"IDs: {start_id} to {current_id-1}",
     ]
 
     metadata_y = page_height_px - margin - 20
@@ -361,7 +358,7 @@ def create_page_with_tags_large_format(tag_specs, start_id, dpi=300):
         metadata_y -= line_height
 
     canvas = np.array(pil_img)
-    pil_image = Image.fromarray(canvas, mode='RGB')
+    pil_image = Image.fromarray(canvas, mode="RGB")
     return pil_image, current_id
 
 
@@ -392,8 +389,8 @@ def create_merged_template_with_tags(tag_specs, start_id, template_image_path, d
         return None, start_id
 
     # Convert template to RGB if needed
-    if template_img.mode != 'RGB':
-        template_img = template_img.convert('RGB')
+    if template_img.mode != "RGB":
+        template_img = template_img.convert("RGB")
 
     # Get template dimensions
     template_width_px, template_height_px = template_img.size
@@ -460,9 +457,7 @@ def create_merged_template_with_tags(tag_specs, start_id, template_image_path, d
             pil_img = Image.fromarray(canvas)
             draw = ImageDraw.Draw(pil_img)
             draw.rectangle(
-                [(x - 3, y - 3), (x + tag_size_px + 3, y + tag_size_px + 3)],
-                outline=(200, 200, 200),
-                width=2
+                [(x - 3, y - 3), (x + tag_size_px + 3, y + tag_size_px + 3)], outline=(200, 200, 200), width=2
             )
             canvas = np.array(pil_img)
 
@@ -500,13 +495,11 @@ def create_merged_template_with_tags(tag_specs, start_id, template_image_path, d
     draw.text((margin, template_height_px - margin - 20), metadata, fill=(100, 100, 100), font=font)
 
     canvas = np.array(pil_img)
-    return Image.fromarray(canvas, mode='RGB'), current_id
+    return Image.fromarray(canvas, mode="RGB"), current_id
 
 
 def generate_merged_template_pdf(
-    tag_specs,
-    output_filename="aruco_template_merged.pdf",
-    template_path="template_silhouette.png"
+    tag_specs, output_filename="aruco_template_merged.pdf", template_path="template_silhouette.png"
 ):
     """
     Generate PDF with ArUco tags merged onto template_silhouette.png.
@@ -517,10 +510,7 @@ def generate_merged_template_pdf(
     print(f"Template: {template_path}")
 
     pil_img, current_id = create_merged_template_with_tags(
-        tag_specs,
-        start_id=0,
-        template_image_path=template_path,
-        dpi=300
+        tag_specs, start_id=0, template_image_path=template_path, dpi=300
     )
 
     if pil_img is None:
@@ -531,7 +521,7 @@ def generate_merged_template_pdf(
 
     try:
         # Save as PDF
-        pil_img.save(output_filename, format='PDF', dpi=(300, 300))
+        pil_img.save(output_filename, format="PDF", dpi=(300, 300))
         print(f"\n✅ Successfully generated: '{output_filename}'")
         print(f"   Tags: {total_tags} (IDs 0 to {current_id-1})")
         print("   Resolution: 300 DPI")
@@ -570,12 +560,7 @@ def generate_sheets(specs_list, output_filename="aruco_tags.pdf"):
 
     # Save multi-page PDF
     try:
-        pages[0].save(
-            output_filename,
-            format='PDF',
-            save_all=True,
-            append_images=pages[1:] if len(pages) > 1 else []
-        )
+        pages[0].save(output_filename, format="PDF", save_all=True, append_images=pages[1:] if len(pages) > 1 else [])
         print(f"\n✅ Successfully generated: '{output_filename}'")
         print(f"   Total pages: {len(pages)}")
     except Exception as e:
@@ -589,7 +574,7 @@ def generate_sheets_large_format(specs_list, output_filename="aruco_tags_large.p
     specs_list: list of (layout_description, [(size_cm, count), ...])
     Tags are arranged in rows filling the width of the paper.
     """
-    print("--- ArUco Tag Sheet Generator (Large Format Roll Paper - 36\" × 44\") ---")
+    print('--- ArUco Tag Sheet Generator (Large Format Roll Paper - 36" × 44") ---')
     print(f"OpenCV version: {cv2.__version__}")
 
     pages = []
@@ -609,12 +594,7 @@ def generate_sheets_large_format(specs_list, output_filename="aruco_tags_large.p
 
     # Save multi-page PDF
     try:
-        pages[0].save(
-            output_filename,
-            format='PDF',
-            save_all=True,
-            append_images=pages[1:] if len(pages) > 1 else []
-        )
+        pages[0].save(output_filename, format="PDF", save_all=True, append_images=pages[1:] if len(pages) > 1 else [])
         print(f"\n✅ Successfully generated: '{output_filename}'")
         print(f"   Total pages: {len(pages)}")
     except Exception as e:
@@ -658,7 +638,7 @@ def generate_tags_as_pngs(tag_specs, output_dir="aruco_tags_png", dpi=300):
 
             # Create PIL image with white border
             border = 10
-            canvas = Image.new('RGB', (tag_size_px + 2*border, tag_size_px + 2*border), 'white')
+            canvas = Image.new("RGB", (tag_size_px + 2 * border, tag_size_px + 2 * border), "white")
             tag_pil = Image.fromarray(tag_img_rgb)
             canvas.paste(tag_pil, (border, border))
 
@@ -689,38 +669,37 @@ def generate_tags_as_pngs(tag_specs, output_dir="aruco_tags_png", dpi=300):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Generate multi-tag ArUco sheets for printing.',
-        usage='%(prog)s [--format {small,large}] [--template] [--png] [-o OUTPUT]'
+        description="Generate multi-tag ArUco sheets for printing.",
+        usage="%(prog)s [--format {small,large}] [--template] [--png] [-o OUTPUT]",
     )
     parser.add_argument(
-        '--format',
-        choices=['small', 'large'],
-        default='small',
-        help='Format: small (11"×8.5" letter) or large (36"×44" roll paper) [default: small]'
+        "--format",
+        choices=["small", "large"],
+        default="small",
+        help='Format: small (11"×8.5" letter) or large (36"×44" roll paper) [default: small]',
     )
     parser.add_argument(
-        '--template',
-        action='store_true',
-        help='Merge small ArUco tags with template_silhouette.png as registration marks'
+        "--template",
+        action="store_true",
+        help="Merge small ArUco tags with template_silhouette.png as registration marks",
     )
     parser.add_argument(
-        '--png',
-        action='store_true',
-        help='Generate individual ArUco tags as PNG files (for layering/compositing)'
+        "--png", action="store_true", help="Generate individual ArUco tags as PNG files (for layering/compositing)"
     )
     parser.add_argument(
-        '-o', '--output',
+        "-o",
+        "--output",
         default=None,
-        help='Output PDF filename [default: aruco_sheets.pdf (small) or aruco_sheets_large.pdf (large)]'
+        help="Output PDF filename [default: aruco_sheets.pdf (small) or aruco_sheets_large.pdf (large)]",
     )
     args = parser.parse_args()
 
     # Set default output filename based on format and mode
     if args.output is None:
         if args.template:
-            args.output = 'aruco_template_merged.pdf'
+            args.output = "aruco_template_merged.pdf"
         else:
-            args.output = 'aruco_sheets.pdf' if args.format == 'small' else 'aruco_sheets_large.pdf'
+            args.output = "aruco_sheets.pdf" if args.format == "small" else "aruco_sheets_large.pdf"
 
     print("\n📋 ArUco Sheet Generation Configuration:")
 
@@ -731,8 +710,8 @@ def main():
         print("   Use: Layering, compositing, or custom layouts\n")
 
         tag_specs = [
-            (2, 42),   # 42× 2cm tags
-            (1, 90),   # 90× 1cm tags
+            (2, 42),  # 42× 2cm tags
+            (1, 90),  # 90× 1cm tags
         ]
 
         generate_tags_as_pngs(tag_specs, output_dir="aruco_tags_png")
@@ -745,50 +724,72 @@ def main():
         print("   Output: Single PDF with merged image\n")
 
         tag_specs = [
-            (2, 42),   # 42× 2cm tags
-            (1, 90),   # 90× 1cm tags
+            (2, 42),  # 42× 2cm tags
+            (1, 90),  # 90× 1cm tags
         ]
 
         generate_merged_template_pdf(tag_specs, args.output)
 
-    elif args.format == 'small':
+    elif args.format == "small":
         print("   Format: SMALL - Standard Letter Paper")
-        print("   Page size: 11\" × 8.5\" (US Letter)")
-        print("   Printable area: 9.5\" × 7.0\" (within template_silhouette.png margins)")
-        print("   Safe margins: 0.75\" on all sides")
+        print('   Page size: 11" × 8.5" (US Letter)')
+        print('   Printable area: 9.5" × 7.0" (within template_silhouette.png margins)')
+        print('   Safe margins: 0.75" on all sides')
         print("   DPI: 300")
         print("   Recommended single tag sizes: 1-7cm for multiple tags\n")
 
         # Define small format layouts
         layouts = [
-            ("Small tags (keyboard USB corners + extras) - 2cm", [
-                (2, 42),  # 42x 2cm tags for keyboard corners + extras
-
-            ], True),
-            ("Small tags (keyboard USB corners + extras) - 1cm", [
-
-                (1, 90),  # 90x 1cm tags for USB slot corners + extras
-            ], True),
-            ("Medium tags (navigation markers) - 10cm", [
-                (10, 2),  # 2x 10cm tags per page (fits 2 per row)
-            ], True),
-            ("Medium tags (navigation markers) - 10cm - Page 2", [
-                (10, 2),
-            ], True),
-            ("Large tags (navigation posts) - 15cm", [
-                (15, 1),  # 1x 15cm tag per page
-            ], True),
-            ("Large tags (navigation posts) - 15cm - Page 2", [
-                (15, 1),
-            ], True),
+            (
+                "Small tags (keyboard USB corners + extras) - 2cm",
+                [
+                    (2, 42),  # 42x 2cm tags for keyboard corners + extras
+                ],
+                True,
+            ),
+            (
+                "Small tags (keyboard USB corners + extras) - 1cm",
+                [
+                    (1, 90),  # 90x 1cm tags for USB slot corners + extras
+                ],
+                True,
+            ),
+            (
+                "Medium tags (navigation markers) - 10cm",
+                [
+                    (10, 2),  # 2x 10cm tags per page (fits 2 per row)
+                ],
+                True,
+            ),
+            (
+                "Medium tags (navigation markers) - 10cm - Page 2",
+                [
+                    (10, 2),
+                ],
+                True,
+            ),
+            (
+                "Large tags (navigation posts) - 15cm",
+                [
+                    (15, 1),  # 1x 15cm tag per page
+                ],
+                True,
+            ),
+            (
+                "Large tags (navigation posts) - 15cm - Page 2",
+                [
+                    (15, 1),
+                ],
+                True,
+            ),
         ]
 
         generate_sheets(layouts, args.output)
 
     else:  # large format
-        print("   Format: LARGE - Roll Paper (36\" × 44\")")
-        print("   Page size: 36\" × 44\" (big printer roll)")
-        print("   Margins: 0.5\" on all sides")
+        print('   Format: LARGE - Roll Paper (36" × 44")')
+        print('   Page size: 36" × 44" (big printer roll)')
+        print('   Margins: 0.5" on all sides')
         print("   Layout: Tags arranged in efficient rows (fills width)")
         print("   DPI: 300")
         print("   Recommended tag sizes: 10-20cm (large navigation posts)\n")
@@ -796,16 +797,22 @@ def main():
         # Define large format layouts - tags listed as (size_cm, count)
         # These will be arranged in rows filling the 36" width
         layouts = [
-            ("Large navigation posts - 20cm", [
-                (20, 8),  # 8× 20cm tags = ~8 tags per row (20cm × 8 + spacing = ~180cm / 36")
-            ]),
-            ("Large navigation posts - 15cm", [
-                (15, 12),  # 12× 15cm tags = more per row (15cm × 12 + spacing = ~180cm / 36")
-            ]),
+            (
+                "Large navigation posts - 20cm",
+                [
+                    (20, 8),  # 8× 20cm tags = ~8 tags per row (20cm × 8 + spacing = ~180cm / 36")
+                ],
+            ),
+            (
+                "Large navigation posts - 15cm",
+                [
+                    (15, 12),  # 12× 15cm tags = more per row (15cm × 12 + spacing = ~180cm / 36")
+                ],
+            ),
         ]
 
         generate_sheets_large_format(layouts, args.output)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -135,9 +135,7 @@ class EmergencyResponseCoordinator(Node):
         for subsystem in subsystems:
             self.subsystem_clients[subsystem] = SubsystemEmergencyClient(
                 name=subsystem,
-                emergency_client=self.create_client(
-                    Empty, f"/{subsystem}/emergency_stop"
-                ),
+                emergency_client=self.create_client(Empty, f"/{subsystem}/emergency_stop"),
                 status_client=self.create_client(Empty, f"/{subsystem}/status"),
             )
 
@@ -207,9 +205,7 @@ class EmergencyResponseCoordinator(Node):
     def _setup_timers(self):
         """Setup coordination and monitoring timers."""
         # Emergency status publishing timer
-        self.status_timer = self.create_timer(
-            1.0, self._publish_emergency_status, callback_group=self.monitoring_group
-        )
+        self.status_timer = self.create_timer(1.0, self._publish_emergency_status, callback_group=self.monitoring_group)
 
         # Coordination monitoring timer
         self.coordination_timer = self.create_timer(
@@ -242,10 +238,7 @@ class EmergencyResponseCoordinator(Node):
 
     def _safety_status_callback(self, msg: SafetyStatus):
         """Monitor safety status for safety conditions."""
-        if (
-            msg.safety_level in ["CRITICAL", "EMERGENCY"]
-            and not self.safety_stop_active
-        ):
+        if msg.safety_level in ["CRITICAL", "EMERGENCY"] and not self.safety_stop_active:
             # Determine safety type based on severity and trigger type
             if (
                 msg.safety_level == "EMERGENCY"
@@ -262,9 +255,7 @@ class EmergencyResponseCoordinator(Node):
                 f"Safety system triggered: {msg.trigger_description}",
             )
 
-    def _initiate_safety_response(
-        self, safety_type: SafetyStopType, source: str, description: str
-    ):
+    def _initiate_safety_response(self, safety_type: SafetyStopType, source: str, description: str):
         """Initiate coordinated safety response."""
         if self.safety_stop_active:
             self.logger.warning("Safety response already active, ignoring new trigger")
@@ -284,9 +275,7 @@ class EmergencyResponseCoordinator(Node):
             can_toggle=(safety_type == SafetyStopType.SAFESTOP),
         )
 
-        self.logger.error(
-            f"SAFETY RESPONSE INITIATED: {safety_type.value} - {description}"
-        )
+        self.logger.error(f"SAFETY RESPONSE INITIATED: {safety_type.value} - {description}")
 
         # Start coordinated safety stop
         asyncio.create_task(self._coordinate_safety_stop())
@@ -315,9 +304,7 @@ class EmergencyResponseCoordinator(Node):
         # The actual stopping behavior is the same - set to safe values
         safety_tasks = []
         for subsystem_name, client in self.subsystem_clients.items():
-            task = asyncio.create_task(
-                self._send_unified_safety_command(subsystem_name, client)
-            )
+            task = asyncio.create_task(self._send_unified_safety_command(subsystem_name, client))
             safety_tasks.append(task)
 
         # Wait for all subsystems to respond (with timeout)
@@ -339,15 +326,11 @@ class EmergencyResponseCoordinator(Node):
         # Move to verification phase
         self.active_safety_event.phase = EmergencyResponsePhase.VERIFICATION
 
-    async def _send_unified_safety_command(
-        self, subsystem_name: str, client: SubsystemEmergencyClient
-    ) -> bool:
+    async def _send_unified_safety_command(self, subsystem_name: str, client: SubsystemEmergencyClient) -> bool:
         """Send unified safety command to set subsystem to safe values."""
         try:
             if not client.emergency_client.service_is_ready():
-                self.logger.warning(
-                    f"Safety command service not ready for {subsystem_name}"
-                )
+                self.logger.warning(f"Safety command service not ready for {subsystem_name}")
                 client.error_count += 1
                 return False
 
@@ -369,22 +352,16 @@ class EmergencyResponseCoordinator(Node):
 
                     # Update safety event status
                     if self.active_safety_event:
-                        self.active_safety_event.response_status[subsystem_name] = (
-                            "SUCCESS"
-                        )
+                        self.active_safety_event.response_status[subsystem_name] = "SUCCESS"
 
                     self.logger.info(f"Safety command acknowledged by {subsystem_name}")
                     return True
 
                 except Exception as e:
-                    self.logger.error(
-                        f"Safety command failed for {subsystem_name}: {e}"
-                    )
+                    self.logger.error(f"Safety command failed for {subsystem_name}: {e}")
                     client.error_count += 1
                     if self.active_safety_event:
-                        self.active_safety_event.response_status[subsystem_name] = (
-                            f"ERROR: {str(e)}"
-                        )
+                        self.active_safety_event.response_status[subsystem_name] = f"ERROR: {str(e)}"
                     return False
             else:
                 self.logger.error(f"Safety command timeout for {subsystem_name}")
@@ -397,23 +374,17 @@ class EmergencyResponseCoordinator(Node):
             self.logger.error(f"Failed to send safety command to {subsystem_name}: {e}")
             client.error_count += 1
             if self.active_safety_event:
-                self.active_safety_event.response_status[subsystem_name] = (
-                    f"EXCEPTION: {str(e)}"
-                )
+                self.active_safety_event.response_status[subsystem_name] = f"EXCEPTION: {str(e)}"
             return False
 
-    def initiate_recovery(
-        self, recovery_method: str = "AUTO", operator_id: str = "coordinator"
-    ) -> bool:
+    def initiate_recovery(self, recovery_method: str = "AUTO", operator_id: str = "coordinator") -> bool:
         """Initiate recovery from safety state."""
         if not self.active_safety_event or not self.safety_stop_active:
             self.logger.warning("No active safety event to recover from")
             return False
 
         if self.active_safety_event.phase != EmergencyResponsePhase.VERIFICATION:
-            self.logger.warning(
-                f"Cannot recover during {self.active_safety_event.phase.value} phase"
-            )
+            self.logger.warning(f"Cannot recover during {self.active_safety_event.phase.value} phase")
             return False
 
         # SAFESTOP can be toggled, ESTOP requires full recovery
@@ -424,9 +395,7 @@ class EmergencyResponseCoordinator(Node):
 
         # Update safety event
         self.active_safety_event.phase = EmergencyResponsePhase.STABILIZATION
-        self.active_safety_event.notes.append(
-            f"Recovery initiated: {recovery_method} by {operator_id}"
-        )
+        self.active_safety_event.notes.append(f"Recovery initiated: {recovery_method} by {operator_id}")
 
         # For now, implement basic recovery
         # TODO: Implement full recovery coordination
@@ -436,10 +405,7 @@ class EmergencyResponseCoordinator(Node):
 
     def _toggle_safestop(self, operator_id: str) -> bool:
         """Toggle SAFESTOP on/off."""
-        if (
-            not self.active_safety_event
-            or self.active_safety_event.safety_type != SafetyStopType.SAFESTOP
-        ):
+        if not self.active_safety_event or self.active_safety_event.safety_type != SafetyStopType.SAFESTOP:
             return False
 
         self.logger.info(f"SAFESTOP toggled by {operator_id}")
@@ -504,31 +470,23 @@ class EmergencyResponseCoordinator(Node):
         total_subsystems = len(self.subsystem_clients)
         responded_subsystems = len(self.active_safety_event.response_status)
         successful_responses = sum(
-            1
-            for status in self.active_safety_event.response_status.values()
-            if status == "SUCCESS"
+            1 for status in self.active_safety_event.response_status.values() if status == "SUCCESS"
         )
 
         if responded_subsystems >= total_subsystems:
             if self.active_safety_event.phase == EmergencyResponsePhase.EXECUTION:
                 self.active_safety_event.phase = EmergencyResponsePhase.VERIFICATION
-                self.logger.info(
-                    f"Safety coordination complete: {successful_responses}/{total_subsystems} successful"
-                )
+                self.logger.info(f"Safety coordination complete: {successful_responses}/{total_subsystems} successful")
 
     def _check_recovery_readiness(self):
         """Check if system is ready for recovery."""
-        if (
-            not self.active_safety_event
-            or self.active_safety_event.phase != EmergencyResponsePhase.STABILIZATION
-        ):
+        if not self.active_safety_event or self.active_safety_event.phase != EmergencyResponsePhase.STABILIZATION:
             return
 
         # Check subsystem status
         # TODO: Implement subsystem health checks for recovery readiness
         stabilization_time = time.time() - (
-            self.active_safety_event.resolved_time
-            or self.active_safety_event.trigger_time
+            self.active_safety_event.resolved_time or self.active_safety_event.trigger_time
         )
 
         if stabilization_time > 10.0:  # 10 second stabilization period
@@ -549,9 +507,7 @@ class EmergencyResponseCoordinator(Node):
                     "phase": self.active_safety_event.phase.value,
                     "trigger_source": self.active_safety_event.trigger_source,
                     "description": self.active_safety_event.description,
-                    "affected_subsystems": list(
-                        self.active_safety_event.affected_subsystems
-                    ),
+                    "affected_subsystems": list(self.active_safety_event.affected_subsystems),
                     "response_status": self.active_safety_event.response_status,
                     "trigger_age": time.time() - self.active_safety_event.trigger_time,
                     "can_toggle": self.active_safety_event.can_toggle,
@@ -583,13 +539,8 @@ class EmergencyResponseCoordinator(Node):
         # Add subsystem response information
         for subsystem_name, client in self.subsystem_clients.items():
             response_status = "UNKNOWN"
-            if (
-                self.active_safety_event
-                and subsystem_name in self.active_safety_event.response_status
-            ):
-                response_status = self.active_safety_event.response_status[
-                    subsystem_name
-                ]
+            if self.active_safety_event and subsystem_name in self.active_safety_event.response_status:
+                response_status = self.active_safety_event.response_status[subsystem_name]
 
             safety_status.values.append(
                 {
@@ -615,11 +566,7 @@ class EmergencyResponseCoordinator(Node):
                     "phase": event.phase.value,
                     "resolved_time": event.resolved_time,
                     "can_toggle": event.can_toggle,
-                    "duration": (
-                        (event.resolved_time - event.trigger_time)
-                        if event.resolved_time
-                        else None
-                    ),
+                    "duration": ((event.resolved_time - event.trigger_time) if event.resolved_time else None),
                 }
             )
         return history
@@ -632,11 +579,7 @@ class EmergencyResponseCoordinator(Node):
                 "response_count": client.response_count,
                 "error_count": client.error_count,
                 "acknowledged_stop": client.acknowledged_stop,
-                "service_ready": (
-                    client.emergency_client.service_is_ready()
-                    if client.emergency_client
-                    else False
-                ),
+                "service_ready": (client.emergency_client.service_is_ready() if client.emergency_client else False),
             }
             for name, client in self.subsystem_clients.items()
         }

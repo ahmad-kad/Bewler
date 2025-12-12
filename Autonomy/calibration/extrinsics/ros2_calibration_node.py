@@ -26,7 +26,6 @@ Parameters:
 """
 
 import logging
-import os
 import sys
 import threading
 from pathlib import Path
@@ -36,10 +35,7 @@ from rclpy.node import Node
 from std_msgs.msg import Float32, String
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -48,14 +44,14 @@ class CalibrationNode(Node):
 
     def __init__(self):
         """Initialize calibration node."""
-        super().__init__('calibration_node')
+        super().__init__("calibration_node")
 
         # Node configuration
-        self.declare_parameter('calibration_mode', 'intrinsic')
-        self.declare_parameter('target_images', 50)
-        self.declare_parameter('capture_mode', 'manual')
-        self.declare_parameter('camera_index', 0)
-        self.declare_parameter('board_name', 'board_5x7')
+        self.declare_parameter("calibration_mode", "intrinsic")
+        self.declare_parameter("target_images", 50)
+        self.declare_parameter("capture_mode", "manual")
+        self.declare_parameter("camera_index", 0)
+        self.declare_parameter("board_name", "board_5x7")
 
         # State tracking
         self.is_calibrating = False
@@ -64,21 +60,13 @@ class CalibrationNode(Node):
         self.calibration_result = None
 
         # Publishers
-        self.status_pub = self.create_publisher(
-            String, '/calibration/status', 10
-        )
-        self.progress_pub = self.create_publisher(
-            Float32, '/calibration/progress', 10
-        )
+        self.status_pub = self.create_publisher(String, "/calibration/status", 10)
+        self.progress_pub = self.create_publisher(Float32, "/calibration/progress", 10)
 
         # Subscribers
-        self.state_sub = self.create_subscription(
-            String, '/state_machine/state', self.state_callback, 10
-        )
+        self.state_sub = self.create_subscription(String, "/state_machine/state", self.state_callback, 10)
 
-        self.command_sub = self.create_subscription(
-            String, '/calibration/command', self.command_callback, 10
-        )
+        self.command_sub = self.create_subscription(String, "/calibration/command", self.command_callback, 10)
 
         self.get_logger().info("Calibration Node initialized")
         self.publish_status("INITIALIZED")
@@ -141,9 +129,7 @@ class CalibrationNode(Node):
         self.is_calibrating = True
 
         # Start calibration in separate thread
-        self.calibration_thread = threading.Thread(
-            target=self._calibration_worker
-        )
+        self.calibration_thread = threading.Thread(target=self._calibration_worker)
         self.calibration_thread.daemon = True
         self.calibration_thread.start()
 
@@ -154,13 +140,12 @@ class CalibrationNode(Node):
             self.publish_status("CALIBRATING")
 
             # Get parameters
-            calibration_mode = self.get_parameter('calibration_mode').value
-            target_images = self.get_parameter('target_images').value
-            capture_mode = self.get_parameter('capture_mode').value
+            calibration_mode = self.get_parameter("calibration_mode").value
+            target_images = self.get_parameter("target_images").value
+            capture_mode = self.get_parameter("capture_mode").value
 
             self.get_logger().info(
-                f"Calibration: mode={calibration_mode}, "
-                f"images={target_images}, capture={capture_mode}"
+                f"Calibration: mode={calibration_mode}, " f"images={target_images}, capture={capture_mode}"
             )
 
             # TODO: Import and use actual calibration modules
@@ -182,16 +167,13 @@ class CalibrationNode(Node):
 
                 # Simulate processing time
                 import time
+
                 time.sleep(0.1)
 
             if self.is_calibrating:
                 self.publish_progress(100.0)
                 self.publish_status("COMPLETE")
-                self.calibration_result = {
-                    "status": "success",
-                    "images": target_images,
-                    "mode": capture_mode
-                }
+                self.calibration_result = {"status": "success", "images": target_images, "mode": capture_mode}
                 self.get_logger().info("Calibration completed successfully")
 
         except Exception as e:
@@ -282,29 +264,25 @@ class CalibrationNodeWithRealSupport(CalibrationNode):
             self.publish_status("CALIBRATING")
 
             # Get parameters
-            calibration_mode = self.get_parameter('calibration_mode').value
-            target_images = self.get_parameter('target_images').value
-            capture_mode = self.get_parameter('capture_mode').value
-            camera_index = self.get_parameter('camera_index').value
-            board_name = self.get_parameter('board_name').value
+            calibration_mode = self.get_parameter("calibration_mode").value
+            target_images = self.get_parameter("target_images").value
+            capture_mode = self.get_parameter("capture_mode").value
+            camera_index = self.get_parameter("camera_index").value
+            board_name = self.get_parameter("board_name").value
 
             if calibration_mode != "intrinsic":
-                self.get_logger().warning(
-                    f"Mode {calibration_mode} not yet implemented"
-                )
+                self.get_logger().warning(f"Mode {calibration_mode} not yet implemented")
                 self.publish_status("READY")
                 return
 
             # Check if modules are available
-            if not hasattr(self, 'CameraIntrinsicsCalibrator'):
+            if not hasattr(self, "CameraIntrinsicsCalibrator"):
                 self.get_logger().info("Running in simulation mode (modules not available)")
                 self._run_simulation(target_images)
                 return
 
             # Real calibration
-            self._run_real_calibration(
-                camera_index, board_name, capture_mode, target_images
-            )
+            self._run_real_calibration(camera_index, board_name, capture_mode, target_images)
 
         except Exception as e:
             self.get_logger().error(f"Calibration failed: {e}")
@@ -327,6 +305,7 @@ class CalibrationNodeWithRealSupport(CalibrationNode):
 
             # Simulate processing
             import time
+
             time.sleep(0.05)
 
         if self.is_calibrating:
@@ -334,7 +313,7 @@ class CalibrationNodeWithRealSupport(CalibrationNode):
             self.calibration_result = {
                 "status": "success_simulation",
                 "images": target_images,
-                "note": "Simulated calibration - real camera not detected"
+                "note": "Simulated calibration - real camera not detected",
             }
             self.publish_status("COMPLETE")
 
@@ -348,9 +327,7 @@ class CalibrationNodeWithRealSupport(CalibrationNode):
         try:
             # Create configurations
             camera_config = self.CameraConfig(
-                name=f"Camera_{camera_idx}",
-                camera_index=camera_idx,
-                resolution=(1920, 1080)
+                name=f"Camera_{camera_idx}", camera_index=camera_idx, resolution=(1920, 1080)
             )
 
             # Standard board configurations
@@ -369,7 +346,7 @@ class CalibrationNodeWithRealSupport(CalibrationNode):
                 aruco_dict_name="DICT_4X4_50",
                 size=(cols, rows),
                 checker_size_mm=checker_mm,
-                marker_size_mm=marker_mm
+                marker_size_mm=marker_mm,
             )
 
             # Initialize calibrator
@@ -419,7 +396,7 @@ class CalibrationNodeWithRealSupport(CalibrationNode):
                 "valid_frames": len(corners),
                 "reprojection_error": result.reprojection_error,
                 "quality_score": result.quality_score,
-                "output_files": {fmt: str(f) for fmt, f in files.items()}
+                "output_files": {fmt: str(f) for fmt, f in files.items()},
             }
 
             self.publish_status("COMPLETE")
@@ -450,5 +427,5 @@ def main(args=None):
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

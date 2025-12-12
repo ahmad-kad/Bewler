@@ -14,7 +14,7 @@ import math
 import random
 import threading
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import websockets
 
@@ -67,7 +67,7 @@ class CANBusMockSimulator:
             # GPS data
             'gps': {
                 'latitude': 38.406,     # decimal degrees
-                'longitude': -110.792, # decimal degrees
+                'longitude': -110.792,  # decimal degrees
                 'altitude': 1500.0,    # meters
                 'heading': 0.0,        # degrees
                 'speed': 0.0,          # m/s

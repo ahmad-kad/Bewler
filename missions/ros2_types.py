@@ -5,34 +5,40 @@ Provides type annotations and utilities to improve static analysis and MyPy supp
 for ROS2 message types and interfaces.
 """
 
-from typing import Any, Dict, List, Optional, Protocol, Union
+from typing import Any, Dict, List, Optional, Protocol
 
 
 # ROS2 Message Type Protocols for better static analysis
 class ROS2Message(Protocol):
     """Protocol for ROS2 message types."""
+
     def __init__(self) -> None: ...
+
 
 class Header(Protocol):
     """ROS2 Header message protocol."""
     stamp: Any  # builtin_interfaces/Time
     frame_id: str
 
+
 class Pose(Protocol):
     """ROS2 Pose message protocol."""
     position: Any  # geometry_msgs/Point
     orientation: Any  # geometry_msgs/Quaternion
+
 
 class PoseStamped(Protocol):
     """ROS2 PoseStamped message protocol."""
     header: Header
     pose: Pose
 
+
 class Point(Protocol):
     """ROS2 Point message protocol."""
     x: float
     y: float
     z: float
+
 
 class Quaternion(Protocol):
     """ROS2 Quaternion message protocol."""
@@ -41,16 +47,19 @@ class Quaternion(Protocol):
     z: float
     w: float
 
+
 class Twist(Protocol):
     """ROS2 Twist message protocol."""
     linear: Any  # geometry_msgs/Vector3
     angular: Any  # geometry_msgs/Vector3
+
 
 class Vector3(Protocol):
     """ROS2 Vector3 message protocol."""
     x: float
     y: float
     z: float
+
 
 class Imu(Protocol):
     """ROS2 IMU message protocol."""
@@ -62,6 +71,7 @@ class Imu(Protocol):
     linear_acceleration: Vector3
     linear_acceleration_covariance: List[float]
 
+
 class NavSatFix(Protocol):
     """ROS2 NavSatFix message protocol."""
     header: Header
@@ -71,11 +81,13 @@ class NavSatFix(Protocol):
     position_covariance: List[float]
     position_covariance_type: int
 
+
 class Odometry(Protocol):
     """ROS2 Odometry message protocol."""
     header: Header
     pose: Any  # geometry_msgs/PoseWithCovarianceStamped equivalent
     twist: Any  # geometry_msgs/TwistWithCovarianceStamped equivalent
+
 
 class BatteryState(Protocol):
     """ROS2 BatteryState message protocol."""
@@ -91,17 +103,21 @@ class BatteryState(Protocol):
     power_supply_technology: int
     present: bool
 
+
 class Temperature(Protocol):
     """ROS2 Temperature message protocol."""
     header: Header
     temperature: float
     variance: float
 
+
 class String(Protocol):
     """ROS2 String message protocol."""
     data: str
 
 # Mission-specific types
+
+
 class Waypoint:
     """Waypoint data structure."""
     latitude: float
@@ -110,6 +126,7 @@ class Waypoint:
     name: str
     precision_required: bool
 
+
 class MissionConfig:
     """Mission configuration structure."""
     mission_type: str
@@ -117,6 +134,7 @@ class MissionConfig:
     timeout: float
     retry_count: int
     emergency_procedures: Dict[str, Any]
+
 
 class SystemHealth:
     """System health monitoring structure."""
@@ -128,6 +146,8 @@ class SystemHealth:
     subsystem_status: Dict[str, str]
 
 # Utility functions for type-safe operations
+
+
 def create_pose_stamped(
     x: float,
     y: float,
@@ -149,6 +169,7 @@ def create_pose_stamped(
         }
     }
 
+
 def create_twist(
     linear_x: float = 0.0,
     linear_y: float = 0.0,
@@ -163,12 +184,14 @@ def create_twist(
         "angular": {"x": angular_x, "y": angular_y, "z": angular_z}
     }
 
+
 def validate_message_type(message: Any, expected_type: str) -> bool:
     """Validate that a message matches expected type."""
     # Type checking utility
     if not hasattr(message, '__class__'):
         return False
     return expected_type in str(type(message))
+
 
 def safe_get_message_attribute(message: Any, attribute_path: str, default: Any = None) -> Any:
     """Safely get nested message attributes."""
@@ -183,6 +206,8 @@ def safe_get_message_attribute(message: Any, attribute_path: str, default: Any =
         return default
 
 # Constants for better type safety
+
+
 class ROS2QoSProfiles:
     """QoS profile constants for consistent configuration."""
     SENSOR_DATA = {
@@ -203,6 +228,7 @@ class ROS2QoSProfiles:
         "depth": 1
     }
 
+
 class MissionStatus:
     """Mission status enumeration."""
     IDLE = "idle"
@@ -213,6 +239,7 @@ class MissionStatus:
     FAILED = "failed"
     EMERGENCY = "emergency"
 
+
 class ErrorCodes:
     """Standardized error codes for mission system."""
     SUCCESS = 0
@@ -222,6 +249,7 @@ class ErrorCodes:
     COMMUNICATION_ERROR = 4
     SAFETY_VIOLATION = 5
     RESOURCE_EXHAUSTED = 6
+
 
 # Type aliases for better readability
 PoseStampedMsg = Any  # Would be geometry_msgs.msg.PoseStamped

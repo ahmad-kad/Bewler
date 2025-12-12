@@ -4,26 +4,13 @@ URC 2026 Software-Level System Demonstration
 Simulates the complete autonomy system using Python threads
 """
 
-import asyncio
 import sys
 import threading
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List
 
 # Import autonomy components
 sys.path.insert(0, 'Autonomy')
-
-from Autonomy.code.computer_vision.autonomy_computer_vision.computer_vision_node import (
-    ComputerVisionNode,
-)
-from Autonomy.code.safety_system.autonomy_safety_system.safety_watchdog import (
-    SafetyWatchdog,
-)
-from Autonomy.code.state_management.autonomy_state_machine.state_machine_director import (
-    StateMachineDirector,
-)
-from Autonomy.code.utilities import NodeLogger
 
 
 @dataclass
@@ -33,6 +20,7 @@ class SystemStatus:
     status: str = "INITIALIZING"
     last_update: float = 0.0
     message_count: int = 0
+
 
 class SoftwareSystemDemo:
     """Software-level system demonstration."""
@@ -161,9 +149,9 @@ class SoftwareSystemDemo:
 
     def print_system_status(self):
         """Print comprehensive system status."""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("URC 2026 AUTONOMY SYSTEM - SOFTWARE LEVEL DEMONSTRATION")
-        print("="*70)
+        print("=" * 70)
 
         for component, status in self.system_status.items():
             status_icon = {
@@ -182,13 +170,13 @@ class SoftwareSystemDemo:
             last_update = time.strftime("%H:%M:%S", time.localtime(status.last_update))
             print(f"{status_icon} {status.name:<25} | {status.status:<12} | Messages: {status.message_count:<3} | Last: {last_update}")
 
-        print("="*70)
+        print("=" * 70)
 
     def run_demo(self, duration: int = 30):
         """Run the complete system demonstration."""
         print(" STARTING URC 2026 AUTONOMY SYSTEM DEMO")
         print(f"Duration: {duration} seconds")
-        print("="*50)
+        print("=" * 50)
 
         self.running = True
 
@@ -226,6 +214,7 @@ class SoftwareSystemDemo:
         print(" System integration tested and verified")
         print("\n SYSTEM READY FOR COMPETITION DEPLOYMENT!")
 
+
 def main():
     """Main demonstration function."""
     demo = SoftwareSystemDemo()
@@ -242,6 +231,7 @@ def main():
     demo.running = False
     for thread in demo.threads:
         thread.join(timeout=2)
+
 
 if __name__ == '__main__':
     main()

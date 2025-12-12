@@ -32,97 +32,65 @@ class RoboticsException(Exception):
 class ConfigurationError(RoboticsException):
     """Raised when configuration is invalid or missing."""
 
-    pass
-
 
 class ValidationError(RoboticsException):
     """Raised when data validation fails."""
-
-    pass
 
 
 class TeleoperationError(RoboticsException):
     """Base class for teleoperation-related errors."""
 
-    pass
-
 
 class DataValidationError(TeleoperationError):
     """Raised when teleoperation data fails validation."""
-
-    pass
 
 
 class DataQualityError(TeleoperationError):
     """Raised when data quality issues are detected."""
 
-    pass
-
 
 class MotorControlError(TeleoperationError):
     """Raised when motor control operations fail."""
-
-    pass
 
 
 class SystemHealthError(RoboticsException):
     """Base class for system health-related errors."""
 
-    pass
-
 
 class ThermalError(SystemHealthError):
     """Raised when thermal limits are exceeded."""
-
-    pass
 
 
 class BatteryError(SystemHealthError):
     """Raised when battery conditions are critical."""
 
-    pass
-
 
 class EmergencyError(SystemHealthError):
     """Raised during emergency situations."""
-
-    pass
 
 
 class MissionError(RoboticsException):
     """Base class for mission-related errors."""
 
-    pass
-
 
 class NavigationError(MissionError):
     """Raised when navigation operations fail."""
-
-    pass
 
 
 class CommunicationError(RoboticsException):
     """Raised when communication with external systems fails."""
 
-    pass
-
 
 class HardwareError(RoboticsException):
     """Raised when hardware operations fail."""
-
-    pass
 
 
 class SensorError(HardwareError):
     """Raised when sensor operations fail."""
 
-    pass
-
 
 class ActuatorError(HardwareError):
     """Raised when actuator operations fail."""
-
-    pass
 
 
 # Convenience functions for common error patterns

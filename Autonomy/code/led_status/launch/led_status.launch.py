@@ -11,9 +11,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     # Get the launch directory
-    pkg_share = FindPackageShare(package="autonomy_led_status").find(
-        "autonomy_led_status"
-    )
+    pkg_share = FindPackageShare(package="autonomy_led_status").find("autonomy_led_status")
 
     # Declare launch arguments
     declare_log_level_cmd = DeclareLaunchArgument(

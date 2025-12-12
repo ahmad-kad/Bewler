@@ -5,7 +5,6 @@ Tests the complete data flow from mock teleoperation to autonomy decisions
 """
 
 import os
-import signal
 import subprocess
 import sys
 import time
@@ -203,14 +202,14 @@ class IntegrationTest:
                 print(f"Warning: Error stopping {name}: {e}")
                 try:
                     process.kill()
-                except:
+                except BaseException:
                     pass
 
         # Kill any remaining ROS2 processes
         try:
             subprocess.run(["pkill", "-f", "mission_executor"], check=False)
             subprocess.run(["pkill", "-f", "test_teleoperation_integration"], check=False)
-        except:
+        except BaseException:
             pass
 
 
@@ -227,7 +226,7 @@ def main():
         if result.returncode != 0:
             print("❌ ROS2 not available. Please source ROS2 environment.")
             sys.exit(1)
-    except:
+    except BaseException:
         print("❌ ROS2 not found. Please install and source ROS2.")
         sys.exit(1)
 

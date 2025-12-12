@@ -23,12 +23,11 @@ from pathlib import Path
 
 import numpy as np
 import yaml
+from intrinsics import CalibrationResult, CameraConfig, CaptureMode, CharUcoBoardConfig
 
 # Add parent directories to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../intrinsics'))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../extrinsics'))
-
-from intrinsics import CalibrationResult, CameraConfig, CaptureMode, CharUcoBoardConfig
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../intrinsics"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../extrinsics"))
 
 
 class TestCalibrationConfiguration(unittest.TestCase):
@@ -36,11 +35,7 @@ class TestCalibrationConfiguration(unittest.TestCase):
 
     def test_camera_config_creation(self):
         """Test creating camera configuration."""
-        config = CameraConfig(
-            name="Test Camera",
-            camera_index=0,
-            resolution=(1920, 1080)
-        )
+        config = CameraConfig(name="Test Camera", camera_index=0, resolution=(1920, 1080))
 
         self.assertEqual(config.name, "Test Camera")
         self.assertEqual(config.camera_index, 0)
@@ -57,11 +52,7 @@ class TestCalibrationConfiguration(unittest.TestCase):
     def test_board_config_creation(self):
         """Test creating board configuration."""
         config = CharUcoBoardConfig(
-            name="Test Board",
-            aruco_dict_name="DICT_4X4_50",
-            size=(5, 7),
-            checker_size_mm=30.0,
-            marker_size_mm=18.0
+            name="Test Board", aruco_dict_name="DICT_4X4_50", size=(5, 7), checker_size_mm=30.0, marker_size_mm=18.0
         )
 
         self.assertEqual(config.name, "Test Board")
@@ -75,9 +66,7 @@ class TestCalibrationConfiguration(unittest.TestCase):
         sizes = [(4, 5), (5, 7), (7, 5), (6, 8)]
 
         for size in sizes:
-            config = CharUcoBoardConfig(
-                "Board", "DICT_4X4_50", size, 30.0, 18.0
-            )
+            config = CharUcoBoardConfig("Board", "DICT_4X4_50", size, 30.0, 18.0)
             self.assertEqual(config.size, size)
 
 
@@ -86,11 +75,7 @@ class TestCalibrationResultManagement(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.camera_matrix = np.array([
-            [1920, 0, 960],
-            [0, 1920, 540],
-            [0, 0, 1]
-        ], dtype=np.float64)
+        self.camera_matrix = np.array([[1920, 0, 960], [0, 1920, 540], [0, 0, 1]], dtype=np.float64)
 
         self.distortion = np.array([-0.1, 0.05, 0.001, -0.002, 0.0], dtype=np.float64)
 
@@ -111,7 +96,7 @@ class TestCalibrationResultManagement(unittest.TestCase):
             capture_mode="manual",
             timestamp="2025-01-01T00:00:00",
             images_used=[],
-            quality_metrics={"quality_score": 0.95}
+            quality_metrics={"quality_score": 0.95},
         )
 
         np.testing.assert_array_equal(result.camera_matrix, self.camera_matrix)
@@ -124,11 +109,7 @@ class TestCalibrationResultManagement(unittest.TestCase):
         camera_cfg = CameraConfig("Test", camera_index=0, resolution=(1920, 1080))
         board_cfg = CharUcoBoardConfig("Test Board", "DICT_4X4_50", (5, 7), 30.0, 18.0)
 
-        metadata = {
-            "capture_mode": "manual",
-            "image_count": 50,
-            "board_name": "board_5x7"
-        }
+        metadata = {"capture_mode": "manual", "image_count": 50, "board_name": "board_5x7"}
 
         result = CalibrationResult(
             camera_matrix=self.camera_matrix,
@@ -142,7 +123,7 @@ class TestCalibrationResultManagement(unittest.TestCase):
             capture_mode="manual",
             timestamp="2025-01-01T00:00:00",
             images_used=[],
-            quality_metrics=metadata
+            quality_metrics=metadata,
         )
 
         self.assertEqual(result.quality_metrics, metadata)
@@ -156,11 +137,7 @@ class TestCalibrationResultSerialization(unittest.TestCase):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
 
-        self.camera_matrix = np.array([
-            [1920, 0, 960],
-            [0, 1920, 540],
-            [0, 0, 1]
-        ], dtype=np.float64)
+        self.camera_matrix = np.array([[1920, 0, 960], [0, 1920, 540], [0, 0, 1]], dtype=np.float64)
 
         self.distortion = np.array([-0.1, 0.05, 0.001, -0.002, 0.0], dtype=np.float64)
 
@@ -179,12 +156,13 @@ class TestCalibrationResultSerialization(unittest.TestCase):
             capture_mode="manual",
             timestamp="2025-01-01T00:00:00",
             images_used=[],
-            quality_metrics={"mode": "manual", "count": 50}
+            quality_metrics={"mode": "manual", "count": 50},
         )
 
     def tearDown(self):
         """Clean up test fixtures."""
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_save_and_load_json(self):
@@ -201,29 +179,29 @@ class TestCalibrationResultSerialization(unittest.TestCase):
             "camera_config": {
                 "name": self.result.camera_config.name,
                 "camera_index": self.result.camera_config.camera_index,
-                "resolution": list(self.result.camera_config.resolution)
+                "resolution": list(self.result.camera_config.resolution),
             },
             "board_config": {
                 "name": self.result.board_config.name,
                 "aruco_dict_name": self.result.board_config.aruco_dict_name,
                 "size": list(self.result.board_config.size),
                 "checker_size_mm": self.result.board_config.checker_size_mm,
-                "marker_size_mm": self.result.board_config.marker_size_mm
+                "marker_size_mm": self.result.board_config.marker_size_mm,
             },
             "num_images": self.result.num_images,
             "capture_mode": self.result.capture_mode,
             "timestamp": self.result.timestamp,
             "images_used": self.result.images_used,
-            "quality_metrics": self.result.quality_metrics
+            "quality_metrics": self.result.quality_metrics,
         }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
         # Load and verify
         self.assertTrue(filepath.exists())
 
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             loaded = json.load(f)
 
         self.assertAlmostEqual(loaded["reprojection_error"], 0.45)
@@ -244,29 +222,29 @@ class TestCalibrationResultSerialization(unittest.TestCase):
             "camera_config": {
                 "name": self.result.camera_config.name,
                 "camera_index": self.result.camera_config.camera_index,
-                "resolution": list(self.result.camera_config.resolution)
+                "resolution": list(self.result.camera_config.resolution),
             },
             "board_config": {
                 "name": self.result.board_config.name,
                 "aruco_dict_name": self.result.board_config.aruco_dict_name,
                 "size": list(self.result.board_config.size),
                 "checker_size_mm": self.result.board_config.checker_size_mm,
-                "marker_size_mm": self.result.board_config.marker_size_mm
+                "marker_size_mm": self.result.board_config.marker_size_mm,
             },
             "num_images": self.result.num_images,
             "capture_mode": self.result.capture_mode,
             "timestamp": self.result.timestamp,
             "images_used": self.result.images_used,
-            "quality_metrics": self.result.quality_metrics
+            "quality_metrics": self.result.quality_metrics,
         }
 
-        with open(filepath, 'w') as f:
+        with open(filepath, "w") as f:
             yaml.dump(data, f)
 
         # Load and verify
         self.assertTrue(filepath.exists())
 
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             loaded = yaml.safe_load(f)
 
         self.assertAlmostEqual(loaded["reprojection_error"], 0.45)
@@ -277,20 +255,18 @@ class TestCalibrationResultSerialization(unittest.TestCase):
         filepath = Path(self.temp_dir) / "calibration.pkl"
 
         # Save as pickle
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             pickle.dump(self.result, f)
 
         # Load and verify
         self.assertTrue(filepath.exists())
 
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             loaded = pickle.load(f)
 
         self.assertAlmostEqual(loaded.reprojection_error, 0.45)
         self.assertEqual(loaded.quality_metrics["mode"], "manual")
-        np.testing.assert_array_almost_equal(
-            loaded.camera_matrix, self.camera_matrix
-        )
+        np.testing.assert_array_almost_equal(loaded.camera_matrix, self.camera_matrix)
 
 
 class TestCalibrationQualityMetrics(unittest.TestCase):
@@ -313,7 +289,7 @@ class TestCalibrationQualityMetrics(unittest.TestCase):
             capture_mode="manual",
             timestamp="2025-01-01T00:00:00",
             images_used=[],
-            quality_metrics={"quality_score": 0.98}
+            quality_metrics={"quality_score": 0.98},
         )
 
         # Excellent: error < 0.5
@@ -337,7 +313,7 @@ class TestCalibrationQualityMetrics(unittest.TestCase):
             capture_mode="manual",
             timestamp="2025-01-01T00:00:00",
             images_used=[],
-            quality_metrics={"quality_score": 0.85}
+            quality_metrics={"quality_score": 0.85},
         )
 
         # Good: 0.5 <= error < 1.0
@@ -361,7 +337,7 @@ class TestCalibrationQualityMetrics(unittest.TestCase):
             capture_mode="manual",
             timestamp="2025-01-01T00:00:00",
             images_used=[],
-            quality_metrics={"quality_score": 0.70}
+            quality_metrics={"quality_score": 0.70},
         )
 
         # Acceptable: 1.0 <= error < 2.0
@@ -385,7 +361,7 @@ class TestCalibrationQualityMetrics(unittest.TestCase):
             capture_mode="manual",
             timestamp="2025-01-01T00:00:00",
             images_used=[],
-            quality_metrics={"quality_score": 0.50}
+            quality_metrics={"quality_score": 0.50},
         )
 
         # Poor: error >= 2.0
@@ -410,9 +386,7 @@ class TestMultiCameraWorkflow(unittest.TestCase):
 
     def test_consistent_board_across_cameras(self):
         """Test using same board for all cameras."""
-        board = CharUcoBoardConfig(
-            "standard_board", "DICT_4X4_50", (5, 7), 30.0, 18.0
-        )
+        board = CharUcoBoardConfig("standard_board", "DICT_4X4_50", (5, 7), 30.0, 18.0)
 
         cameras = [
             CameraConfig("Camera_0", camera_index=0, resolution=(1920, 1080)),
@@ -436,6 +410,7 @@ class TestOutputDirectoryStructure(unittest.TestCase):
     def tearDown(self):
         """Clean up test fixtures."""
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
     def test_create_output_directory(self):
@@ -452,25 +427,25 @@ class TestOutputDirectoryStructure(unittest.TestCase):
         # Create dummy calibration data
         data = {
             "camera_matrix": [[1920, 0, 960], [0, 1920, 540], [0, 0, 1]],
-            "distortion": [-0.1, 0.05, 0.001, -0.002, 0.0]
+            "distortion": [-0.1, 0.05, 0.001, -0.002, 0.0],
         }
 
         formats = {
             "json": self.calibration_dir / "calibration.json",
             "yaml": self.calibration_dir / "calibration.yaml",
-            "pkl": self.calibration_dir / "calibration.pkl"
+            "pkl": self.calibration_dir / "calibration.pkl",
         }
 
         # Save JSON
-        with open(formats["json"], 'w') as f:
+        with open(formats["json"], "w") as f:
             json.dump(data, f)
 
         # Save YAML
-        with open(formats["yaml"], 'w') as f:
+        with open(formats["yaml"], "w") as f:
             yaml.dump(data, f)
 
         # Save PKL
-        with open(formats["pkl"], 'wb') as f:
+        with open(formats["pkl"], "wb") as f:
             pickle.dump(data, f)
 
         # Verify all files exist
@@ -500,11 +475,7 @@ class TestCalibrationParameterValidation(unittest.TestCase):
 
     def test_valid_focal_length(self):
         """Test valid focal length values."""
-        camera_matrix = np.array([
-            [1920, 0, 960],
-            [0, 1920, 540],
-            [0, 0, 1]
-        ], dtype=np.float64)
+        camera_matrix = np.array([[1920, 0, 960], [0, 1920, 540], [0, 0, 1]], dtype=np.float64)
 
         fx = camera_matrix[0, 0]
         fy = camera_matrix[1, 1]
@@ -516,11 +487,7 @@ class TestCalibrationParameterValidation(unittest.TestCase):
 
     def test_valid_principal_point(self):
         """Test valid principal point."""
-        camera_matrix = np.array([
-            [1920, 0, 960],
-            [0, 1920, 540],
-            [0, 0, 1]
-        ], dtype=np.float64)
+        camera_matrix = np.array([[1920, 0, 960], [0, 1920, 540], [0, 0, 1]], dtype=np.float64)
 
         cx = camera_matrix[0, 2]
         cy = camera_matrix[1, 2]
@@ -600,6 +567,6 @@ def run_test_suite():
     return runner.run(suite)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     result = run_test_suite()
     sys.exit(0 if result.wasSuccessful() else 1)

@@ -64,13 +64,9 @@ class SensorIntegrationNode(Node):
         self.odom_timer = self.create_timer(0.05, self.publish_odometry)  # 20 Hz
 
         # Subscribe to velocity commands to update simulation
-        self.cmd_vel_subscription = self.create_subscription(
-            Twist, "cmd_vel", self.cmd_vel_callback, 10
-        )
+        self.cmd_vel_subscription = self.create_subscription(Twist, "cmd_vel", self.cmd_vel_callback, 10)
 
-        self.get_logger().info(
-            "Sensor integration node initialized with simulated sensors"
-        )
+        self.get_logger().info("Sensor integration node initialized with simulated sensors")
 
     def cmd_vel_callback(self, msg: Twist):
         """Update robot velocity from navigation commands"""
@@ -88,16 +84,13 @@ class SensorIntegrationNode(Node):
         # Convert to GPS coordinates (rough approximation)
         # 1 degree lat/lon ≈ 111 km, so small displacements in meters
         lat_offset = self.robot_y / 111000.0  # Convert meters to degrees latitude
-        lon_offset = self.robot_x / (
-            111000.0 * math.cos(math.radians(self.base_latitude))
-        )
+        lon_offset = self.robot_x / (111000.0 * math.cos(math.radians(self.base_latitude)))
 
         # Add noise
         lat_noise = random.gauss(0, self.gps_noise_std / 111000.0)
         lon_noise = random.gauss(
             0,
-            self.gps_noise_std
-            / (111000.0 * math.cos(math.radians(self.base_latitude))),
+            self.gps_noise_std / (111000.0 * math.cos(math.radians(self.base_latitude))),
         )
 
         gps_msg = NavSatFix()

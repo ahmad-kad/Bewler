@@ -6,23 +6,19 @@ Comprehensive end-to-end testing of all mission types with mock/simulated hardwa
 Tests complete mission workflows from initialization to completion.
 """
 
-import asyncio
-import json
 import os
 import sys
-import threading
 import time
 import unittest
-from typing import Any, Dict, List, Optional
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
+from bridges.can_mock_simulator import CANBusMockSimulator
+from bridges.priority_message_router import PriorityMessageRouter
 
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'missions'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'bridges'))
-
-from bridges.can_mock_simulator import CANBusMockSimulator
-from bridges.priority_message_router import PriorityMessageRouter
 
 
 class MockDeliveryMission:
@@ -56,6 +52,7 @@ class MockDeliveryMission:
 
 class MockScienceMission:
     """Mock science mission for testing."""
+
     def __init__(self):
         self.state = 'initialized'
 
@@ -81,6 +78,7 @@ class MockScienceMission:
 
 class MockEquipmentServicingMission:
     """Mock equipment servicing mission for testing."""
+
     def __init__(self):
         self.state = 'initialized'
 

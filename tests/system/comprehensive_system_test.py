@@ -18,19 +18,16 @@ Author: URC 2026 Testing Framework
 
 import json
 import os
-import signal
 import subprocess
-import sys
-import threading
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 import psutil
 import rclpy
 import yaml
-from geometry_msgs.msg import PoseStamped, Twist
-from nav_msgs.msg import Odometry, Path
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, NavSatFix
 from std_msgs.msg import Float32, String
@@ -180,7 +177,8 @@ class ComprehensiveSystemTester(Node):
         ]
 
         if self.current_test_phase < len(test_phases):
-            phase_name = test_phases[self.current_test_phase].__name__.replace('test_phase_', '').replace('_', ' ').title()
+            phase_name = test_phases[self.current_test_phase].__name__.replace(
+                'test_phase_', '').replace('_', ' ').title()
             self.get_logger().info(f'Running Test Phase {self.current_test_phase + 1}: {phase_name}')
             test_phases[self.current_test_phase]()
             self.current_test_phase += 1
@@ -238,7 +236,7 @@ class ComprehensiveSystemTester(Node):
         if self.received_odom:
             pos = self.received_odom.pose.pose.position
             self.add_test_result('Odometry Data', True,
-                               f'Position: ({pos.x:.2f}, {pos.y:.2f}), Velocity: {self.received_odom.twist.twist.linear.x:.2f} m/s')
+                                 f'Position: ({pos.x:.2f}, {pos.y:.2f}), Velocity: {self.received_odom.twist.twist.linear.x:.2f} m/s')
         else:
             self.add_test_result('Odometry Data', False, 'No odometry data received')
 
@@ -247,14 +245,14 @@ class ComprehensiveSystemTester(Node):
             accel = self.received_imu.linear_acceleration
             gyro = self.received_imu.angular_velocity
             self.add_test_result('IMU Data', True,
-                               f'Accel: ({accel.x:.2f}, {accel.y:.2f}, {accel.z:.2f}), Gyro: ({gyro.x:.2f}, {gyro.y:.2f}, {gyro.z:.2f})')
+                                 f'Accel: ({accel.x:.2f}, {accel.y:.2f}, {accel.z:.2f}), Gyro: ({gyro.x:.2f}, {gyro.y:.2f}, {gyro.z:.2f})')
         else:
             self.add_test_result('IMU Data', False, 'No IMU data received')
 
         # Test 2.3: GPS Data Flow
         if self.received_gps:
             self.add_test_result('GPS Data', True,
-                               f'Lat: {self.received_gps.latitude:.6f}, Lon: {self.received_gps.longitude:.6f}, Alt: {self.received_gps.altitude:.2f}')
+                                 f'Lat: {self.received_gps.latitude:.6f}, Lon: {self.received_gps.longitude:.6f}, Alt: {self.received_gps.altitude:.2f}')
         else:
             self.add_test_result('GPS Data', False, 'No GPS data received')
 
@@ -285,7 +283,7 @@ class ComprehensiveSystemTester(Node):
         if self.received_slam_pose:
             pos = self.received_slam_pose.pose.position
             self.add_test_result('SLAM Pose', True,
-                               f'Pose: ({pos.x:.2f}, {pos.y:.2f}, {pos.z:.2f})')
+                                 f'Pose: ({pos.x:.2f}, {pos.y:.2f}, {pos.z:.2f})')
         else:
             self.add_test_result('SLAM Pose', False, 'No SLAM pose data received')
 
@@ -294,7 +292,7 @@ class ComprehensiveSystemTester(Node):
             robot = self.received_map_data.get('robot', {})
             if robot:
                 self.add_test_result('Map Data Flow', True,
-                                   f'Robot at ({robot.get("x", 0):.2f}, {robot.get("y", 0):.2f}), heading: {robot.get("heading", 0):.1f}°')
+                                     f'Robot at ({robot.get("x", 0):.2f}, {robot.get("y", 0):.2f}), heading: {robot.get("heading", 0):.1f}°')
             else:
                 self.add_test_result('Map Data Flow', False, 'Map data missing robot information')
         else:
@@ -333,7 +331,7 @@ class ComprehensiveSystemTester(Node):
         try:
             # Test WebSocket connection (this would need websocat or similar)
             result = subprocess.run(['timeout', '2', 'bash', '-c', 'echo "test" | nc -q1 localhost 8765 >/dev/null'],
-                                  capture_output=True, timeout=5)
+                                    capture_output=True, timeout=5)
             if result.returncode == 0:
                 self.add_test_result('WebSocket Interface', True, 'WebSocket server responding')
             else:
@@ -407,7 +405,10 @@ class ComprehensiveSystemTester(Node):
             self.add_test_result('Invalid Command Handling', False, 'System failed after invalid command')
 
         # Test 6.2: Component Recovery (would need to implement component restart testing)
-        self.add_test_result('Component Recovery', True, 'Basic recovery test (advanced testing needed with real hardware)')
+        self.add_test_result(
+            'Component Recovery',
+            True,
+            'Basic recovery test (advanced testing needed with real hardware)')
 
         # Test 6.3: Resource Limits
         if self.memory_usage and max(self.memory_usage) < 90.0:
@@ -466,29 +467,29 @@ class ComprehensiveSystemTester(Node):
         success_rate = (passed_tests / total_tests) * 100 if total_tests > 0 else 0
 
         self.add_test_result('Overall System Health',
-                           success_rate >= 80.0,
-                           f'{passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)')
+                             success_rate >= 80.0,
+                             f'{passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)')
 
         # System readiness assessment
         critical_components = ['Odometry Data', 'IMU Data', 'Waypoint Navigation', 'Map Data Flow']
         critical_passed = sum(1 for result in self.test_results
-                            if result['name'] in critical_components and result['success'])
+                              if result['name'] in critical_components and result['success'])
 
         if critical_passed >= len(critical_components) * 0.8:
             self.add_test_result('Hardware Deployment Ready',
-                               True,
-                               'System ready for hardware deployment')
+                                 True,
+                                 'System ready for hardware deployment')
         else:
             self.add_test_result('Hardware Deployment Ready',
-                               False,
-                               'Critical components need attention before hardware deployment')
+                                 False,
+                                 'Critical components need attention before hardware deployment')
 
         # Performance summary
         if self.cpu_usage:
             avg_cpu = sum(self.cpu_usage) / len(self.cpu_usage)
             avg_memory = sum(self.memory_usage) / len(self.memory_usage) if self.memory_usage else 0
             self.add_test_result('Performance Summary', True,
-                               f'Avg CPU: {avg_cpu:.1f}%, Avg Memory: {avg_memory:.1f}%')
+                                 f'Avg CPU: {avg_cpu:.1f}%, Avg Memory: {avg_memory:.1f}%')
 
     # ===========================================
     # UTILITY METHODS
@@ -521,7 +522,7 @@ class ComprehensiveSystemTester(Node):
         """Get list of active ROS2 topics"""
         try:
             result = subprocess.run(['ros2', 'topic', 'list'],
-                                  capture_output=True, text=True, timeout=5)
+                                    capture_output=True, text=True, timeout=5)
             return result.stdout.strip().split('\n')
         except Exception:
             return []
@@ -535,7 +536,7 @@ class ComprehensiveSystemTester(Node):
             try:
                 # Use ros2 topic hz to measure rate
                 result = subprocess.run(['timeout', '3', 'ros2', 'topic', 'hz', topic],
-                                      capture_output=True, text=True, timeout=5)
+                                        capture_output=True, text=True, timeout=5)
                 # Parse the output to extract rate (simplified)
                 if 'average rate:' in result.stdout:
                     rate_line = [line for line in result.stdout.split('\n') if 'average rate:' in line]
@@ -624,7 +625,7 @@ class ComprehensiveSystemTester(Node):
         report.append("🚀 HARDWARE DEPLOYMENT READINESS:")
         critical_tests = ['Waypoint Navigation', 'Odometry Data', 'IMU Data', 'Map Data Flow']
         critical_passed = sum(1 for result in self.test_results
-                            if result['name'] in critical_tests and result['success'])
+                              if result['name'] in critical_tests and result['success'])
 
         if success_rate >= 85.0 and critical_passed >= len(critical_tests):
             report.append("   ✅ SYSTEM READY FOR HARDWARE DEPLOYMENT")

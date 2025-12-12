@@ -9,8 +9,7 @@ import math
 import os
 import sys
 from dataclasses import dataclass
-from enum import Enum
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import rclpy
 from autonomy_interfaces.action import NavigateToPose
@@ -18,11 +17,6 @@ from geometry_msgs.msg import PoseStamped, Twist
 from sensor_msgs.msg import Imu, NavSatFix
 from std_msgs.msg import String
 from std_srvs.srv import Trigger
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
-
-from typing import Any, Dict
-
 from utilities import (
     AutonomyNode,
     Failure,
@@ -38,6 +32,8 @@ from utilities import (
 from .gnss_processor import GNSSProcessor
 from .motion_controller import MotionController
 from .path_planner import PathPlanner
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 @dataclass
@@ -91,31 +87,23 @@ class NavigationNode(AutonomyNode):
         # Setup processing pipeline
         self._setup_processing_pipeline()
 
-        self.logger.info("Navigation node initialized with subsystems",
-                        subsystems=["gnss", "path_planner", "motion_controller", "terrain"])
+        self.logger.info(
+            "Navigation node initialized with subsystems",
+            subsystems=["gnss", "path_planner", "motion_controller", "terrain"],
+        )
 
     def _setup_interfaces(self) -> None:
         """Setup ROS2 interfaces with automatic registration."""
         # Subscribers
-        self.interface_factory.create_subscriber(
-            NavSatFix, "/gnss/fix", self._gnss_callback
-        )
-        self.interface_factory.create_subscriber(
-            Imu, "/imu/data", self._imu_callback
-        )
+        self.interface_factory.create_subscriber(NavSatFix, "/gnss/fix", self._gnss_callback)
+        self.interface_factory.create_subscriber(Imu, "/imu/data", self._imu_callback)
 
         # Publishers
-        self.cmd_vel_pub = self.interface_factory.create_publisher(
-            Twist, "/cmd_vel"
-        )
-        self.waypoint_pub = self.interface_factory.create_publisher(
-            PoseStamped, "/navigation/current_waypoint"
-        )
+        self.cmd_vel_pub = self.interface_factory.create_publisher(Twist, "/cmd_vel")
+        self.waypoint_pub = self.interface_factory.create_publisher(PoseStamped, "/navigation/current_waypoint")
 
         # Services
-        self.interface_factory.create_service(
-            Trigger, "/navigation/stop", self._stop_navigation_callback
-        )
+        self.interface_factory.create_service(Trigger, "/navigation/stop", self._stop_navigation_callback)
 
         # Action server
         self.navigate_action_server = self.interface_factory.create_action_server(
@@ -123,9 +111,7 @@ class NavigationNode(AutonomyNode):
         )
 
         # Control timer
-        self.interface_factory.create_timer(
-            1.0 / self.params.update_rate, self._control_loop, "control"
-        )
+        self.interface_factory.create_timer(1.0 / self.params.update_rate, self._control_loop, "control")
 
     def _setup_processing_pipeline(self) -> None:
         """Setup data processing pipeline."""
@@ -180,9 +166,7 @@ class NavigationNode(AutonomyNode):
         """Handle navigation action requests."""
         # Validate operation requirements
         validation = self.validate_operation(
-            "navigate_to_pose",
-            required_state="idle",
-            required_interfaces={"subscribers": 2}  # GNSS and IMU
+            "navigate_to_pose", required_state="idle", required_interfaces={"subscribers": 2}  # GNSS and IMU
         )
 
         if isinstance(validation, Failure):
@@ -216,9 +200,7 @@ class NavigationNode(AutonomyNode):
 
         try:
             # Generate velocity commands
-            cmd_vel = self.motion_controller.compute_velocity_commands(
-                self.current_path, self.current_pose
-            )
+            cmd_vel = self.motion_controller.compute_velocity_commands(self.current_path, self.current_pose)
 
             # Publish command
             self.cmd_vel_pub.publish(cmd_vel)
@@ -244,15 +226,10 @@ class NavigationNode(AutonomyNode):
                 return validation
 
             # Plan path
-            path_result = self.path_planner.plan_path(
-                self.current_pose, waypoint, self.params.node_specific_params
-            )
+            path_result = self.path_planner.plan_path(self.current_pose, waypoint, self.params.node_specific_params)
 
             if not path_result:
-                return failure(
-                    ProcessingError("path_planning", "no_valid_path_found"),
-                    operation="start_navigation"
-                )
+                return failure(ProcessingError("path_planning", "no_valid_path_found"), operation="start_navigation")
 
             # Start navigation
             self.current_waypoint = waypoint
@@ -260,16 +237,13 @@ class NavigationNode(AutonomyNode):
             self.is_navigating = True
             self.transition_to("navigating", f"Goal: {waypoint}")
 
-            self.logger.info("Navigation started",
-                           waypoint=waypoint.name,
-                           path_length=len(self.current_path))
+            self.logger.info("Navigation started", waypoint=waypoint.name, path_length=len(self.current_path))
 
             return success(True, "start_navigation")
 
         except Exception as e:
             return failure(
-                ProcessingError("start_navigation", f"unexpected_error: {str(e)}"),
-                operation="start_navigation"
+                ProcessingError("start_navigation", f"unexpected_error: {str(e)}"), operation="start_navigation"
             )
 
     def stop_navigation(self) -> None:
@@ -291,16 +265,17 @@ class NavigationNode(AutonomyNode):
             return False
 
         distance = math.sqrt(
-            (self.current_waypoint.latitude - self.current_pose[0])**2 +
-            (self.current_waypoint.longitude - self.current_pose[1])**2
+            (self.current_waypoint.latitude - self.current_pose[0]) ** 2
+            + (self.current_waypoint.longitude - self.current_pose[1]) ** 2
         )
 
         return distance < self.params.node_specific_params["waypoint_tolerance"]
 
     def _complete_navigation(self) -> None:
         """Handle successful navigation completion."""
-        self.logger.info("Navigation goal reached",
-                        waypoint=self.current_waypoint.name if self.current_waypoint else "unknown")
+        self.logger.info(
+            "Navigation goal reached", waypoint=self.current_waypoint.name if self.current_waypoint else "unknown"
+        )
 
         self.is_navigating = False
         self.transition_to("completed", "Goal reached")
@@ -310,9 +285,9 @@ class NavigationNode(AutonomyNode):
         # Simplified conversion - would need proper coordinate transformation
         return Waypoint(
             latitude=pose.pose.position.x,  # Simplified
-            longitude=pose.pose.position.y, # Simplified
+            longitude=pose.pose.position.y,  # Simplified
             altitude=pose.pose.position.z,
-            name=f"waypoint_{int(pose.header.stamp.sec)}"
+            name=f"waypoint_{int(pose.header.stamp.sec)}",
         )
 
     def _validate_waypoint(self, waypoint: Waypoint) -> OperationResult[Waypoint, ValidationError]:
@@ -401,18 +376,13 @@ class NavigationNode(AutonomyNode):
         # Haversine distance
         dlat = lat2_rad - lat1_rad
         dlon = lon2_rad - lon1_rad
-        a = (
-            math.sin(dlat / 2) ** 2
-            + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
-        )
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         distance = 6371000 * c  # Earth radius in meters
 
         # Bearing calculation
         y = math.sin(dlon) * math.cos(lat2_rad)
-        x = math.cos(lat1_rad) * math.sin(lat2_rad) - math.sin(lat1_rad) * math.cos(
-            lat2_rad
-        ) * math.cos(dlon)
+        x = math.cos(lat1_rad) * math.sin(lat2_rad) - math.sin(lat1_rad) * math.cos(lat2_rad) * math.cos(dlon)
         bearing = math.atan2(y, x)
 
         return distance, bearing

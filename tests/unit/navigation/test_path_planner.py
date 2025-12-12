@@ -6,7 +6,7 @@ Tests waypoint following, obstacle avoidance, and terrain adaptation.
 """
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 import numpy as np
 
@@ -183,6 +183,7 @@ class TestWaypointNavigation(unittest.TestCase):
 
         # Mock sequential navigation
         call_count = 0
+
         def mock_set_target(waypoint):
             nonlocal call_count
             call_count += 1

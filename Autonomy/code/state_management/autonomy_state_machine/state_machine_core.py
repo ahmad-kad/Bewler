@@ -84,23 +84,13 @@ class RoverStateMachine:
         """Add all valid state transitions from the metadata."""
 
         # BOOT transitions
-        self.machine.add_transition(
-            "boot_to_calibration", SystemState.BOOT.value, SystemState.CALIBRATION.value
-        )
-        self.machine.add_transition(
-            "boot_to_idle", SystemState.BOOT.value, SystemState.IDLE.value
-        )
-        self.machine.add_transition(
-            "boot_to_safety", SystemState.BOOT.value, SystemState.SAFETY.value
-        )
-        self.machine.add_transition(
-            "boot_to_shutdown", SystemState.BOOT.value, SystemState.SHUTDOWN.value
-        )
+        self.machine.add_transition("boot_to_calibration", SystemState.BOOT.value, SystemState.CALIBRATION.value)
+        self.machine.add_transition("boot_to_idle", SystemState.BOOT.value, SystemState.IDLE.value)
+        self.machine.add_transition("boot_to_safety", SystemState.BOOT.value, SystemState.SAFETY.value)
+        self.machine.add_transition("boot_to_shutdown", SystemState.BOOT.value, SystemState.SHUTDOWN.value)
 
         # CALIBRATION transitions
-        self.machine.add_transition(
-            "calibration_to_idle", SystemState.CALIBRATION.value, SystemState.IDLE.value
-        )
+        self.machine.add_transition("calibration_to_idle", SystemState.CALIBRATION.value, SystemState.IDLE.value)
         self.machine.add_transition(
             "calibration_to_safety",
             SystemState.CALIBRATION.value,
@@ -113,26 +103,14 @@ class RoverStateMachine:
         )
 
         # IDLE transitions
-        self.machine.add_transition(
-            "idle_to_calibration", SystemState.IDLE.value, SystemState.CALIBRATION.value
-        )
-        self.machine.add_transition(
-            "idle_to_teleop", SystemState.IDLE.value, SystemState.TELEOPERATION.value
-        )
-        self.machine.add_transition(
-            "idle_to_autonomous", SystemState.IDLE.value, SystemState.AUTONOMOUS.value
-        )
-        self.machine.add_transition(
-            "idle_to_safety", SystemState.IDLE.value, SystemState.SAFETY.value
-        )
-        self.machine.add_transition(
-            "idle_to_shutdown", SystemState.IDLE.value, SystemState.SHUTDOWN.value
-        )
+        self.machine.add_transition("idle_to_calibration", SystemState.IDLE.value, SystemState.CALIBRATION.value)
+        self.machine.add_transition("idle_to_teleop", SystemState.IDLE.value, SystemState.TELEOPERATION.value)
+        self.machine.add_transition("idle_to_autonomous", SystemState.IDLE.value, SystemState.AUTONOMOUS.value)
+        self.machine.add_transition("idle_to_safety", SystemState.IDLE.value, SystemState.SAFETY.value)
+        self.machine.add_transition("idle_to_shutdown", SystemState.IDLE.value, SystemState.SHUTDOWN.value)
 
         # TELEOPERATION transitions
-        self.machine.add_transition(
-            "teleop_to_idle", SystemState.TELEOPERATION.value, SystemState.IDLE.value
-        )
+        self.machine.add_transition("teleop_to_idle", SystemState.TELEOPERATION.value, SystemState.IDLE.value)
         self.machine.add_transition(
             "teleop_to_autonomous",
             SystemState.TELEOPERATION.value,
@@ -150,9 +128,7 @@ class RoverStateMachine:
         )
 
         # AUTONOMOUS transitions
-        self.machine.add_transition(
-            "autonomous_to_idle", SystemState.AUTONOMOUS.value, SystemState.IDLE.value
-        )
+        self.machine.add_transition("autonomous_to_idle", SystemState.AUTONOMOUS.value, SystemState.IDLE.value)
         self.machine.add_transition(
             "autonomous_to_teleop",
             SystemState.AUTONOMOUS.value,
@@ -170,23 +146,13 @@ class RoverStateMachine:
         )
 
         # ESTOP transitions (hardware emergency stop)
-        self.machine.add_transition(
-            "any_to_estop", "*", SystemState.ESTOP.value
-        )  # Can enter from any state
-        self.machine.add_transition(
-            "estop_to_idle", SystemState.ESTOP.value, SystemState.IDLE.value
-        )
-        self.machine.add_transition(
-            "estop_to_shutdown", SystemState.ESTOP.value, SystemState.SHUTDOWN.value
-        )
+        self.machine.add_transition("any_to_estop", "*", SystemState.ESTOP.value)  # Can enter from any state
+        self.machine.add_transition("estop_to_idle", SystemState.ESTOP.value, SystemState.IDLE.value)
+        self.machine.add_transition("estop_to_shutdown", SystemState.ESTOP.value, SystemState.SHUTDOWN.value)
 
         # SAFESTOP transitions (software graceful pause)
-        self.machine.add_transition(
-            "any_to_safestop", "*", SystemState.SAFESTOP.value
-        )  # Can enter from any state
-        self.machine.add_transition(
-            "safestop_to_idle", SystemState.SAFESTOP.value, SystemState.IDLE.value
-        )
+        self.machine.add_transition("any_to_safestop", "*", SystemState.SAFESTOP.value)  # Can enter from any state
+        self.machine.add_transition("safestop_to_idle", SystemState.SAFESTOP.value, SystemState.IDLE.value)
         self.machine.add_transition(
             "safestop_to_teleop",
             SystemState.SAFESTOP.value,
@@ -202,17 +168,13 @@ class RoverStateMachine:
         )  # Can escalate
 
         # SAFETY transitions (legacy - deprecated)
-        self.machine.add_transition(
-            "safety_to_idle", SystemState.SAFETY.value, SystemState.IDLE.value
-        )
+        self.machine.add_transition("safety_to_idle", SystemState.SAFETY.value, SystemState.IDLE.value)
         self.machine.add_transition(
             "safety_to_teleop",
             SystemState.SAFETY.value,
             SystemState.TELEOPERATION.value,
         )
-        self.machine.add_transition(
-            "safety_to_shutdown", SystemState.SAFETY.value, SystemState.SHUTDOWN.value
-        )
+        self.machine.add_transition("safety_to_shutdown", SystemState.SAFETY.value, SystemState.SHUTDOWN.value)
 
         # SHUTDOWN is terminal - no outgoing transitions
 
@@ -226,9 +188,7 @@ class RoverStateMachine:
 
             if from_state and to_state:
                 # Handle state objects
-                from_name = (
-                    from_state.name if hasattr(from_state, "name") else str(from_state)
-                )
+                from_name = from_state.name if hasattr(from_state, "name") else str(from_state)
                 to_name = to_state.name if hasattr(to_state, "name") else str(to_state)
 
                 if self.logger:
@@ -241,12 +201,8 @@ class RoverStateMachine:
 
                     if not is_valid_transition(from_state_enum, to_state_enum):
                         if self.logger:
-                            self.logger.error(
-                                f"Invalid transition blocked: {from_name} -> {to_name}"
-                            )
-                        raise ValueError(
-                            f"Invalid transition: {from_name} -> {to_name}"
-                        )
+                            self.logger.error(f"Invalid transition blocked: {from_name} -> {to_name}")
+                        raise ValueError(f"Invalid transition: {from_name} -> {to_name}")
                 except ValueError as e:
                     if self.logger:
                         self.logger.error(f"State validation error: {e}")
@@ -260,9 +216,7 @@ class RoverStateMachine:
             to_state = getattr(event, "dest", None)
 
             if from_state and to_state:
-                from_name = (
-                    from_state.name if hasattr(from_state, "name") else str(from_state)
-                )
+                from_name = from_state.name if hasattr(from_state, "name") else str(from_state)
                 to_name = to_state.name if hasattr(to_state, "name") else str(to_state)
 
                 if self.logger:
@@ -314,9 +268,7 @@ class RoverStateMachine:
                 "CALIBRATION": "calibration",
             }
             from_abbrev = state_abbrevs.get(self.state, self.state.lower())
-            to_abbrev = state_abbrevs.get(
-                target_state.value, target_state.value.lower()
-            )
+            to_abbrev = state_abbrevs.get(target_state.value, target_state.value.lower())
             trigger_name = f"{from_abbrev}_to_{to_abbrev}"
             return hasattr(self, trigger_name)
         except Exception:
@@ -341,9 +293,7 @@ class RoverStateMachine:
                 "CALIBRATION": "calibration",
             }
             from_abbrev = state_abbrevs.get(self.state, self.state.lower())
-            to_abbrev = state_abbrevs.get(
-                target_state.value, target_state.value.lower()
-            )
+            to_abbrev = state_abbrevs.get(target_state.value, target_state.value.lower())
             trigger_name = f"{from_abbrev}_to_{to_abbrev}"
 
             if hasattr(self, trigger_name):
@@ -382,9 +332,7 @@ class RoverStateMachine:
             "state_metadata": {
                 "description": metadata.description,
                 "requires_calibration": metadata.requires_calibration,
-                "required_subsystems": get_required_subsystems(
-                    current_state, self._current_autonomous_substate
-                ),
+                "required_subsystems": get_required_subsystems(current_state, self._current_autonomous_substate),
             },
         }
 
@@ -401,17 +349,13 @@ class RoverStateMachine:
             if isinstance(self.machine, GraphMachine):
                 self.machine.get_graph().draw(f"{filename}.png", prog="dot")
                 if self.logger:
-                    self.logger.info(
-                        f"State machine visualization saved to {filename}.png"
-                    )
+                    self.logger.info(f"State machine visualization saved to {filename}.png")
             else:
                 if self.logger:
                     self.logger.warning("GraphMachine not available for visualization")
         except ImportError:
             if self.logger:
-                self.logger.warning(
-                    "graphviz not installed, cannot generate visualization"
-                )
+                self.logger.warning("graphviz not installed, cannot generate visualization")
         except Exception as e:
             if self.logger:
                 self.logger.error(f"Visualization failed: {str(e)}")

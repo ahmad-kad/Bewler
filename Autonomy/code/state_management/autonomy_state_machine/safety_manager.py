@@ -16,9 +16,7 @@ class SafetyTriggerType(Enum):
     """Types of safety triggers."""
 
     EMERGENCY_STOP = "EMERGENCY_STOP"  # Physical E-stop pressed (hardware power cut)
-    SOFTWARE_ESTOP = (
-        "SOFTWARE_ESTOP"  # Software-triggered emergency stop (full shutdown)
-    )
+    SOFTWARE_ESTOP = "SOFTWARE_ESTOP"  # Software-triggered emergency stop (full shutdown)
     SAFESTOP_REQUEST = "SAFESTOP_REQUEST"  # Operator-requested safestop (toggle-able)
     PROXIMITY_VIOLATION = "PROXIMITY_VIOLATION"  # Auto-safe: object too close
     COMMUNICATION_LOSS = "COMMUNICATION_LOSS"  # Lost communication link
@@ -113,8 +111,7 @@ class SafetyManager:
 
         if self._logger:
             self._logger.warning(
-                f"Safety triggered: {trigger_type.value} ({severity.value}) - {description} "
-                f"(source: {source})"
+                f"Safety triggered: {trigger_type.value} ({severity.value}) - {description} " f"(source: {source})"
             )
 
     def clear_trigger(self, trigger_type: SafetyTriggerType) -> None:
@@ -173,9 +170,7 @@ class SafetyManager:
         """
         if self._logger:
             state_str = current_state.value if current_state else "unknown"
-            self._logger.info(
-                f"Determining recovery behavior for {trigger_type.value} in {state_str} state"
-            )
+            self._logger.info(f"Determining recovery behavior for {trigger_type.value} in {state_str} state")
 
         # Emergency stop (ESTOP) - hardware power cut, requires full recovery
         if trigger_type == SafetyTriggerType.EMERGENCY_STOP:
@@ -481,9 +476,7 @@ class SafetyManager:
         return {
             "is_safe": len(self._active_triggers) == 0,
             "active_triggers": list(self._active_triggers.keys()),
-            "highest_severity": (
-                self.get_highest_severity() if self.get_highest_severity() else None
-            ),
+            "highest_severity": (self.get_highest_severity() if self.get_highest_severity() else None),
             "battery_level": self._battery_level,
             "temperature": self._temperature,
             "communication_ok": self._communication_ok,

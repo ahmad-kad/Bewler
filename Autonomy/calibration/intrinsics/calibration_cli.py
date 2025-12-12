@@ -14,11 +14,8 @@ Usage:
 
 import argparse
 import logging
-import os
 import sys
-from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from camera_intrinsics_calibrator import (
     CameraConfig,
@@ -34,25 +31,13 @@ from camera_intrinsics_calibrator import (
 # Standard boards (can be extended)
 STANDARD_BOARDS = {
     "board_5x7": CharUcoBoardConfig(
-        name="board_5x7",
-        aruco_dict_name="DICT_4X4_50",
-        size=(5, 7),
-        checker_size_mm=30.0,
-        marker_size_mm=18.0
+        name="board_5x7", aruco_dict_name="DICT_4X4_50", size=(5, 7), checker_size_mm=30.0, marker_size_mm=18.0
     ),
     "board_7x5": CharUcoBoardConfig(
-        name="board_7x5",
-        aruco_dict_name="DICT_4X4_50",
-        size=(7, 5),
-        checker_size_mm=25.0,
-        marker_size_mm=15.0
+        name="board_7x5", aruco_dict_name="DICT_4X4_50", size=(7, 5), checker_size_mm=25.0, marker_size_mm=15.0
     ),
     "board_small": CharUcoBoardConfig(
-        name="board_small",
-        aruco_dict_name="DICT_4X4_50",
-        size=(4, 5),
-        checker_size_mm=20.0,
-        marker_size_mm=12.0
+        name="board_small", aruco_dict_name="DICT_4X4_50", size=(4, 5), checker_size_mm=20.0, marker_size_mm=12.0
     ),
 }
 
@@ -65,16 +50,14 @@ DEFAULT_CAMERAS = {
 }
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(levelname)s: %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
 # ============================================================================
 # CLI UTILITY FUNCTIONS
 # ============================================================================
+
 
 def print_header(text: str):
     """Print formatted header."""
@@ -133,6 +116,7 @@ def detect_available_cameras(max_cameras: int = 5) -> dict:
 # COMMAND HANDLERS
 # ============================================================================
 
+
 def cmd_list_cameras(args):
     """List available cameras."""
     print_header("AVAILABLE CAMERAS")
@@ -170,7 +154,7 @@ def cmd_calibrate(args):
     # Parse resolution
     if args.resolution:
         try:
-            w, h = map(int, args.resolution.split('x'))
+            w, h = map(int, args.resolution.split("x"))
             resolution = (w, h)
         except ValueError:
             print_error(f"Invalid resolution: {args.resolution}")
@@ -209,11 +193,7 @@ def cmd_calibrate(args):
 
     try:
         camera_name = f"Camera_{camera_id}"
-        camera_config = CameraConfig(
-            name=camera_name,
-            camera_index=camera_id,
-            resolution=resolution
-        )
+        camera_config = CameraConfig(name=camera_name, camera_index=camera_id, resolution=resolution)
         calibrator = CameraIntrinsicsCalibrator(camera_config, board)
         print_success("Calibrator initialized")
     except Exception as e:
@@ -319,7 +299,7 @@ def cmd_calibrate(args):
 
     print_section("CALIBRATION COMPLETE")
     print_success("Ready to use!")
-    print_info(f"Load calibration in your application and enjoy accurate vision!")
+    print_info("Load calibration in your application and enjoy accurate vision!")
 
     return True
 
@@ -334,11 +314,8 @@ def cmd_test(args):
     # Test 1: Import modules
     print_section("Test 1: Module Imports")
     try:
-        from camera_intrinsics_calibrator import (
-            CameraConfig,
-            CameraIntrinsicsCalibrator,
-            CharUcoBoardConfig,
-        )
+        from camera_intrinsics_calibrator import CameraConfig, CharUcoBoardConfig
+
         print_success("All modules imported successfully")
         tests_passed += 1
     except Exception as e:
@@ -364,10 +341,9 @@ def cmd_test(args):
     # Test 3: Configuration validation
     print_section("Test 3: Configuration Validation")
     try:
-        camera_config = CameraConfig("Test", camera_index=0, resolution=(1920, 1080))
-        board_config = CharUcoBoardConfig(
-            "test_board", "DICT_4X4_50", (5, 7), 30.0, 18.0
-        )
+        # Test configuration creation
+        CameraConfig("Test", camera_index=0, resolution=(1920, 1080))
+        CharUcoBoardConfig("test_board", "DICT_4X4_50", (5, 7), 30.0, 18.0)
         print_success("Configurations created successfully")
         tests_passed += 1
     except Exception as e:
@@ -406,6 +382,7 @@ def cmd_test(args):
 # MAIN ENTRY POINT
 # ============================================================================
 
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(
@@ -427,66 +404,64 @@ Examples:
 
   # Test system
   python3 calibration_cli.py --test
-        """
+        """,
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Commands')
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
 
     # Calibrate command
-    calibrate_parser = subparsers.add_parser('calibrate', help='Run calibration')
-    calibrate_parser.add_argument('--camera', type=int, default=0, help='Camera index')
-    calibrate_parser.add_argument('--mode', default='manual',
-                                 choices=['manual', 'video', 'conservative'],
-                                 help='Capture mode')
-    calibrate_parser.add_argument('--count', type=int, default=50,
-                                 help='Target number of images')
-    calibrate_parser.add_argument('--board', default='board_5x7',
-                                 help='Board type')
-    calibrate_parser.add_argument('--preset', default='fullhd',
-                                 choices=['default', 'hd', 'fullhd', '2k'],
-                                 help='Resolution preset')
-    calibrate_parser.add_argument('--resolution', help='Custom resolution (WIDTHxHEIGHT)')
+    calibrate_parser = subparsers.add_parser("calibrate", help="Run calibration")
+    calibrate_parser.add_argument("--camera", type=int, default=0, help="Camera index")
+    calibrate_parser.add_argument(
+        "--mode", default="manual", choices=["manual", "video", "conservative"], help="Capture mode"
+    )
+    calibrate_parser.add_argument("--count", type=int, default=50, help="Target number of images")
+    calibrate_parser.add_argument("--board", default="board_5x7", help="Board type")
+    calibrate_parser.add_argument(
+        "--preset", default="fullhd", choices=["default", "hd", "fullhd", "2k"], help="Resolution preset"
+    )
+    calibrate_parser.add_argument("--resolution", help="Custom resolution (WIDTHxHEIGHT)")
 
     # List cameras command
-    list_parser = subparsers.add_parser('list', help='List available cameras')
+    subparsers.add_parser("list", help="List available cameras")
 
     # Test command
-    test_parser = subparsers.add_parser('test', help='Test system')
+    subparsers.add_parser("test", help="Test system")
 
     # Handle legacy command structure (backward compatibility)
-    if len(sys.argv) > 1 and sys.argv[1] == '--list-cameras':
-        args = argparse.Namespace(command='list')
+    if len(sys.argv) > 1 and sys.argv[1] == "--list-cameras":
+        args = argparse.Namespace(command="list")
         return cmd_list_cameras(args)
-    elif len(sys.argv) > 1 and sys.argv[1] == '--test':
-        args = argparse.Namespace(command='test')
+    elif len(sys.argv) > 1 and sys.argv[1] == "--test":
+        args = argparse.Namespace(command="test")
         return cmd_test(args)
-    elif len(sys.argv) > 1 and sys.argv[1] == '--camera':
+    elif len(sys.argv) > 1 and sys.argv[1] == "--camera":
         # Build new-style args from old format
         parser_old = argparse.ArgumentParser()
-        parser_old.add_argument('--camera', type=int, default=0)
-        parser_old.add_argument('--mode', default='manual')
-        parser_old.add_argument('--count', type=int, default=50)
-        parser_old.add_argument('--board', default='board_5x7')
-        parser_old.add_argument('--preset', default='fullhd')
-        parser_old.add_argument('--resolution', default=None)
+        parser_old.add_argument("--camera", type=int, default=0)
+        parser_old.add_argument("--mode", default="manual")
+        parser_old.add_argument("--count", type=int, default=50)
+        parser_old.add_argument("--board", default="board_5x7")
+        parser_old.add_argument("--preset", default="fullhd")
+        parser_old.add_argument("--resolution", default=None)
 
         args = parser_old.parse_args()
-        args.command = 'calibrate'
+        args.command = "calibrate"
         return cmd_calibrate(args)
 
     args = parser.parse_args()
 
-    if args.command == 'calibrate':
+    if args.command == "calibrate":
         return cmd_calibrate(args)
-    elif args.command == 'list':
+    elif args.command == "list":
         return cmd_list_cameras(args)
-    elif args.command == 'test':
+    elif args.command == "test":
         return cmd_test(args)
     else:
         parser.print_help()
         return False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     success = main()
     sys.exit(0 if success else 1)

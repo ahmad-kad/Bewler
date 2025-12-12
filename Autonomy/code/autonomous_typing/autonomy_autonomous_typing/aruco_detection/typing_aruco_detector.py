@@ -46,9 +46,7 @@ class TypingArUcoDetector:
         )
 
         # Service clients
-        self.aruco_detection_client: Client = node.create_client(
-            DetectAruco, "/aruco_detection/detect"
-        )
+        self.aruco_detection_client: Client = node.create_client(DetectAruco, "/aruco_detection/detect")
 
         logger.info("Typing ArUco detector initialized")
 
@@ -89,14 +87,10 @@ class TypingArUcoDetector:
         try:
             # Call detection service
             if not self.aruco_detection_client.wait_for_service(timeout_sec=2.0):
-                return self._create_error_result(
-                    "ArUco detection service not available"
-                )
+                return self._create_error_result("ArUco detection service not available")
 
             future = self.aruco_detection_client.call_async(request)
-            self.node.get_executor().spin_until_future_complete(
-                future, timeout_sec=timeout + 1.0
-            )
+            self.node.get_executor().spin_until_future_complete(future, timeout_sec=timeout + 1.0)
 
             if not future.done():
                 return self._create_error_result("Detection request timed out")
@@ -104,9 +98,7 @@ class TypingArUcoDetector:
             response = future.result()
 
             if not response.success:
-                return self._create_error_result(
-                    f"Detection failed: {response.message}"
-                )
+                return self._create_error_result(f"Detection failed: {response.message}")
 
             # Process detection results
             return self._process_typing_detection_results(response, target_depth)
@@ -149,9 +141,7 @@ class TypingArUcoDetector:
         # Check if we have enough tags
         detected_count = len(result.get("detected_tag_ids", []))
         if detected_count < min_tags:
-            return self._create_error_result(
-                f"Insufficient tags detected: {detected_count} < {min_tags}"
-            )
+            return self._create_error_result(f"Insufficient tags detected: {detected_count} < {min_tags}")
 
         return result
 
@@ -171,9 +161,7 @@ class TypingArUcoDetector:
             detected_tags.append(tag_info)
 
         # Calculate typing alignment
-        alignment_result = self.alignment_calculator.calculate_typing_alignment(
-            detected_tags, target_depth
-        )
+        alignment_result = self.alignment_calculator.calculate_typing_alignment(detected_tags, target_depth)
 
         # Create result
         result = {
@@ -194,16 +182,12 @@ class TypingArUcoDetector:
             "mission_ready": alignment_result.get("mission_ready", False),
             "keyboard_info": alignment_result.get("keyboard_info", {}),
             "alignment_warnings": alignment_result.get("alignment_warnings", []),
-            "typing_recommendations": alignment_result.get(
-                "typing_recommendations", []
-            ),
+            "typing_recommendations": alignment_result.get("typing_recommendations", []),
         }
 
         return result
 
-    def get_typing_alignment_command(
-        self, detection_result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    def get_typing_alignment_command(self, detection_result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Get typing alignment command from detection result."""
         if not detection_result.get("alignment_available", False):
             return None

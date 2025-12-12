@@ -11,17 +11,20 @@ Usage:
 
 import argparse
 import json
-import os
-import sys
 import time
-from pathlib import Path
 
 import cv2
 import numpy as np
 
 
-def quick_calibrate_camera(camera_index=0, duration=30, output_file="webcam_calibration.json",
-                          board_squares=(8, 6), square_size=0.020, marker_size=0.015):
+def quick_calibrate_camera(
+    camera_index=0,
+    duration=30,
+    output_file="webcam_calibration.json",
+    board_squares=(8, 6),
+    square_size=0.020,
+    marker_size=0.015,
+):
     """
     Quick camera calibration by capturing frames directly and detecting ChArUco board.
 
@@ -68,7 +71,9 @@ def quick_calibrate_camera(camera_index=0, duration=30, output_file="webcam_cali
     detector = cv2.aruco.ArucoDetector(aruco_dict, parameters)
 
     # ChArUco board parameters (8x6 with 20mm squares)
-    board = cv2.aruco.CharucoBoard(board_squares, squareLength=square_size, markerLength=marker_size, dictionary=aruco_dict)
+    board = cv2.aruco.CharucoBoard(
+        board_squares, squareLength=square_size, markerLength=marker_size, dictionary=aruco_dict
+    )
 
     # Calibration variables
     all_charuco_corners = []
@@ -120,18 +125,25 @@ def quick_calibrate_camera(camera_index=0, duration=30, output_file="webcam_cali
 
                         status = f"✓ Frame {calibration_frames} - Detected {len(charuco_ids)} ChArUco corners"
                         color = (0, 255, 0)
-                except Exception as e:
+                except Exception:
                     pass
 
             # Display frame with status
             cv2.putText(frame, status, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-            cv2.putText(frame, f"Time: {time.time() - start_time:.1f}s / {duration}s",
-                       (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-            cv2.imshow('Webcam Calibration', frame)
+            cv2.putText(
+                frame,
+                f"Time: {time.time() - start_time:.1f}s / {duration}s",
+                (10, 70),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (255, 255, 255),
+                1,
+            )
+            cv2.imshow("Webcam Calibration", frame)
 
             # Handle keyboard
             key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
+            if key == ord("q"):
                 print("⏹️ User requested exit")
                 break
 
@@ -143,7 +155,7 @@ def quick_calibrate_camera(camera_index=0, duration=30, output_file="webcam_cali
         cap.release()
         cv2.destroyAllWindows()
 
-    print(f"\n✅ Capture complete")
+    print("\n✅ Capture complete")
     print(f"   Total frames: {frame_count}")
     print(f"   Valid detections: {calibration_frames}")
 
@@ -159,8 +171,7 @@ def quick_calibrate_camera(camera_index=0, duration=30, output_file="webcam_cali
 
         # Calibrate camera
         ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.aruco.calibrateCameraCharuco(
-            all_charuco_corners, all_charuco_ids, board, (width, height),
-            camera_matrix, dist_coeffs
+            all_charuco_corners, all_charuco_ids, board, (width, height), camera_matrix, dist_coeffs
         )
 
         if not ret:
@@ -171,34 +182,26 @@ def quick_calibrate_camera(camera_index=0, duration=30, output_file="webcam_cali
 
         # Prepare output data
         calib_data = {
-            "camera_matrix": {
-                "rows": 3,
-                "cols": 3,
-                "data": camera_matrix.flatten().tolist()
-            },
-            "distortion_coefficients": {
-                "rows": 1,
-                "cols": 5,
-                "data": dist_coeffs.flatten().tolist()
-            },
+            "camera_matrix": {"rows": 3, "cols": 3, "data": camera_matrix.flatten().tolist()},
+            "distortion_coefficients": {"rows": 1, "cols": 5, "data": dist_coeffs.flatten().tolist()},
             "image_width": width,
             "image_height": height,
             "frames_used": calibration_frames,
             "reprojection_error": 0.0,
-            "calibration_quality": "good"
+            "calibration_quality": "good",
         }
 
         # Save to JSON
-        with open(output_file, 'w') as f:
+        with open(output_file, "w") as f:
             json.dump(calib_data, f, indent=2)
 
         print(f"💾 Calibration saved to: {output_file}")
-        print(f"\n📊 Calibration Results:")
+        print("\n📊 Calibration Results:")
         print(f"   Image size: {width}x{height}")
         print(f"   Frames used: {calibration_frames}")
-        print(f"   Camera Matrix:")
+        print("   Camera Matrix:")
         print(f"   {camera_matrix}")
-        print(f"   Distortion Coefficients:")
+        print("   Distortion Coefficients:")
         print(f"   {dist_coeffs.flatten()}")
 
         return True
@@ -206,13 +209,14 @@ def quick_calibrate_camera(camera_index=0, duration=30, output_file="webcam_cali
     except Exception as e:
         print(f"❌ Calibration failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Quick Webcam Calibration for ArUco Distance Detection',
+        description="Quick Webcam Calibration for ArUco Distance Detection",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -233,23 +237,25 @@ Examples:
 
   # After calibration, test ArUco distance detection
   python ../aruco_tags/aruco_validator.py --calibration my_camera.json --tag-size 10.0
-        """
+        """,
     )
 
-    parser.add_argument('--camera', type=int, default=0,
-                       help='Camera device index (default: 0)')
-    parser.add_argument('--duration', type=int, default=30,
-                       help='Capture duration in seconds (default: 30)')
-    parser.add_argument('--output', '-o', default='webcam_calibration.json',
-                       help='Output calibration file (default: webcam_calibration.json)')
-    parser.add_argument('--square-size', type=float, default=0.030,
-                       help='ChArUco square size in meters (default: 0.030 = 30mm)')
-    parser.add_argument('--marker-size', type=float, default=0.018,
-                       help='ChArUco marker size in meters (default: 0.018 = 18mm)')
-    parser.add_argument('--board-cols', type=int, default=8,
-                       help='ChArUco board columns (default: 8)')
-    parser.add_argument('--board-rows', type=int, default=6,
-                       help='ChArUco board rows (default: 6)')
+    parser.add_argument("--camera", type=int, default=0, help="Camera device index (default: 0)")
+    parser.add_argument("--duration", type=int, default=30, help="Capture duration in seconds (default: 30)")
+    parser.add_argument(
+        "--output",
+        "-o",
+        default="webcam_calibration.json",
+        help="Output calibration file (default: webcam_calibration.json)",
+    )
+    parser.add_argument(
+        "--square-size", type=float, default=0.030, help="ChArUco square size in meters (default: 0.030 = 30mm)"
+    )
+    parser.add_argument(
+        "--marker-size", type=float, default=0.018, help="ChArUco marker size in meters (default: 0.018 = 18mm)"
+    )
+    parser.add_argument("--board-cols", type=int, default=8, help="ChArUco board columns (default: 8)")
+    parser.add_argument("--board-rows", type=int, default=6, help="ChArUco board rows (default: 6)")
 
     args = parser.parse_args()
 
@@ -259,14 +265,14 @@ Examples:
         output_file=args.output,
         board_squares=(args.board_cols, args.board_rows),
         square_size=args.square_size,
-        marker_size=args.marker_size
+        marker_size=args.marker_size,
     )
 
     if success:
-        print(f"\n🎉 Calibration complete!")
-        print(f"\n📌 Next steps:")
-        print(f"1. Test ArUco detection with distance measurement:")
-        print(f"   cd ../aruco_tags/")
+        print("\n🎉 Calibration complete!")
+        print("\n📌 Next steps:")
+        print("1. Test ArUco detection with distance measurement:")
+        print("   cd ../aruco_tags/")
         print(f"   python aruco_validator.py --calibration ../camera/{args.output} --tag-size 10.0")
         return 0
     else:
@@ -274,5 +280,5 @@ Examples:
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     exit(main())

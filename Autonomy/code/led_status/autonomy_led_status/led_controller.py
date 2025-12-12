@@ -16,9 +16,7 @@ Competition Requirements:
 - Integration with hierarchical state management system
 """
 
-import time
 from enum import Enum
-from typing import Optional
 
 import rclpy
 from autonomy.utilities import (
@@ -80,9 +78,7 @@ class LEDController(StateMachineNode):
         )
 
         # ROS2 subscriptions
-        led_info_sub = self.create_subscription(
-            String, "/state_machine/led_info", self.led_info_callback, qos_profile
-        )
+        led_info_sub = self.create_subscription(String, "/state_machine/led_info", self.led_info_callback, qos_profile)
         self.interfaces.add_subscriber("led_info", led_info_sub)
 
         system_state_sub = self.create_subscription(
@@ -124,28 +120,26 @@ class LEDController(StateMachineNode):
 
         # Load validated parameters
         config["flash_on_duration"] = get_validated_parameter(
-            self, "flash_on_duration", 0.5,
+            self,
+            "flash_on_duration",
+            0.5,
             validator=lambda x: 0.1 <= x <= 2.0,
             error_msg="Flash on duration must be 0.1-2.0 seconds",
-            logger=self.logger
+            logger=self.logger,
         )
 
         config["flash_off_duration"] = get_validated_parameter(
-            self, "flash_off_duration", 0.5,
+            self,
+            "flash_off_duration",
+            0.5,
             validator=lambda x: 0.1 <= x <= 2.0,
             error_msg="Flash off duration must be 0.1-2.0 seconds",
-            logger=self.logger
+            logger=self.logger,
         )
 
-        config["enable_hardware"] = get_validated_parameter(
-            self, "enable_hardware", True,
-            logger=self.logger
-        )
+        config["enable_hardware"] = get_validated_parameter(self, "enable_hardware", True, logger=self.logger)
 
-        config["debug_mode"] = get_validated_parameter(
-            self, "debug_mode", False,
-            logger=self.logger
-        )
+        config["debug_mode"] = get_validated_parameter(self, "debug_mode", False, logger=self.logger)
 
         return config
 
@@ -292,19 +286,13 @@ class LEDController(StateMachineNode):
             self.current_pattern = pattern
 
             if self.led_hardware:
-                result, error = safe_execute(
-                    self.led_hardware.set_color_and_pattern, color, pattern
-                )
+                result, error = safe_execute(self.led_hardware.set_color_and_pattern, color, pattern)
                 if error:
                     self.logger.error("Failed to set LED hardware state", error=error)
                     return
             else:
                 # Software simulation
-                self.logger.info(
-                    "LED set (simulation)",
-                    color=color.value,
-                    pattern=pattern.value
-                )
+                self.logger.info("LED set (simulation)", color=color.value, pattern=pattern.value)
 
         except Exception as e:
             self.logger.error("Unexpected error setting LED state", error=e)

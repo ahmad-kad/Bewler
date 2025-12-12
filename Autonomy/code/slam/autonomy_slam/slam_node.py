@@ -48,9 +48,7 @@ class SLAMOrchestrator(Node):
         self.declare_parameter("enable_diagnostics", True)
         self.declare_parameter("map_frame", "map")
         self.declare_parameter("base_frame", "base_link")
-        self.declare_parameter(
-            "min_feature_count", 50
-        )  # Minimum features for valid pose
+        self.declare_parameter("min_feature_count", 50)  # Minimum features for valid pose
 
         # Get parameters
         self.enable_depth_proc = self.get_parameter("enable_depth_processing").value
@@ -122,9 +120,7 @@ class SLAMOrchestrator(Node):
         )
 
         # Timer for health monitoring
-        self.health_timer = self.create_timer(
-            1.0, self.on_health_check, callback_group=self.callback_group
-        )
+        self.health_timer = self.create_timer(1.0, self.on_health_check, callback_group=self.callback_group)
 
         # TF broadcaster for diagnostics
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
@@ -239,12 +235,8 @@ class SLAMOrchestrator(Node):
         # SLAM status diagnostic
         slam_diag = DiagnosticStatus()
         slam_diag.name = "SLAM System"
-        slam_diag.level = (
-            DiagnosticStatus.OK if self.system_ready else DiagnosticStatus.WARN
-        )
-        slam_diag.message = (
-            "SLAM Operational" if self.system_ready else "SLAM Initializing"
-        )
+        slam_diag.level = DiagnosticStatus.OK if self.system_ready else DiagnosticStatus.WARN
+        slam_diag.message = "SLAM Operational" if self.system_ready else "SLAM Initializing"
         slam_diag.values = [
             self._kv_pair("Feature Count", str(self.feature_count)),
             self._kv_pair("SLAM Confidence", f"{self.slam_confidence:.3f}"),
@@ -256,9 +248,7 @@ class SLAMOrchestrator(Node):
         pose_diag.name = "Pose Estimate"
         if self.slam_pose is not None:
             pose_diag.level = DiagnosticStatus.OK
-            pose_diag.message = (
-                f"Pose: ({self.slam_pose[0]:.2f}, {self.slam_pose[1]:.2f})"
-            )
+            pose_diag.message = f"Pose: ({self.slam_pose[0]:.2f}, {self.slam_pose[1]:.2f})"
             pose_diag.values = [
                 self._kv_pair("X", f"{self.slam_pose[0]:.3f}"),
                 self._kv_pair("Y", f"{self.slam_pose[1]:.3f}"),

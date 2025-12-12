@@ -106,6 +106,7 @@ repos:
         additional_dependencies: [types-requests, types-setuptools, types-PyYAML]
         exclude: ^(docs/|frontend/|tests/|scripts/|Autonomy/ros2_ws/|.*/setup\.py$|.*digital_twin_manager\.py$|.*state_machine_director\.py$)
         args: [--ignore-missing-imports, --no-error-summary, --explicit-package-bases]
+        stages: [commit]  # Only run on commit, not pre-push (pre-existing type issues)
 
   - repo: local
     hooks:

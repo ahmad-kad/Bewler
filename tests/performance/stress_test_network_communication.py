@@ -8,7 +8,6 @@ than real-world scenarios, including severe congestion, packet loss, and latency
 
 import asyncio
 import random
-import rclpy
 import statistics
 import subprocess
 import sys
@@ -17,12 +16,14 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Optional
 
+import rclpy
+
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy, HistoryPolicy
-from std_msgs.msg import String, Float64
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
+from std_msgs.msg import Float64, String
 
 
 class NetworkStressPublisher(Node):
@@ -359,6 +360,7 @@ def run_comprehensive_network_stress_test():
 
 if __name__ == '__main__':
     import os
+
     # Add path for imports
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 

@@ -91,7 +91,9 @@ class StressTestOrchestrator:
 
     def _run_network_stress_tests(self):
         """Run network communication stress tests."""
-        from stress_test_network_communication import run_comprehensive_network_stress_test
+        from stress_test_network_communication import (
+            run_comprehensive_network_stress_test,
+        )
 
         try:
             print("   Running network stress tests...")

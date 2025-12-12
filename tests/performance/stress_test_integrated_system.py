@@ -9,8 +9,6 @@ than real-world scenarios, combining network, CAN bus, and movement control stre
 import asyncio
 import concurrent.futures
 import os
-import psutil
-import rclpy
 import statistics
 import subprocess
 import sys
@@ -19,6 +17,9 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional
+
+import psutil
+import rclpy
 
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -270,7 +271,11 @@ class IntegratedStressTest:
 
     def _run_can_stress(self) -> Dict:
         """Run CAN bus stress test."""
-        from stress_test_can_communication import run_can_stress_test_worker, CANStressConfig, CANStressLevel
+        from stress_test_can_communication import (
+            CANStressConfig,
+            CANStressLevel,
+            run_can_stress_test_worker,
+        )
 
         try:
             # Configure CAN stress based on integrated config
@@ -286,7 +291,10 @@ class IntegratedStressTest:
 
     def _run_movement_stress(self) -> Dict:
         """Run movement control stress test."""
-        from stress_test_movement_control import run_movement_stress_test_level, MovementStressLevel
+        from stress_test_movement_control import (
+            MovementStressLevel,
+            run_movement_stress_test_level,
+        )
 
         try:
             # Use severe movement stress for integrated testing
@@ -496,6 +504,7 @@ Performance by Stress Level:")
 
 if __name__ == '__main__':
     import os
+
     # Add path for imports
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 

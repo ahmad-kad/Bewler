@@ -6,13 +6,14 @@ This script demonstrates the performance difference between intra-process and in
 communication by running both publisher and subscriber in the same process vs separate processes.
 """
 
-import rclpy
-import time
-import psutil
 import statistics
+import time
 from typing import List
+
+import psutil
+import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import String
 
 

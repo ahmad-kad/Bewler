@@ -43,7 +43,10 @@ def run_quick_can_demo():
     print("-" * 32)
 
     try:
-        from stress_test_can_communication import run_can_stress_test_level, CANStressLevel
+        from stress_test_can_communication import (
+            CANStressLevel,
+            run_can_stress_test_level,
+        )
 
         print("Testing moderate CAN stress (10 seconds)...")
         results = run_can_stress_test_level(CANStressLevel.MODERATE)
@@ -66,7 +69,10 @@ def run_quick_movement_demo():
     print("-" * 38)
 
     try:
-        from stress_test_movement_control import run_movement_stress_test_level, MovementStressLevel
+        from stress_test_movement_control import (
+            MovementStressLevel,
+            run_movement_stress_test_level,
+        )
 
         print("Testing moderate movement stress (10 seconds)...")
         results = run_movement_stress_test_level(MovementStressLevel.MODERATE)

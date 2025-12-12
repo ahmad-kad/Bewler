@@ -6,13 +6,14 @@ This test shows the actual performance improvements achieved by enabling
 intra-process communication for coupled ROS2 topics.
 """
 
-import rclpy
-import time
-import psutil
 import statistics
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+import time
+
+import psutil
+import rclpy
 from geometry_msgs.msg import Twist
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Imu
 from std_msgs.msg import String
 

@@ -5,11 +5,12 @@ Simple ROS2 Intra-Process vs Inter-Process Latency Test
 Demonstrates the performance difference by measuring actual message passing latency.
 """
 
-import rclpy
-import time
 import threading
+import time
+
+import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import String
 
 

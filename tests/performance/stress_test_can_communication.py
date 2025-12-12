@@ -395,6 +395,7 @@ def simulate_can_bus_failure_recovery():
 
 if __name__ == '__main__':
     import os
+
     # Add path for imports
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 

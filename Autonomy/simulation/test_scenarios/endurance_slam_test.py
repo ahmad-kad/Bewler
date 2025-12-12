@@ -8,13 +8,13 @@ Tests SLAM accuracy, memory usage, CPU utilization, and system reliability.
 
 import json
 import math
-import psutil
 import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Dict, List, Optional
 
 import numpy as np
+import psutil
 import rclpy
 from geometry_msgs.msg import PoseStamped, Twist
 from nav_msgs.msg import Odometry, Path

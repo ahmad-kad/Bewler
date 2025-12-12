@@ -8,8 +8,6 @@ for ROS2 topics, measuring latency, throughput, and resource usage.
 
 import asyncio
 import os
-import psutil
-import rclpy
 import statistics
 import sys
 import threading
@@ -17,6 +15,9 @@ import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional, Tuple
+
+import psutil
+import rclpy
 
 # Add project paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))

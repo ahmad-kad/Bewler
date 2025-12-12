@@ -6,10 +6,10 @@ Tests whether the teleoperation submodule can integrate with the autonomy system
 This test focuses on ROS2 compatibility and interface contracts.
 """
 
-import sys
 import os
+import sys
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 # Add paths for testing
 sys.path.append(os.path.join(os.path.dirname(__file__), 'Autonomy/code'))
@@ -70,8 +70,8 @@ class TestTeleoperationCompatibility(unittest.TestCase):
 
         try:
             # Import required ROS2 message types
-            from sensor_msgs.msg import JointState, BatteryState
             from geometry_msgs.msg import TwistStamped
+            from sensor_msgs.msg import BatteryState, JointState
             from std_msgs.msg import Float32MultiArray
 
             # Verify message structures can be created
@@ -105,8 +105,8 @@ class TestTeleoperationCompatibility(unittest.TestCase):
 
         # Test the example ROS2 publisher from the integration guide
         try:
-            from sensor_msgs.msg import JointState, BatteryState
             from geometry_msgs.msg import TwistStamped
+            from sensor_msgs.msg import BatteryState, JointState
             from std_msgs.msg import Float32MultiArray
 
             # Simulate the publisher class from integration guide
@@ -211,9 +211,9 @@ class TestTeleoperationCompatibility(unittest.TestCase):
 
         # Check that required packages can be imported
         try:
+            import gevent
             import serial
             import socketio
-            import gevent
             print("✅ Core dependencies available")
         except ImportError as e:
             self.fail(f"Required dependency missing: {e}")
@@ -222,8 +222,8 @@ class TestTeleoperationCompatibility(unittest.TestCase):
         if ROS2_AVAILABLE:
             try:
                 import rclpy
-                from sensor_msgs.msg import JointState, BatteryState
                 from geometry_msgs.msg import TwistStamped
+                from sensor_msgs.msg import BatteryState, JointState
                 from std_msgs.msg import Float32MultiArray
                 print("✅ ROS2 dependencies available")
             except ImportError as e:
@@ -315,7 +315,3 @@ if __name__ == '__main__':
         print("\n⚠️  Compatibility issues found - see test output above")
 
     exit(0 if success else 1)
-
-
-
-

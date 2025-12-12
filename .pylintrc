@@ -1,0 +1,19 @@
+[MASTER]
+disable=
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    R0903,  # too-few-public-methods
+    R0913,  # too-many-arguments
+    R0914,  # too-many-locals
+    W0703,  # broad-except
+    W1203,  # logging-fstring-interpolation
+    C0103,  # invalid-name (too restrictive for scientific code)
+    R0201,  # no-self-use
+    W0613,  # unused-argument (common in callbacks)
+
+[FORMAT]
+max-line-length=88
+
+[MESSAGES CONTROL]
+extension-pkg-whitelist=cv2,numpy,rclpy

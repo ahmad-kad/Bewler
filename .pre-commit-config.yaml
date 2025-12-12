@@ -103,7 +103,7 @@ repos:
     rev: v1.13.0
     hooks:
       - id: mypy
-        additional_dependencies: [types-requests, types-setuptools]
+        additional_dependencies: [types-requests, types-setuptools, types-PyYAML]
         exclude: ^(docs/|frontend/|tests/|scripts/|Autonomy/ros2_ws/|.*/setup\.py$|.*digital_twin_manager\.py$)
         args: [--ignore-missing-imports, --no-error-summary, --explicit-package-bases]
 

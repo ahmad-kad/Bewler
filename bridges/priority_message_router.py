@@ -7,12 +7,12 @@ Routes messages based on priority levels to ensure critical systems
 """
 
 import asyncio
+import heapq
 import json
 import time
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
-import heapq
+from typing import Any, Dict, List, Optional
 
 
 class MessagePriority(Enum):
@@ -281,6 +281,3 @@ async def demo_priority_router():
 if __name__ == "__main__":
     print("🚀 Priority Message Router Demo")
     asyncio.run(demo_priority_router())
-
-
-

@@ -6,10 +6,9 @@ These tests ensure the experimental API is at least internally consistent
 and behaves as documented (placeholders, reserved methods, etc.).
 """
 
-from typing import Dict, Any
-
-import sys
 import os
+import sys
+from typing import Any, Dict
 
 import pytest
 
@@ -118,5 +117,3 @@ class TestTerrainClassifierAPI:
         classifier.update_terrain_map((0.0, 0.0), TerrainType.SAND)
         classifier.reset_classifier()
         classifier.shutdown()
-
-

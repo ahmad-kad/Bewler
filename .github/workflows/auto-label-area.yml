@@ -37,4 +37,3 @@ jobs:
           echo "- .github/labeler.yml is valid YAML"
           echo "- Pull request has changed files"
           echo "- File paths match labeler.yml patterns"
-

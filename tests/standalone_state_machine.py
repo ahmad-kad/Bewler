@@ -6,12 +6,14 @@ Provides ROS-compatible state machine services and topics for testing
 the frontend without requiring the full ROS autonomy stack.
 """
 
+import json
+import time
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 from std_srvs.srv import Trigger
-import json
-import time
+
 
 class StandaloneStateMachine(Node):
     """Standalone state machine node for testing."""

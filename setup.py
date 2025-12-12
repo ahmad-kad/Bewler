@@ -5,7 +5,7 @@ Setup script for URC 2026 Robotics Platform.
 This setup.py enables editable installs and provides basic package metadata.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # Read the README for long description
 with open("README.md", "r", encoding="utf-8") as fh:

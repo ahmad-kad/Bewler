@@ -3,11 +3,12 @@
 Tests for CAN Mock Simulator and Priority Message Router
 """
 
-import unittest
 import json
 import time
+import unittest
+
 from bridges.can_mock_simulator import CANBusMockSimulator
-from bridges.priority_message_router import PriorityMessageRouter, MessagePriority
+from bridges.priority_message_router import MessagePriority, PriorityMessageRouter
 
 
 class TestCANMockSimulator(unittest.TestCase):
@@ -154,6 +155,3 @@ class TestPriorityMessageRouter(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-

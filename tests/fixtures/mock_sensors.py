@@ -5,9 +5,10 @@ Mock Sensor Interfaces for Testing
 Provides realistic mock implementations of sensor interfaces for testing.
 """
 
-import numpy as np
 import time
 from typing import Dict, List, Optional, Tuple
+
+import numpy as np
 
 
 class MockGPS:
@@ -391,10 +392,3 @@ def generate_test_waypoints(count: int = 5) -> List[Dict]:
             'accuracy_required': 3.0
         })
     return waypoints
-
-
-
-
-
-
-

@@ -27,4 +27,3 @@ string[] transition_reasons      # Reasons for each transition
 string[] active_subsystems       # Currently active subsystems
 string[] inactive_subsystems     # Inactive subsystems
 string[] failed_subsystems       # Failed/error subsystems
-

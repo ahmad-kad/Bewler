@@ -11,11 +11,11 @@ Supports three capture modes:
 """
 
 from .camera_intrinsics_calibrator import (
-    CameraConfig,
-    CharUcoBoardConfig,
-    CameraIntrinsicsCalibrator,
     CalibrationResult,
-    CaptureMode
+    CameraConfig,
+    CameraIntrinsicsCalibrator,
+    CaptureMode,
+    CharUcoBoardConfig,
 )
 
 __all__ = [

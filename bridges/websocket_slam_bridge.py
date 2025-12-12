@@ -11,22 +11,22 @@ Bridges WebSocket sensor data to ROS2 SLAM system:
 Author: URC 2026 Autonomy Team
 """
 
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
-
-# ROS2 Messages
-from sensor_msgs.msg import Imu, NavSatFix, Image, CameraInfo
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
-from std_msgs.msg import Header, String, Bool
-from std_srvs.srv import Trigger
-
 # JSON and threading handling
 import json
 import threading
 import time
-from typing import Dict, Any, Optional, Callable
+from typing import Any, Callable, Dict, Optional
+
+import rclpy
+from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from nav_msgs.msg import Odometry
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+
+# ROS2 Messages
+from sensor_msgs.msg import CameraInfo, Image, Imu, NavSatFix
+from std_msgs.msg import Bool, Header, String
+from std_srvs.srv import Trigger
 
 
 class WebSocketSLAMBridge(Node):

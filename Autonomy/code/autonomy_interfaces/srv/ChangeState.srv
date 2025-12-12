@@ -23,4 +23,3 @@ string message                   # Human-readable status message
 bool preconditions_met           # Were all preconditions satisfied
 string[] failed_preconditions    # List of preconditions that failed
 string[] warnings                # Non-critical warnings about the transition
-

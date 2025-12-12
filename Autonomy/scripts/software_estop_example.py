@@ -7,8 +7,8 @@ exactly like a hardware emergency stop button.
 """
 
 import rclpy
-from rclpy.node import Node
 from autonomy_interfaces.srv import SoftwareEstop
+from rclpy.node import Node
 
 
 class SoftwareEstopExample(Node):
@@ -82,10 +82,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-

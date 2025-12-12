@@ -330,8 +330,3 @@ const MapVisualization = ({ ros }) => {
 };
 
 export default MapVisualization;
-
-
-
-
-

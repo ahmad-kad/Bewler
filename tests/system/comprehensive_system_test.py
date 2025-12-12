@@ -16,23 +16,24 @@ Tests all system areas:
 Author: URC 2026 Testing Framework
 """
 
+import json
+import os
+import signal
+import subprocess
+import sys
+import threading
+import time
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+import psutil
 import rclpy
+import yaml
+from geometry_msgs.msg import PoseStamped, Twist
+from nav_msgs.msg import Odometry, Path
 from rclpy.node import Node
 from sensor_msgs.msg import Imu, NavSatFix
-from nav_msgs.msg import Odometry, Path
-from geometry_msgs.msg import PoseStamped, Twist
-from std_msgs.msg import String, Float32
-import json
-import time
-import threading
-import subprocess
-import signal
-import sys
-import psutil
-import os
-import yaml
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime
+from std_msgs.msg import Float32, String
 
 
 class ComprehensiveSystemTester(Node):

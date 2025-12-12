@@ -195,7 +195,9 @@ class EnduranceSLAMTester(Node):
 
         # Log periodic status
         elapsed = time.time() - self.start_time
-        self.get_logger().info(".1f"
+        self.get_logger().info(f"Endurance test running: {elapsed:.1f}s")
+        self.get_logger().info(f"SLAM quality: {self.slam_quality:.2f}")
+
     def calculate_memory_growth(self) -> float:
         """Calculate memory growth rate."""
         if len(self.memory_readings) < 2:
@@ -316,15 +318,21 @@ class EnduranceSLAMTester(Node):
         print("\n" + "="*80)
         print("ENDURANCE SLAM TEST RESULTS")
         print("="*80)
-        print(".2f"        print(f"Total Distance: {self.total_distance:.1f} meters")
+        print(".2f")
+        print(f"Total Distance: {self.total_distance:.1f} meters")
         print(f"Loop Closures: {self.loop_closures}")
         print(f"Pose Updates: {self.pose_update_count}")
         print(f"Map Updates: {self.map_update_count}")
         print()
         print("SYSTEM PERFORMANCE:")
-        print(".1f"        print(".1f"        print(".1f"        print(".1f"        print()
+        print(".1f")
+        print(".1f")
+        print(".1f")
+        print(".1f")
+        print()
         print("SLAM PERFORMANCE:")
-        print(".1f"        print(f"Average Confidence: {avg_confidence:.2f}")
+        print(".1f")
+        print(f"Average Confidence: {avg_confidence:.2f}")
         print()
         print("TEST VALIDATION:")
         memory_ok = memory_growth < 50.0

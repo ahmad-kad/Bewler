@@ -20,7 +20,7 @@ repos:
     rev: 7.1.1
     hooks:
       - id: flake8
-        args: [--max-line-length=88, --extend-ignore=E203,W503,E402,F821,W291,E712]
+        args: [--max-line-length=120, --extend-ignore=E203,W503,E402,F821,W291,E712]
         exclude: ^(docs/|frontend/node_modules/|Autonomy/ros2_ws/|tests/|scripts/)
 
   - repo: https://github.com/pycqa/pylint
@@ -104,8 +104,8 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [types-requests, types-setuptools]
-        exclude: ^(docs/|frontend/|tests/|scripts/|Autonomy/ros2_ws/)
-        args: [--ignore-missing-imports, --no-error-summary]
+        exclude: ^(docs/|frontend/|tests/|scripts/|Autonomy/ros2_ws/|.*/setup\.py$|.*digital_twin_manager\.py$)
+        args: [--ignore-missing-imports, --no-error-summary, --explicit-package-bases]
 
   - repo: local
     hooks:

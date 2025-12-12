@@ -6,7 +6,7 @@ Tests overall system integration and data flow consistency.
 """
 
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock
 
 
 class TestSystemIntegration(unittest.TestCase):
@@ -56,7 +56,8 @@ class TestSystemIntegration(unittest.TestCase):
     def test_error_propagation(self):
         """Test that errors propagate correctly through the system."""
         # Simulate component failure
-        self.system_components['vision'].process_data = Mock(side_effect=Exception("Camera failure"))
+        vision_mock = self.system_components['vision']
+        vision_mock.process_data = Mock(side_effect=Exception("Camera failure"))
 
         # Verify error handling
         with self.assertRaises(Exception):

@@ -233,5 +233,3 @@ class TerrainClassifier:
         # Save state if needed
         # Release resources
         ...
-
-

@@ -13,18 +13,19 @@ Supports both mock implementations (for development) and real hardware drivers.
 Author: URC 2026 Autonomy Team
 """
 
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
-from typing import Optional, Tuple, List, Dict, Any
 from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Tuple
+
+import rclpy
+from autonomy_interfaces.msg import VisionDetection
 
 # ROS2 messages
-from geometry_msgs.msg import Twist, PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 from nav_msgs.msg import Odometry
-from sensor_msgs.msg import NavSatFix, Imu, Image, CameraInfo, BatteryState, Temperature
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+from sensor_msgs.msg import BatteryState, CameraInfo, Image, Imu, NavSatFix, Temperature
 from std_msgs.msg import Bool, Float32
-from autonomy_interfaces.msg import VisionDetection
 
 
 class SensorInterface(ABC):
@@ -226,6 +227,7 @@ class MockSensorInterface(SensorInterface):
     def _quaternion_to_heading(self, orientation) -> float:
         """Convert quaternion to heading angle"""
         import math
+
         # Simplified conversion for yaw
         siny_cosp = 2.0 * (orientation.w * orientation.z + orientation.x * orientation.y)
         cosy_cosp = 1.0 - 2.0 * (orientation.y * orientation.y + orientation.z * orientation.z)

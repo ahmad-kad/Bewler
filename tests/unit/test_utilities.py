@@ -5,17 +5,26 @@ Unit tests for streamlined autonomy utilities.
 Tests the core utility functions and classes without ROS2 dependencies.
 """
 
-import pytest
-from typing import Dict, Any
+import os
 
 # Import utilities directly since ROS2 packages aren't available in test environment
 import sys
-import os
+from typing import Any, Dict
+
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Autonomy', 'code'))
 
 from utilities import (
-    safe_execute, success, failure, ValidationError, ProcessingError,
-    NodeParameters, MessagePipeline, Success, Failure
+    Failure,
+    MessagePipeline,
+    NodeParameters,
+    ProcessingError,
+    Success,
+    ValidationError,
+    failure,
+    safe_execute,
+    success,
 )
 
 

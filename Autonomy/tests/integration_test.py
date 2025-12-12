@@ -6,13 +6,13 @@ This module provides integration tests to validate cross-subsystem communication
 and functionality.
 """
 
-import unittest
-import time
-import subprocess
-import signal
 import os
+import signal
+import subprocess
 import sys
-from typing import List, Dict, Optional
+import time
+import unittest
+from typing import Dict, List, Optional
 
 
 class ROS2IntegrationTest(unittest.TestCase):

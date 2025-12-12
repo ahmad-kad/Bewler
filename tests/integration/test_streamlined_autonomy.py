@@ -11,8 +11,8 @@ import sys
 
 import pytest
 import rclpy
-from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
+from rclpy.node import Node
 from std_msgs.msg import String
 
 # Ensure Autonomy/code is on path
@@ -20,22 +20,25 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "Autonomy
 
 from utilities import (  # type: ignore  # noqa: E402
     AutonomyNode,
-    NodeParameters,
+    MessagePipeline,
     NodeLogger,
-    ROS2InterfaceRegistry,
+    NodeParameters,
+    ProcessingError,
     ROS2InterfaceFactory,
+    ROS2InterfaceRegistry,
     TimerManager,
+    ValidationError,
+    failure,
     safe_execute,
     success,
-    failure,
-    ValidationError,
-    ProcessingError,
-    MessagePipeline,
 )
 
 try:
     # This import requires autonomy_interfaces.action.NavigateToPose to be available
-    from navigation.autonomy_navigation.navigation_node import NavigationNode, Waypoint  # type: ignore  # noqa: E402
+    from navigation.autonomy_navigation.navigation_node import (  # type: ignore  # noqa: E402
+        NavigationNode,
+        Waypoint,
+    )
 except Exception:
     NavigationNode = None
     Waypoint = None

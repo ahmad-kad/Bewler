@@ -6,9 +6,10 @@ Tests marker detection, pose estimation, and keyboard mapping.
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
-import numpy as np
+from unittest.mock import MagicMock, Mock, patch
+
 import cv2
+import numpy as np
 
 
 class TestArucoDetection(unittest.TestCase):
@@ -245,10 +246,3 @@ class TestArucoDetection(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-
-
-

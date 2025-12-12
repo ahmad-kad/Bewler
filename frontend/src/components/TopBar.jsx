@@ -4,7 +4,7 @@ import { AlertTriangle } from 'lucide-react';
 
 /**
  * TopBar Component
- * 
+ *
  * Always-visible top bar with system state, critical telemetry, and emergency stop.
  * Minimal, information-dense design.
  */
@@ -27,7 +27,7 @@ export const TopBar = () => {
       {/* Left: System info */}
       <div className="flex items-center gap-4">
         <span className="font-semibold text-zinc-100">URC 2026</span>
-        
+
         {/* System state badge */}
         <div className={`flex items-center gap-1.5 px-2 py-1 rounded ${
           stateBadge.color === 'green' ? 'bg-green-900/30 text-green-400' :
@@ -102,7 +102,3 @@ export const TopBar = () => {
     </div>
   );
 };
-
-
-
-

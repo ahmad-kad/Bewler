@@ -22,11 +22,12 @@ Environment Variables:
 
 import argparse
 import os
-import sys
-import subprocess
 import shutil
-from pathlib import Path
+import subprocess
+import sys
 import time
+from pathlib import Path
+
 
 class DocsBuilder:
     """Documentation builder for URC 2026 project."""
@@ -60,8 +61,8 @@ class DocsBuilder:
 
         # Check Python dependencies
         try:
-            import sphinx
             import breathe
+            import sphinx
             import sphinx_js
             print("✅ Python dependencies OK")
         except ImportError as e:

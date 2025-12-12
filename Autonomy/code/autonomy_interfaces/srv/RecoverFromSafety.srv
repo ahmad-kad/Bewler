@@ -24,4 +24,3 @@ float64 estimated_time           # Estimated time to complete recovery (seconds)
 # Next state information
 string recommended_next_state    # Recommended state after recovery
 string[] restrictions            # Operational restrictions after recovery
-

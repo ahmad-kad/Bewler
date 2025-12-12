@@ -13,20 +13,19 @@ Usage:
 """
 
 import argparse
-import sys
-import os
-from pathlib import Path
-from datetime import datetime
 import logging
+import os
+import sys
+from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from camera_intrinsics_calibrator import (
     CameraConfig,
-    CharUcoBoardConfig,
     CameraIntrinsicsCalibrator,
-    CaptureMode
+    CaptureMode,
+    CharUcoBoardConfig,
 )
-
 
 # ============================================================================
 # CONFIGURATION
@@ -113,7 +112,7 @@ def print_error(text: str):
 def detect_available_cameras(max_cameras: int = 5) -> dict:
     """Detect available cameras on the system."""
     import cv2
-    
+
     available = {}
     for i in range(max_cameras):
         try:
@@ -126,7 +125,7 @@ def detect_available_cameras(max_cameras: int = 5) -> dict:
                     cap.release()
         except Exception:
             pass
-    
+
     return available
 
 
@@ -137,37 +136,37 @@ def detect_available_cameras(max_cameras: int = 5) -> dict:
 def cmd_list_cameras(args):
     """List available cameras."""
     print_header("AVAILABLE CAMERAS")
-    
+
     available = detect_available_cameras()
-    
+
     if not available:
         print_error("No cameras detected!")
         print_info("Check USB connections or permissions.")
         return False
-    
+
     for camera_id, info in available.items():
         print(f"  {info}")
-    
+
     return True
 
 
 def cmd_calibrate(args):
     """Run calibration."""
     print_header("INTRINSICS CALIBRATION")
-    
+
     # Validate camera
     camera_id = args.camera
     available = detect_available_cameras()
-    
+
     if camera_id not in available:
         print_error(f"Camera {camera_id} not available!")
         print_info("Available cameras:")
         for cid, info in available.items():
             print(f"  {info}")
         return False
-    
+
     print_info(f"Using {available[camera_id]}")
-    
+
     # Parse resolution
     if args.resolution:
         try:
@@ -183,18 +182,18 @@ def cmd_calibrate(args):
             resolution = DEFAULT_CAMERAS[args.preset]
         else:
             resolution = (1920, 1080)
-    
+
     print_info(f"Resolution: {resolution[0]}x{resolution[1]}")
-    
+
     # Parse board
     if args.board not in STANDARD_BOARDS:
         print_error(f"Unknown board: {args.board}")
         print_info(f"Available boards: {', '.join(STANDARD_BOARDS.keys())}")
         return False
-    
+
     board = STANDARD_BOARDS[args.board]
     print_info(f"Board: {board.name} ({board.size[0]}x{board.size[1]})")
-    
+
     # Parse capture mode
     try:
         capture_mode = CaptureMode[args.mode.upper()]
@@ -202,12 +201,12 @@ def cmd_calibrate(args):
         print_error(f"Unknown mode: {args.mode}")
         print_info(f"Available modes: {', '.join([m.value for m in CaptureMode])}")
         return False
-    
+
     print_info(f"Mode: {capture_mode.value}")
-    
+
     # Create calibrator
     print_section("INITIALIZING CALIBRATOR")
-    
+
     try:
         camera_name = f"Camera_{camera_id}"
         camera_config = CameraConfig(
@@ -220,64 +219,64 @@ def cmd_calibrate(args):
     except Exception as e:
         print_error(f"Failed to initialize calibrator: {e}")
         return False
-    
+
     # Capture images based on mode
     print_section(f"CAPTURING IMAGES ({capture_mode.value.upper()})")
-    
+
     try:
         target_images = args.count
         print_info(f"Target: {target_images} images")
-        
+
         if capture_mode == CaptureMode.MANUAL:
             print_info("\nManual Mode - Full control over each capture")
             images = calibrator.capture_manual(target_images=target_images)
-        
+
         elif capture_mode == CaptureMode.VIDEO:
             print_info("\nVideo Mode - Continuous extraction (faster)")
             images = calibrator.capture_video(target_images=target_images)
-        
+
         elif capture_mode == CaptureMode.CONSERVATIVE:
             print_info("\nConservative Mode - Video + quality checks")
             images = calibrator.capture_conservative(target_images=target_images)
-        
+
         if not images:
             print_error("No images captured!")
             return False
-        
+
         print_success(f"Captured {len(images)} images")
-    
+
     except KeyboardInterrupt:
         print_warning("\nCapture interrupted by user")
         return False
     except Exception as e:
         print_error(f"Capture failed: {e}")
         return False
-    
+
     # Process dataset
     print_section("PROCESSING DATASET")
-    
+
     try:
         print_info("Detecting CharUco corners...")
         corners, ids, rejected = calibrator.process_dataset(images)
         print_success(f"Found {len(corners)} valid frames with corners")
-        
+
         if len(corners) < 5:
             print_error("Not enough valid frames for calibration!")
             print_info("Need at least 5 frames with detected corners")
             return False
-    
+
     except Exception as e:
         print_error(f"Processing failed: {e}")
         return False
-    
+
     # Calibrate
     print_section("CALIBRATING CAMERA")
-    
+
     try:
         print_info("Computing camera matrix and distortion coefficients...")
         result = calibrator.calibrate(corners, ids, images, capture_mode.value)
         print_success("Calibration complete!")
-        
+
         # Display results
         print_section("CALIBRATION RESULTS")
         print(f"\nReprojection Error: {result.reprojection_error:.4f} px")
@@ -287,7 +286,7 @@ def cmd_calibrate(args):
         print(f"Principal Point (cy): {result.camera_matrix[1, 2]:.2f}")
         print(f"\nDistortion Coefficients: {result.distortion.flatten()}")
         print(f"Image Quality Score: {result.quality_score:.2%}")
-        
+
         # Quality assessment
         if result.reprojection_error < 0.5:
             quality_level = "EXCELLENT"
@@ -297,53 +296,55 @@ def cmd_calibrate(args):
             quality_level = "ACCEPTABLE"
         else:
             quality_level = "POOR"
-        
+
         print(f"\nQuality Assessment: {quality_level}")
-    
+
     except Exception as e:
         print_error(f"Calibration failed: {e}")
         return False
-    
+
     # Save results
     print_section("SAVING CALIBRATION")
-    
+
     try:
         files = calibrator.save_calibration(result)
         print_success(f"Calibration saved ({len(files)} formats)")
-        
+
         for fmt, filepath in files.items():
             print_info(f"  {fmt.upper()}: {filepath}")
-    
+
     except Exception as e:
         print_error(f"Save failed: {e}")
         return False
-    
+
     print_section("CALIBRATION COMPLETE")
     print_success("Ready to use!")
     print_info(f"Load calibration in your application and enjoy accurate vision!")
-    
+
     return True
 
 
 def cmd_test(args):
     """Test calibration system."""
     print_header("CALIBRATION SYSTEM TEST")
-    
+
     tests_passed = 0
     tests_failed = 0
-    
+
     # Test 1: Import modules
     print_section("Test 1: Module Imports")
     try:
         from camera_intrinsics_calibrator import (
-            CameraConfig, CharUcoBoardConfig, CameraIntrinsicsCalibrator
+            CameraConfig,
+            CameraIntrinsicsCalibrator,
+            CharUcoBoardConfig,
         )
         print_success("All modules imported successfully")
         tests_passed += 1
     except Exception as e:
         print_error(f"Import failed: {e}")
         tests_failed += 1
-    
+
     # Test 2: Camera detection
     print_section("Test 2: Camera Detection")
     try:
@@ -359,7 +360,7 @@ def cmd_test(args):
     except Exception as e:
         print_error(f"Camera detection failed: {e}")
         tests_failed += 1
-    
+
     # Test 3: Configuration validation
     print_section("Test 3: Configuration Validation")
     try:
@@ -372,7 +373,7 @@ def cmd_test(args):
     except Exception as e:
         print_error(f"Configuration failed: {e}")
         tests_failed += 1
-    
+
     # Test 4: Output directory creation
     print_section("Test 4: Output Directory Setup")
     try:
@@ -387,12 +388,12 @@ def cmd_test(args):
     except Exception as e:
         print_error(f"Directory setup failed: {e}")
         tests_failed += 1
-    
+
     # Summary
     print_section("TEST SUMMARY")
     print(f"Passed: {tests_passed}")
     print(f"Failed: {tests_failed}")
-    
+
     if tests_failed == 0:
         print_success("All tests passed! System is ready to use.")
         return True
@@ -414,30 +415,30 @@ def main():
 Examples:
   # List available cameras
   python3 calibration_cli.py --list-cameras
-  
+
   # Calibrate camera 0 in manual mode (detailed control)
   python3 calibration_cli.py --camera 0 --mode manual --count 50
-  
+
   # Calibrate camera 0 in video mode (faster)
   python3 calibration_cli.py --camera 0 --mode video --count 30
-  
+
   # Calibrate with specific resolution
   python3 calibration_cli.py --camera 0 --resolution 1920x1080 --mode manual
-  
+
   # Test system
   python3 calibration_cli.py --test
         """
     )
-    
+
     subparsers = parser.add_subparsers(dest='command', help='Commands')
-    
+
     # Calibrate command
     calibrate_parser = subparsers.add_parser('calibrate', help='Run calibration')
     calibrate_parser.add_argument('--camera', type=int, default=0, help='Camera index')
-    calibrate_parser.add_argument('--mode', default='manual', 
+    calibrate_parser.add_argument('--mode', default='manual',
                                  choices=['manual', 'video', 'conservative'],
                                  help='Capture mode')
-    calibrate_parser.add_argument('--count', type=int, default=50, 
+    calibrate_parser.add_argument('--count', type=int, default=50,
                                  help='Target number of images')
     calibrate_parser.add_argument('--board', default='board_5x7',
                                  help='Board type')
@@ -445,13 +446,13 @@ Examples:
                                  choices=['default', 'hd', 'fullhd', '2k'],
                                  help='Resolution preset')
     calibrate_parser.add_argument('--resolution', help='Custom resolution (WIDTHxHEIGHT)')
-    
+
     # List cameras command
     list_parser = subparsers.add_parser('list', help='List available cameras')
-    
+
     # Test command
     test_parser = subparsers.add_parser('test', help='Test system')
-    
+
     # Handle legacy command structure (backward compatibility)
     if len(sys.argv) > 1 and sys.argv[1] == '--list-cameras':
         args = argparse.Namespace(command='list')
@@ -468,13 +469,13 @@ Examples:
         parser_old.add_argument('--board', default='board_5x7')
         parser_old.add_argument('--preset', default='fullhd')
         parser_old.add_argument('--resolution', default=None)
-        
+
         args = parser_old.parse_args()
         args.command = 'calibrate'
         return cmd_calibrate(args)
-    
+
     args = parser.parse_args()
-    
+
     if args.command == 'calibrate':
         return cmd_calibrate(args)
     elif args.command == 'list':
@@ -489,4 +490,3 @@ Examples:
 if __name__ == '__main__':
     success = main()
     sys.exit(0 if success else 1)
-

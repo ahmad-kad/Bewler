@@ -6,6 +6,8 @@ AR tag precision approaches, obstacle avoidance, and mission progress tracking.
 """
 
 import math
+import os
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Tuple
@@ -17,16 +19,22 @@ from sensor_msgs.msg import Imu, NavSatFix
 from std_msgs.msg import String
 from std_srvs.srv import Trigger
 
-import sys
-import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
+from typing import Any, Dict
+
 from utilities import (
-    AutonomyNode, NodeParameters, MessagePipeline,
-    success, failure, ValidationError, ProcessingError,
-    OperationResult, Failure
+    AutonomyNode,
+    Failure,
+    MessagePipeline,
+    NodeParameters,
+    OperationResult,
+    ProcessingError,
+    ValidationError,
+    failure,
+    success,
 )
-from typing import Dict, Any
+
 from .gnss_processor import GNSSProcessor
 from .motion_controller import MotionController
 from .path_planner import PathPlanner

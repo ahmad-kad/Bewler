@@ -27,7 +27,7 @@ jobs:
               echo "reason=Issue opened" >> $GITHUB_OUTPUT
             fi
           fi
-          
+
           if [ "${{ github.event_name }}" == "pull_request_target" ]; then
             if [ "${{ github.event.pull_request.state }}" == "closed" ]; then
               echo "status_label=status:done" >> $GITHUB_OUTPUT
@@ -53,4 +53,3 @@ jobs:
           echo "   - PR opened/ready_for_review → status:in-review"
           echo "   - Issue/PR closed → status:done"
           echo "   - Add 'status:blocked' label manually to block items"
-

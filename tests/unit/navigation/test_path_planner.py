@@ -6,7 +6,8 @@ Tests waypoint following, obstacle avoidance, and terrain adaptation.
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
 import numpy as np
 
 
@@ -198,10 +199,3 @@ class TestWaypointNavigation(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-
-
-

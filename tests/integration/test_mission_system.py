@@ -6,14 +6,14 @@ Comprehensive end-to-end testing of all mission types with mock/simulated hardwa
 Tests complete mission workflows from initialization to completion.
 """
 
-import unittest
 import asyncio
-import time
 import json
-import threading
-import sys
 import os
-from typing import Dict, List, Any, Optional
+import sys
+import threading
+import time
+import unittest
+from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock, patch
 
 # Add project paths

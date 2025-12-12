@@ -17,17 +17,18 @@ TODO: CONNECT INPUT STREAMS
 - TODO: Parameter server for camera intrinsics
 """
 
-import cv2
-import numpy as np
 import json
-import yaml
+import logging
 import pickle
-from pathlib import Path
-from dataclasses import dataclass, asdict, field
-from typing import Tuple, List, Optional, Dict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
-import logging
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+import cv2
+import numpy as np
+import yaml
 
 # ============================================================================
 # LOGGING
@@ -88,15 +89,15 @@ class IMUCalibrationData:
     accel_bias: np.ndarray = field(default_factory=lambda: np.zeros(3))
     accel_scale: np.ndarray = field(default_factory=lambda: np.eye(3))
     accel_noise_std: float = 0.0
-    
+
     # Gyroscope
     gyro_bias: np.ndarray = field(default_factory=lambda: np.zeros(3))
     gyro_scale: np.ndarray = field(default_factory=lambda: np.eye(3))
     gyro_noise_std: float = 0.0
-    
+
     # Alignment (camera-to-IMU)
     camera_to_imu_rotation: np.ndarray = field(default_factory=lambda: np.eye(3))
-    
+
     # Metadata
     num_samples: int = 0
     temperature_c: float = 25.0
@@ -113,7 +114,7 @@ class HandEyeCalibrator:
     def __init__(self, camera_intrinsics: Dict, board_config: Dict):
         """
         Initialize hand-eye calibrator
-        
+
         Args:
             camera_intrinsics: Camera matrix and distortion coefficients
             board_config: ChArUco board configuration
@@ -133,7 +134,7 @@ class HandEyeCalibrator:
     ):
         """
         Add a pose observation for hand-eye calibration
-        
+
         Args:
             pose_id: Unique identifier for this pose
             robot_base_to_hand: 4x4 transformation from robot base to end-effector
@@ -147,10 +148,10 @@ class HandEyeCalibrator:
         # Estimate board pose from image
         K = np.array(self.camera_intrinsics['camera_matrix'])
         dist = np.array(self.camera_intrinsics['dist_coeffs'])
-        
+
         # TODO: Board 3D points from config
         board_3d_points = self._get_board_3d_points()
-        
+
         success, rvec, tvec = cv2.solvePnP(
             board_3d_points,
             board_corners,
@@ -169,7 +170,7 @@ class HandEyeCalibrator:
             timestamp=timestamp
         )
         self.poses_collected.append(pose)
-        
+
         # Store detection
         self.image_detections.append({
             'pose_id': pose_id,
@@ -188,11 +189,11 @@ class HandEyeCalibrator:
     ) -> HandEyeResult:
         """
         Compute hand-eye transformation
-        
+
         Args:
             setup_type: "eye_on_hand" or "eye_to_hand"
             method: Calibration method (TSAI, PARK, HORAUD, ANDREFF)
-        
+
         Returns:
             HandEyeResult with transformation matrix
         """
@@ -208,14 +209,14 @@ class HandEyeCalibrator:
         for i, detection in enumerate(self.image_detections):
             rvec = detection['rvec']
             tvec = detection['tvec']
-            
+
             # Camera to board transformation
             R_camera_to_board, _ = cv2.Rodrigues(rvec)
             t_camera_to_board = tvec.flatten()
-            
+
             T_camera_to_board = self._create_transform(R_camera_to_board, t_camera_to_board)
             camera_poses.append(T_camera_to_board)
-            
+
             # Robot transformation
             pose = self.poses_collected[i]
             robot_poses.append(pose.robot_base_to_hand)
@@ -232,7 +233,7 @@ class HandEyeCalibrator:
 
             # Create 4x4 transformation
             T_hand_eye = self._create_transform(R_hand_eye, t_hand_eye.flatten())
-            
+
             # Calculate reprojection error
             error = self._calculate_reprojection_error(robot_poses, camera_poses, T_hand_eye)
 
@@ -428,7 +429,7 @@ class IMUCalibrator:
     ):
         """
         Add accelerometer sample during static pose
-        
+
         Note: Perform calibration by placing IMU in 6 orientations (±X, ±Y, ±Z)
         """
         self.accel_samples.append(np.array([x, y, z]))
@@ -440,7 +441,7 @@ class IMUCalibrator:
     def calibrate_accelerometer(self):
         """
         Calibrate accelerometer bias and scale
-        
+
         TODO: Implement 6-position calibration method
         Requires placing IMU in 6 static orientations and recording averages
         """
@@ -460,7 +461,7 @@ class IMUCalibrator:
     def calibrate_gyroscope(self):
         """
         Calibrate gyroscope bias
-        
+
         TODO: Implement temperature-compensated gyro bias calculation
         """
         logger.warning("TODO: Implement temperature-compensated gyro calibration")
@@ -483,7 +484,7 @@ class IMUCalibrator:
     ):
         """
         Set camera-to-IMU rotation alignment
-        
+
         TODO: Auto-detect from synchronized vision and IMU rotation
         """
         self.calibration.camera_to_imu_rotation = rotation_matrix
@@ -573,4 +574,3 @@ if __name__ == "__main__":
 
     calibrator = HandEyeCalibrator(camera_intrinsics, board_config)
     print("Hand-eye calibrator ready for pose observations")
-

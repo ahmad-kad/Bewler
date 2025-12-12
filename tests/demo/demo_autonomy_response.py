@@ -4,8 +4,9 @@ Demo: Autonomy Response to Teleoperation Data
 Shows how autonomy reacts to different teleoperation scenarios
 """
 
-import time
 import random
+import time
+
 
 def simulate_scenario(scenario_name, description):
     """Simulate a teleoperation data scenario and show autonomy response"""

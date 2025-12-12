@@ -6,21 +6,20 @@ depth_processor:
     depth_diameter: 9                    # Kernel diameter (odd number)
     depth_sigma_color: 75.0              # Color space sigma (higher = more smoothing)
     depth_sigma_space: 75.0              # Spatial sigma (higher = larger neighborhood)
-    
+
     # Temporal smoothing
     temporal_smoothing_window: 3         # Number of frames for median filtering
     enable_temporal_smoothing: true      # Enable temporal smoothing
-    
+
     # Dust and outlier detection
     dust_threshold: 50                   # Laplacian threshold for dust detection
     enable_dust_detection: true          # Enable dust particle removal
-    
+
     # Depth range filtering
     min_depth_mm: 100                    # Minimum valid depth (100mm)
     max_depth_mm: 5000                   # Maximum valid depth (5000mm = 5m)
-    
+
     # Preprocessing rates
     rgb_publish_hz: 30                   # RGB image publish rate
     depth_publish_hz: 30                 # Processed depth publish rate
     camera_info_publish_hz: 10           # Camera info publish rate
-

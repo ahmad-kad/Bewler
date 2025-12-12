@@ -5,7 +5,7 @@ import { SystemState } from '../../config/stateDefinitions';
 
 /**
  * DebugTab Component
- * 
+ *
  * Multi-panel debug view with logs, state machine, topics, and performance.
  * Context-aware: highlights errors and relevant information.
  */
@@ -333,4 +333,3 @@ export const DebugTab = () => {
     </div>
   );
 };
-

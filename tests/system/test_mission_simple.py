@@ -3,11 +3,12 @@
 Simple Mission Test - Direct test of mission execution
 """
 
+import json
+import time
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-import json
-import time
 
 
 class SimpleMissionTester(Node):
@@ -97,5 +98,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

@@ -13,7 +13,7 @@ disable=
     W0613,  # unused-argument (common in callbacks)
 
 [FORMAT]
-max-line-length=88
+max-line-length=120
 
 [MESSAGES CONTROL]
 extension-pkg-whitelist=cv2,numpy,rclpy

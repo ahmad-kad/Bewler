@@ -21,7 +21,7 @@ noise_levels:
       depth_noise: 0.005  # meters
       rgb_noise: 0.01  # pixel variance
       update_rate: 30.0  # Hz
-      
+
   medium:
     imu:
       gyro_bias: 0.05  # degrees/s
@@ -40,7 +40,7 @@ noise_levels:
       depth_noise: 0.02  # meters
       rgb_noise: 0.05  # pixel variance
       update_rate: 30.0  # Hz
-      
+
   high:
     imu:
       gyro_bias: 0.1  # degrees/s

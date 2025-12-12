@@ -8,7 +8,7 @@ import { SystemState } from '../../config/stateDefinitions';
 
 /**
  * MissionTab Component
- * 
+ *
  * Context-aware mission planning and execution interface.
  * Shows planner when IDLE, execution view when mission is active.
  */
@@ -185,7 +185,7 @@ export const MissionTab = () => {
     <div className="p-4 space-y-4">
       <div className="bg-zinc-900 border border-zinc-800 rounded p-4">
         <h2 className="text-base font-semibold text-zinc-200 mb-4">Mission Planner</h2>
-        
+
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block text-xs text-zinc-400 mb-1">Type</label>
@@ -199,7 +199,7 @@ export const MissionTab = () => {
               ))}
             </select>
           </div>
-          
+
           <div>
             <label className="block text-xs text-zinc-400 mb-1">Priority</label>
             <select
@@ -212,7 +212,7 @@ export const MissionTab = () => {
               <option value="urgent">Urgent</option>
             </select>
           </div>
-          
+
           <div className="flex items-end">
             <button
               onClick={handleStartMission}
@@ -268,7 +268,3 @@ export const MissionTab = () => {
     </div>
   );
 };
-
-
-
-

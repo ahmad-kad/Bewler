@@ -35,4 +35,3 @@ string[] failed_subsystems       # List of subsystems currently in error state
 string mission_phase             # Competition mission context (setup, terrain, equipment_service, science, etc.)
 string operator_id               # Identifier of who/what initiated current state (auto, manual, safety_system)
 string state_reason              # Human-readable explanation for current state and any restrictions
-

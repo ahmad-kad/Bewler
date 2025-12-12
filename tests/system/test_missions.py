@@ -10,12 +10,12 @@ Author: URC 2026 Autonomy Team
 
 import os
 import sys
-from typing import Dict, Any, List
-from unittest.mock import Mock, MagicMock
+import time
+from typing import Any, Dict, List
+from unittest.mock import MagicMock, Mock
 
 import pytest
 import rclpy
-import time
 import yaml
 
 # Ensure project root is importable as a package root
@@ -24,17 +24,20 @@ sys.path.insert(0, PROJECT_ROOT)
 
 try:
     # Import mission components (requires missions to be a proper package)
-    from missions.mission_executor import MissionExecutor, MissionState  # type: ignore  # noqa: E402
-    from missions.mission_behaviors import (  # type: ignore  # noqa: E402
-        WaypointNavigation,
-        ObjectDetectionMission,
-        FollowMeMission,
-        DeliveryMission,
-    )
     from missions.hardware_abstraction import (  # type: ignore  # noqa: E402
         HardwareInterface,
-        MockSensorInterface,
         MockActuatorInterface,
+        MockSensorInterface,
+    )
+    from missions.mission_behaviors import (  # type: ignore  # noqa: E402
+        DeliveryMission,
+        FollowMeMission,
+        ObjectDetectionMission,
+        WaypointNavigation,
+    )
+    from missions.mission_executor import (  # type: ignore  # noqa: E402
+        MissionExecutor,
+        MissionState,
     )
 except Exception:
     MissionExecutor = None
@@ -265,7 +268,7 @@ class TestFollowMeMission:
 
     def test_follow_velocity_computation(self, follow_mission):
         """Test follow velocity calculation"""
-        from geometry_msgs.msg import PoseStamped, Pose
+        from geometry_msgs.msg import Pose, PoseStamped
 
         # Create mock tag pose
         tag_pose = Mock()
@@ -382,8 +385,8 @@ class TestIntegration:
         node.get_logger.return_value = Mock()
 
         # Test that components can be instantiated together
-        from mission_executor import MissionExecutor
         from hardware_abstraction import HardwareInterface
+        from mission_executor import MissionExecutor
 
         # Mock the ROS2 node creation
         with pytest.raises(Exception):  # Would need proper ROS2 context

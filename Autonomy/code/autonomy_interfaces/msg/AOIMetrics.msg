@@ -44,4 +44,3 @@ uint32 congested_links     # Number of transport links with congestion
 # System recommendations
 string[] network_recommendations # Recommendations for network optimization
 float64 network_health_score    # 0.0-1.0 network health score
-

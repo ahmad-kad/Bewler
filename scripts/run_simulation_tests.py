@@ -20,13 +20,13 @@ Options:
 """
 
 import argparse
+import json
+import os
 import subprocess
 import sys
-import os
 import time
-import json
-from typing import Dict, List, Any, Optional
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Add project paths
 project_root = Path(__file__).parent.parent
@@ -220,8 +220,9 @@ class SimulationTestRunner:
 
         try:
             # Import and run mission tests
-            import test_mission_system
             import unittest
+
+            import test_mission_system
 
             # Create test suite
             suite = unittest.TestLoader().loadTestsFromModule(test_mission_system)
@@ -267,8 +268,9 @@ class SimulationTestRunner:
 
         try:
             # Import and run performance tests
-            import test_performance_load
             import unittest
+
+            import test_performance_load
 
             # Create test suite
             suite = unittest.TestLoader().loadTestsFromModule(test_performance_load)

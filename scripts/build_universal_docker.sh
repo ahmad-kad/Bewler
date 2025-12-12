@@ -258,6 +258,3 @@ echo -e "   ${YELLOW}docker-compose -f docker-compose.prod.yml up${NC}"
 echo ""
 echo "3. View available services:"
 echo -e "   ${YELLOW}docker images | grep urc2026${NC}"
-
-
-

@@ -40,4 +40,3 @@ jobs:
           echo "- GITHUB_TOKEN has 'issues:write' permission"
           echo "- Autonomy/ folder exists"
           echo "- TODO comments follow the format: TODO: description"
-

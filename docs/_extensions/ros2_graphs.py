@@ -17,14 +17,15 @@ Usage in RST files:
 """
 
 import os
-import subprocess
 import re
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
+
 from docutils import nodes
 from docutils.parsers.rst import Directive
-from sphinx.util.docutils import SphinxDirective
 from sphinx.application import Sphinx
+from sphinx.util.docutils import SphinxDirective
 
 
 class ROS2NodesDirective(SphinxDirective):

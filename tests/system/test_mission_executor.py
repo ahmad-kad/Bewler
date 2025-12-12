@@ -8,14 +8,15 @@ Tests the core functionality:
 - Status and progress publishing
 """
 
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import String, Float32
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Pose
 import json
-import time
 import threading
+import time
+
+import rclpy
+from geometry_msgs.msg import Pose
+from nav_msgs.msg import Odometry
+from rclpy.node import Node
+from std_msgs.msg import Float32, String
 
 
 class MissionExecutorTester(Node):

@@ -10,12 +10,13 @@ Usage: Run as a service that WebSocket bridges can connect to for testing.
 
 import asyncio
 import json
-import random
-import time
 import math
-from typing import Dict, Any, List
-import websockets
+import random
 import threading
+import time
+from typing import Any, Dict, List
+
+import websockets
 
 
 class CANBusMockSimulator:

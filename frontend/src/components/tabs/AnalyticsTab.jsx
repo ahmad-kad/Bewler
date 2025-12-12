@@ -4,7 +4,7 @@ import { BarChart3, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react
 
 /**
  * AnalyticsTab Component
- * 
+ *
  * Data visualization and metrics dashboard.
  * Shows real-time and historical data.
  */
@@ -238,7 +238,3 @@ export const AnalyticsTab = () => {
     </div>
   );
 };
-
-
-
-

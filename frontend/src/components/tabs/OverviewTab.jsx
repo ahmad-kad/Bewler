@@ -8,7 +8,7 @@ import { SystemState } from '../../config/stateDefinitions';
 
 /**
  * OverviewTab Component
- * 
+ *
  * Context-aware dashboard that adapts to system state (IDLE, AUTONOMOUS, ERROR).
  * Shows relevant information based on current state.
  */
@@ -236,7 +236,7 @@ export const OverviewTab = () => {
             </h2>
           </div>
           <div className="text-sm text-zinc-300 mb-3">
-            {systemStatus.navigation === 'degraded' 
+            {systemStatus.navigation === 'degraded'
               ? 'GPS accuracy below threshold (HDOP: 2.5). Autonomous navigation limited.'
               : 'System has entered safety mode. Review status before continuing.'}
           </div>
@@ -316,4 +316,3 @@ export const OverviewTab = () => {
     </div>
   );
 };
-

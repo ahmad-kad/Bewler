@@ -4,11 +4,12 @@ Full Autonomy-Teleoperation Integration Test
 Tests the complete data flow from mock teleoperation to autonomy decision-making
 """
 
-import subprocess
-import time
-import signal
-import sys
 import os
+import signal
+import subprocess
+import sys
+import time
+
 
 def test_full_integration():
     """Test full autonomy-teleoperation integration"""

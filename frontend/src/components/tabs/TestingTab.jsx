@@ -5,7 +5,7 @@ import { SystemState } from '../../config/stateDefinitions';
 
 /**
  * TestingTab Component
- * 
+ *
  * Modular component testing interface with smart grouping.
  * Context-aware: shows only relevant tests based on system state.
  */
@@ -124,8 +124,8 @@ export const TestingTab = () => {
     }
   };
 
-  const filteredComponents = activeFilter === 'all' 
-    ? components 
+  const filteredComponents = activeFilter === 'all'
+    ? components
     : components.filter(c => c.id === activeFilter);
 
   // Update running tests count
@@ -299,7 +299,3 @@ export const TestingTab = () => {
     </div>
   );
 };
-
-
-
-

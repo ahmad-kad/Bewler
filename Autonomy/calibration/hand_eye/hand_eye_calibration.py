@@ -10,13 +10,14 @@ Usage:
     python hand_eye_calibration.py --generate-sample  # Test with sample data
 """
 
+import argparse
+import glob
+import os
+from typing import List, Optional, Tuple
+
 import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation
-import argparse
-import os
-import glob
-from typing import List, Tuple, Optional
 
 
 def create_pose_matrix(R, t):

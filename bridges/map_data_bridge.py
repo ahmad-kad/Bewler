@@ -11,24 +11,24 @@ Bridges SLAM map data to frontend visualization:
 Author: URC 2026 Autonomy Team
 """
 
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
-
-# ROS2 Messages
-from nav_msgs.msg import OccupancyGrid, MapMetaData
-from sensor_msgs.msg import PointCloud2, Image
-from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import String, Float32
-from std_srvs.srv import Trigger
+import base64
+import json
+import time
+import zlib
+from typing import Any, Dict, List, Optional
 
 # Data processing
 import numpy as np
-import json
-import base64
-import zlib
-from typing import Dict, Any, Optional, List
-import time
+import rclpy
+from geometry_msgs.msg import PoseStamped
+
+# ROS2 Messages
+from nav_msgs.msg import MapMetaData, OccupancyGrid
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+from sensor_msgs.msg import Image, PointCloud2
+from std_msgs.msg import Float32, String
+from std_srvs.srv import Trigger
 
 
 class MapDataBridge(Node):

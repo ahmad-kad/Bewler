@@ -11,10 +11,12 @@ Run this to see how the system works without real CAN hardware.
 """
 
 import asyncio
-import websockets
 import json
-import time
 import threading
+import time
+
+import websockets
+
 from bridges.can_mock_simulator import CANBusMockSimulator
 
 
@@ -103,7 +105,7 @@ async def demo_priority_routing():
     """Demonstrate priority-based message routing"""
     print("\n🔄 Testing Priority Message Routing...")
 
-    from bridges.priority_message_router import PriorityMessageRouter, MessagePriority
+    from bridges.priority_message_router import MessagePriority, PriorityMessageRouter
 
     router = PriorityMessageRouter(max_queue_size=20)
 

@@ -243,5 +243,3 @@ export default function ThreeDVisualization({ isConnected }) {
     </div>
   );
 }
-
-

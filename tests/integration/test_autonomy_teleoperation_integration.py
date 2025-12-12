@@ -4,11 +4,11 @@ Full Autonomy-Teleoperation Integration Test
 Tests the complete data flow from mock teleoperation to autonomy decisions
 """
 
-import subprocess
-import time
-import signal
-import sys
 import os
+import signal
+import subprocess
+import sys
+import time
 
 
 class IntegrationTest:

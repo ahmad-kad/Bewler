@@ -6,20 +6,17 @@ Provides comprehensive fault injection capabilities for testing system robustnes
 Supports hardware failures, software bugs, and environmental disturbances.
 """
 
-import asyncio
 import json
 import random
-import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-import numpy as np
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
-from std_msgs.msg import Float32MultiArray, String
+from std_msgs.msg import String
 
 
 class FaultType(Enum):
@@ -212,8 +209,11 @@ class FaultInjectionFramework(Node):
         })
         self.fault_control_pub.publish(control_msg)
 
-        self.logger.warn(f"INJECTED FAULT: {fault.fault_type.value} on {fault.target_component} "
-                        f"(severity: {fault.severity.value:.1f})")
+        self.logger.warn(
+            f"INJECTED FAULT: {fault.fault_type.value} "
+            f"on {fault.target_component} "
+            f"(severity: {fault.severity.value:.1f})"
+        )
         return fault_id
 
     def inject_scenario(self, scenario_name: str) -> List[str]:
@@ -225,7 +225,10 @@ class FaultInjectionFramework(Node):
         scenario = self.fault_scenarios[scenario_name]
         fault_ids = []
 
-        self.logger.info(f"Injecting scenario: {scenario_name} ({len(scenario)} faults)")
+        num_faults = len(scenario)
+        self.logger.info(
+            f"Injecting scenario: {scenario_name} ({num_faults} faults)"
+        )
 
         for fault in scenario:
             fault_id = self.inject_fault(fault)
@@ -276,7 +279,8 @@ class FaultInjectionFramework(Node):
         expired_faults = []
 
         for fault_id, fault in self.active_faults.items():
-            if fault.start_time and current_time - fault.start_time >= fault.duration_seconds:
+            time_elapsed = current_time - fault.start_time if fault.start_time else 0
+            if fault.start_time and time_elapsed >= fault.duration_seconds:
                 expired_faults.append(fault_id)
 
                 # Publish fault clearance
@@ -288,7 +292,10 @@ class FaultInjectionFramework(Node):
                 })
                 self.fault_control_pub.publish(clear_msg)
 
-                self.logger.info(f"CLEARED FAULT: {fault.fault_type.value} on {fault.target_component}")
+                self.logger.info(
+                    f"CLEARED FAULT: {fault.fault_type.value} "
+                    f"on {fault.target_component}"
+                )
 
         # Remove expired faults
         for fault_id in expired_faults:
@@ -397,8 +404,9 @@ def run_fault_injection_demo():
 
     try:
         # Start fault injection node in background
-        import threading
-        node_thread = threading.Thread(target=lambda: rclpy.spin(fault_node), daemon=True)
+        node_thread = threading.Thread(
+            target=lambda: rclpy.spin(fault_node), daemon=True
+        )
         node_thread.start()
 
         # Wait for system to initialize
@@ -409,7 +417,7 @@ def run_fault_injection_demo():
 
         for scenario in scenarios:
             print(f"\n Testing scenario: {scenario}")
-            fault_ids = framework.inject_scenario(scenario)
+            framework.inject_scenario(scenario)
 
             # Wait for scenario to complete
             scenario_duration = max(
@@ -421,8 +429,8 @@ def run_fault_injection_demo():
 
         # Demonstrate random fault injection
         print("Injecting random faults for chaos testing...")
-        for i in range(3):
-            fault_id = framework.inject_random_fault()
+        for _ in range(3):
+            framework.inject_random_fault()
             time.sleep(random.uniform(5, 15))
 
         # Generate final statistics

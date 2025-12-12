@@ -32,7 +32,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, Optional
 
 import rclpy
-from autonomy.utilities import safe_execute, NodeLogger
+from autonomy.utilities import NodeLogger, safe_execute
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from nav_msgs.msg import Odometry
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup

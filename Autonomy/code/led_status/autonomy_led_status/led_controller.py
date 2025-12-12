@@ -21,17 +21,16 @@ from enum import Enum
 from typing import Optional
 
 import rclpy
-from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
-from std_msgs.msg import String
-
 from autonomy.utilities import (
-    StateMachineNode,
     NodeLogger,
     ROS2InterfaceRegistry,
+    StateMachineNode,
     TimerManager,
     get_validated_parameter,
-    safe_execute
+    safe_execute,
 )
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+from std_msgs.msg import String
 
 
 # LED color definitions
@@ -442,7 +441,7 @@ class LEDHardwareInterface:
             GPIO.output(BLUE_PIN, GPIO.LOW)
             GPIO.output(GREEN_PIN, GPIO.HIGH)
         # etc.
-        
+
         # Handle patterns
         if pattern == LEDPattern.BLINK:
             # Implement blinking logic

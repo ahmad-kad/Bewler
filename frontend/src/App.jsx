@@ -11,7 +11,7 @@ import { ConfigTab } from './components/tabs/ConfigTab';
 
 /**
  * Main App Component
- * 
+ *
  * Clean, modular, context-aware interface for URC 2026 rover control system.
  * Features:
  * - Tab-based navigation

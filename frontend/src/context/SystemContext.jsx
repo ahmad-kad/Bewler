@@ -4,7 +4,7 @@ import { useStateMachine } from '../hooks/useStateMachine';
 
 /**
  * System Context Provider
- * 
+ *
  * Manages global system state, telemetry, and mission data for the entire application.
  * Provides context-aware data to all components based on current system state.
  */
@@ -21,7 +21,7 @@ export const useSystemContext = () => {
 export const SystemContextProvider = ({ children }) => {
   // ROS connection
   const { ros, isConnected, connectionStatus } = useROS();
-  
+
   // State machine
   const {
     currentState,
@@ -83,7 +83,7 @@ export const SystemContextProvider = ({ children }) => {
   // Update alerts based on system state
   useEffect(() => {
     const newAlerts = [];
-    
+
     if (telemetry.gps.hdop > 2.0) {
       newAlerts.push({
         id: 'gps_drift',
@@ -186,4 +186,3 @@ export const SystemContextProvider = ({ children }) => {
     </SystemContext.Provider>
   );
 };
-

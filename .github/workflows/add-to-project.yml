@@ -41,4 +41,3 @@ jobs:
           echo "- Token has 'project' and 'repo' scopes"
           echo "- Project URL is correct: https://github.com/users/ahmad-kad/projects/5"
           echo "- Issue/PR is not archived"
-

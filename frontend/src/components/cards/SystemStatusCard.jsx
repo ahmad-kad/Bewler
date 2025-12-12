@@ -3,7 +3,7 @@ import { CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 /**
  * SystemStatusCard Component
- * 
+ *
  * Displays system status with color-coded indicators.
  * Context-aware: shows relevant systems based on current state.
  */
@@ -67,7 +67,3 @@ export const SystemStatusCard = ({ systems, title = 'System Status', showDetails
     </div>
   );
 };
-
-
-
-

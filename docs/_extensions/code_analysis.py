@@ -16,15 +16,16 @@ Usage in RST files:
        :output: class_hierarchy.png
 """
 
-import os
 import ast
-import networkx as nx
+import os
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional
+from typing import Dict, List, Optional, Set, Tuple
+
+import networkx as nx
 from docutils import nodes
 from docutils.parsers.rst import Directive
-from sphinx.util.docutils import SphinxDirective
 from sphinx.application import Sphinx
+from sphinx.util.docutils import SphinxDirective
 
 
 class CodeImportsDirective(SphinxDirective):

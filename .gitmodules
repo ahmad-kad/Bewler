@@ -1,6 +1,0 @@
-[submodule "submodules/teleoperation"]
-	path = submodules/teleoperation
-	url = https://github.com/SJSURoboticsTeam/urc-teleoperation-2026.git
-[submodule "submodules/control-systems"]
-	path = submodules/control-systems
-	url = https://github.com/SJSURoboticsTeam/urc-control-systems-2024.git

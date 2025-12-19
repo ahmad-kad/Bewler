@@ -1,6 +1,0 @@
-# Documentation dependencies are now managed in the root pyproject.toml
-#
-# To install documentation dependencies:
-#   pip install -e ".[docs]"
-#
-# This ensures consistency with the main project dependencies.

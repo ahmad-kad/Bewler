@@ -1,0 +1,18 @@
+# Camera Calibration Requirements - URC 2026
+# Install with: pip3 install -r requirements.txt
+
+# Core computer vision
+numpy>=1.21.0
+opencv-python>=4.5.0
+
+# Optional: Enhanced OpenCV with extra modules
+# opencv-contrib-python>=4.5.0
+
+# For headless operation (no GUI dependencies)
+# opencv-python-headless>=4.5.0
+
+# Development and testing
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=4.0.0
+# mypy>=0.950

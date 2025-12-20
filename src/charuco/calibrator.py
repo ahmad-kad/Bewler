@@ -6,8 +6,8 @@ Processes sets of calibration images to compute camera intrinsic parameters.
 Supports multiple camera types and provides comprehensive validation.
 
 Usage:
-    python camera_calibrator.py --images /path/to/calibration_images --pattern 8x6 \
-        --square-size 0.025 --output camera_calibration.yaml
+    python camera_calibrator.py --images /path/to/calibration_images --squares 8x6 \
+        --square-size 0.030 --output camera_calibration.yaml
 
 Author: URC 2026 Autonomy Team
 """
@@ -388,14 +388,14 @@ def main():
     )
     parser.add_argument(
         "--squares",
-        default="5x7",
+        default="8x6",
         help="ChArUco board squares pattern (e.g., 5x7 for 5 columns, 7 rows of squares)",
     )
     parser.add_argument(
         "--square-size",
         type=float,
-        default=0.025,
-        help="Chessboard square size in meters (default: 0.025)",
+        default=0.030,
+        help="Chessboard square size in meters (default: 0.030)",
     )
     parser.add_argument(
         "--marker-size",

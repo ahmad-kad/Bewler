@@ -249,7 +249,7 @@ Examples:
         checker_mm = float(args.custom[2])
         marker_mm = float(args.custom[3])
 
-        output_path = args.output or f"charuco_{rows}x{cols}_{checker_mm}mm.png"
+        output_path = args.output or f"output/charuco_{rows}x{cols}_{checker_mm}_{marker_mm}.png"
 
         print("Generating custom ChArUco board...")
         generator.save_board_png(

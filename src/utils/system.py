@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Tuple, List, Union, Dict, Any
 
 
-def run_command(cmd: str, description: str) -> Tuple[bool, str]:
+def run_command(cmd: str, _description: str) -> Tuple[bool, str]:
     """
     Run a system command and return success status and output.
 

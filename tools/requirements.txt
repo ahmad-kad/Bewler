@@ -1,18 +1,27 @@
 # Camera Calibration Requirements - URC 2026
 # Install with: pip3 install -r requirements.txt
 
-# Core computer vision
-numpy>=1.21.0
-opencv-python>=4.5.0
+# Core computer vision - Pi Zero 2 W optimized (512MB RAM constraint)
+numpy>=1.21.0,<1.25.0  # Pin older version for memory efficiency
+opencv-python-headless>=4.8.0,<4.9.0  # Headless for Pi Zero (no GUI)
 
-# Optional: Enhanced OpenCV with extra modules
+# Optional: Enhanced OpenCV with extra modules (Pi 5 only)
 # opencv-contrib-python>=4.5.0
 
-# For headless operation (no GUI dependencies)
-# opencv-python-headless>=4.5.0
+# ROS 2 dependencies for distributed architecture
+# Install via Pixi on Pi Zero 2 W, pip on Pi 5 for development
+tflite-runtime>=2.11.0  # For INT8 quantized inference on Pi Zero
+cv-bridge>=3.2.0  # ROS 2 cv_bridge for image conversion
 
 # Development and testing
-# pytest>=7.0.0
-# black>=22.0.0
-# flake8>=4.0.0
-# mypy>=0.950
+pytest>=7.0.0
+pytest-asyncio>=0.21.0  # For async ROS 2 tests
+black>=22.0.0
+flake8>=4.0.0
+mypy>=0.950
+
+# ROS 2 development dependencies (optional)
+# ros-humble-desktop  # Full ROS 2 on Pi 5
+# ros-humble-v4l2-camera  # Camera driver
+# ros-humble-image-transport-plugins  # Compressed transport
+# rmw-zenoh-cpp  # Lightweight RMW for Pi Zero

@@ -24,7 +24,7 @@ python3 quick_calibration.py --camera 0
 
 ---
 
-## 📦 What Gets Installed
+##  What Gets Installed
 
 ### System Packages
 - `v4l-utils` - Video device control
@@ -100,25 +100,25 @@ python3 quick_calibration.py --camera 0
 
 ---
 
-## 📋 Files Created
+##  Files Created
 
 ```
 calibration/camera/
-├── camera_validator.py      # Comprehensive camera validation
-├── camera_check.py          # Basic system check
-├── verify_installation.py   # Installation verification
-├── installation_guide.md    # Detailed installation guide
-├── pi_camera_setup.md       # Raspberry Pi specific setup
-├── requirements.txt         # Python dependencies
-├── setup_cameras.sh         # System setup script (generated)
-├── quick_calibration.py     # Camera calibration
-├── check_calibration.py     # Quality assessment
-└── INSTALL.md              # This file
+ camera_validator.py      # Comprehensive camera validation
+ camera_check.py          # Basic system check
+ verify_installation.py   # Installation verification
+ installation_guide.md    # Detailed installation guide
+ pi_camera_setup.md       # Raspberry Pi specific setup
+ requirements.txt         # Python dependencies
+ setup_cameras.sh         # System setup script (generated)
+ quick_calibration.py     # Camera calibration
+ check_calibration.py     # Quality assessment
+ INSTALL.md              # This file
 ```
 
 ---
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -158,7 +158,7 @@ After installation, you should be able to:
 
 ---
 
-## 📚 Additional Resources
+##  Additional Resources
 
 - `installation_guide.md` - Comprehensive installation guide
 - `pi_camera_setup.md` - Raspberry Pi specific instructions
@@ -166,7 +166,7 @@ After installation, you should be able to:
 
 ---
 
-**Ready to calibrate?** Your Raspberry Pi is now equipped for professional camera calibration! 📸
+**Ready to calibrate?** Your Raspberry Pi is now equipped for professional camera calibration! 
 
 **Status**: Production Ready
 **Tested on**: Raspberry Pi 4B/5 with Raspberry Pi OS Bookworm

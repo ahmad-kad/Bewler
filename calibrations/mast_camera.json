@@ -1,0 +1,39 @@
+{
+  "camera_index": 0,
+  "sensor": "IMX219",
+  "camera_matrix": [
+    [
+      3088.9375710030376,
+      0.0,
+      1941.5542089038292
+    ],
+    [
+      0.0,
+      3085.9789560337767,
+      1528.0665900774106
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "distortion_coefficients": [
+    0.05850248246060825,
+    0.14677321410278285,
+    0.00038834136831359355,
+    -0.009032972700328759,
+    -0.4212065865712144
+  ],
+  "image_width": 4056,
+  "image_height": 3040,
+  "frames_collected": 18,
+  "frames_used": 15,
+  "full_board_frames": 18,
+  "partial_frames": 0,
+  "quality_diversity": 31,
+  "reprojection_error": 0.16309065004786463,
+  "opencv_version": "4.12.0",
+  "calibration_method": "charuco_auto_intelligent",
+  "calibrated_at": 1766449687.7956784
+}

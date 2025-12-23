@@ -9,35 +9,35 @@
 ### 1. Setup System
 ```bash
 cd calibration
-python3 scripts/camera_validator.py --setup
+python3 test_detection.py  # Camera validation --setup
 sudo bash tools/setup_cameras.sh
 sudo reboot
 ```
 
 ### 2. Test Camera Detection
 ```bash
-python3 scripts/camera_check.py                    # System validation
-python3 scripts/camera_validator.py --auto-detect  # Find cameras
+python3 setup_cameras.py  # System validation                    # System validation
+python3 test_detection.py  # Camera validation --auto-detect  # Find cameras
 ```
 
 ### 3. Calibrate Cameras
 ```bash
 # Single camera (auto sensor detection)
-python3 scripts/quick_calibration.py --camera 0
-# → Detects: IMX219 sensor
-# → Assigns: imx219_1
+python3 auto_calibrate.py --camera 0
+#  Detects: IMX219 sensor
+#  Assigns: imx219_1
 
 # Custom name
-python3 scripts/quick_calibration.py --camera 0 --name "front_left"
+python3 auto_calibrate.py --camera 0 --name "front_left"
 
 # Batch calibration
-python3 scripts/quick_calibration.py --batch 3
+python3 auto_calibrate.py --batch 3
 ```
 
 ### 4. Manage Calibrations
 ```bash
-python3 scripts/quick_calibration.py --list-cameras    # View all
-python3 scripts/quick_calibration.py --rename-camera imx219_1 front_left
+python3 auto_calibrate.py --list-cameras    # View all
+python3 auto_calibrate.py --rename-camera imx219_1 front_left
 ```
 
 ---
@@ -48,46 +48,46 @@ python3 scripts/quick_calibration.py --rename-camera imx219_1 front_left
 
 ```
 calibration/
-├── src/                    # Core library modules (importable)
-│   ├── __init__.py
-│   ├── aruco/             # ArUco tag functionality
-│   │   ├── __init__.py
-│   │   ├── generator.py
-│   │   └── validator.py
-│   ├── charuco/           # ChArUco board functionality
-│   │   ├── __init__.py
-│   │   ├── generator.py
-│   │   └── calibrator.py
-│   ├── camera/            # Camera calibration utilities
-│   │   ├── __init__.py
-│   │   ├── calibration.py
-│   │   ├── validation.py
-│   │   └── system.py
-│   └── utils/             # Shared utilities
-│       ├── __init__.py
-│       ├── camera.py
-│       ├── file_ops.py
-│       └── system.py
-├── scripts/               # CLI tools and executables
-│   ├── quick_calibration.py
-│   ├── camera_validator.py
-│   ├── verify_installation.py
-│   └── camera_check.py
-├── docs/                  # Documentation
-│   ├── README.md
-│   ├── INSTALL.md
-│   └── camera/
-├── tests/                 # Test suite
-│   ├── __init__.py
-│   └── unit/
-├── tools/                 # Setup scripts and config
-│   ├── setup_cameras.sh
-│   ├── requirements.txt
-│   └── requirements-test.txt
-└── .flake8               # Linting configuration
+ src/                    # Core library modules (importable)
+    __init__.py
+    aruco/             # ArUco tag functionality
+       __init__.py
+       generator.py
+       validator.py
+    charuco/           # ChArUco board functionality
+       __init__.py
+       generator.py
+       calibrator.py
+    camera/            # Camera calibration utilities
+       __init__.py
+       calibration.py
+       validation.py
+       system.py
+    utils/             # Shared utilities
+        __init__.py
+        camera.py
+        file_ops.py
+        system.py
+ auto_calibrate.py      # Main calibration tool
+    quick_calibration.py
+    camera_validator.py
+    verify_installation.py
+    camera_check.py
+ docs/                  # Documentation
+    README.md
+    INSTALL.md
+    camera/
+ tests/                 # Test suite
+    __init__.py
+    unit/
+ tools/                 # Setup scripts and config
+    setup_cameras.sh
+    requirements.txt
+    requirements-test.txt
+ .flake8               # Linting configuration
 ```
-    ├── requirements-test.txt
-    └── pytest.ini
+     requirements-test.txt
+     pytest.ini
 ```
 
 ---
@@ -124,8 +124,8 @@ cd calibration/camera
 
 # Auto-detect sensor and assign ID
 python3 quick_calibration.py --camera 0
-# → Detects: IMX219 sensor
-# → Assigns: imx219_1
+#  Detects: IMX219 sensor
+#  Assigns: imx219_1
 
 # Manual naming
 python3 quick_calibration.py --camera 0 --name "front_left"
@@ -155,9 +155,9 @@ Each camera calibration is saved as a separate JSON file:
 
 ```
 calibrations/
-├── imx219_1.json
-├── imx219_2.json
-└── front_left.json
+ imx219_1.json
+ imx219_2.json
+ front_left.json
 ```
 
 **Example calibration file** (`calibrations/imx219_1.json`):
@@ -213,7 +213,7 @@ python -c "from src.camera.validation import validate_camera_setup; print('Camer
 
 ---
 
-**Ready for deployment on Raspberry Pi systems!** 📸🤖
+**Ready for deployment on Raspberry Pi systems!** 
 
 ## API Reference
 
@@ -673,9 +673,9 @@ python3 calibration_cli.py list
 -  Integrate with ROS2 workflow
 
 ### Short-term (2-3 weeks)
-- ⏳ Create generation module (board generators)
-- ⏳ Add more integration tests
-- ⏳ Create field validation scripts
+-  Create generation module (board generators)
+-  Add more integration tests
+-  Create field validation scripts
 
 ### Medium-term (1-2 months)
 -  Temperature-compensated IMU calibration

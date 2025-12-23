@@ -8,25 +8,25 @@ Bewler provides a comprehensive camera calibration system designed for robotics 
 
 ## Features
 
-- 🔍 **Automatic Sensor Detection** - Supports IMX219, IMX477, IMX708, OV5647 cameras
-- 📐 **Multiple Calibration Methods** - ChArUco board and ArUco tag calibration
-- 🏗️ **Clean Architecture** - Modular design with proper separation of concerns
-- 🧪 **Comprehensive Testing** - Full test coverage with professional tooling
-- 📦 **Easy Installation** - Python package with simple CLI tools
-- 🎯 **Production Ready** - Zero linting errors, type-safe, well-documented
+-  **Automatic Sensor Detection** - Supports IMX219, IMX477, IMX708, OV5647 cameras
+-  **Multiple Calibration Methods** - ChArUco board and ArUco tag calibration
+-  **Clean Architecture** - Modular design with proper separation of concerns
+-  **Comprehensive Testing** - Full test coverage with professional tooling
+-  **Easy Installation** - Python package with simple CLI tools
+-  **Production Ready** - Zero linting errors, type-safe, well-documented
 
 ## Project Structure
 
 ```
 bewler/
-├── calibration/           # Main calibration system
-│   ├── src/              # Core library modules
-│   ├── scripts/          # CLI executables
-│   ├── tests/            # Unit and integration tests
-│   ├── docs/             # Documentation
-│   └── tools/            # Setup and configuration
-├── .gitignore           # Python/CV project exclusions
-└── README.md            # This file
+ calibration/           # Main calibration system
+    src/              # Core library modules
+ auto_calibrate.py     # Main calibration tool
+    tests/            # Unit and integration tests
+    docs/             # Documentation
+    tools/            # Setup and configuration
+ .gitignore           # Python/CV project exclusions
+ README.md            # This file
 ```
 
 ## Quick Start
@@ -43,10 +43,10 @@ pip install -r tools/requirements.txt
 
 ```bash
 # Calibrate a camera with auto sensor detection
-python scripts/quick_calibration.py --camera 0
+python3 auto_calibrate.py --camera 0
 
 # List all calibrated cameras
-python scripts/quick_calibration.py --list-cameras
+python3 auto_calibrate.py --list-cameras
 
 # Generate ArUco tags for your project
 python -c "from src.aruco.generator import ArucoGenerator; gen = ArucoGenerator(); gen.save_sheet_png([1.0, 2.0, 5.0], 'tags.png')"

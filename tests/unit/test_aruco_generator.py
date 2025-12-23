@@ -95,19 +95,19 @@ class TestArucoGenerator(unittest.TestCase):
         # This test doesn't actually generate files, just checks the data structure
         layouts = {
             "keyboard_small": [
-                (1.0, 50),  # 50× 1cm tags for keyboard corners
-                (2.0, 25),  # 25× 2cm tags for extras
+                (1.0, 50),  # 50 1cm tags for keyboard corners
+                (2.0, 25),  # 25 2cm tags for extras
             ],
             "keyboard_medium": [
-                (3.0, 12),  # 12× 3cm tags for keyboard
-                (5.0, 8),  # 8× 5cm tags for extras
+                (3.0, 12),  # 12 3cm tags for keyboard
+                (5.0, 8),  # 8 5cm tags for extras
             ],
             "navigation": [
-                (10.0, 4),  # 4× 10cm navigation markers
-                (15.0, 2),  # 2× 15cm navigation posts
+                (10.0, 4),  # 4 10cm navigation markers
+                (15.0, 2),  # 2 15cm navigation posts
             ],
             "large_navigation": [
-                (20.0, 2),  # 2× 20cm large navigation markers
+                (20.0, 2),  # 2 20cm large navigation markers
             ],
         }
 

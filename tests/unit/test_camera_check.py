@@ -12,19 +12,19 @@ import tempfile
 import json
 import os
 
-# Add the parent directory to the path for imports
+# Add the src directory to the path for imports
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 # Import the functions from camera validation and system utilities
-from camera.validation import validate_camera_setup
-from utils.system import (
+from src.camera.validation import validate_camera_setup
+from src.utils.system import (
     run_command,
     run_system_command,
     check_system_setup,
     list_camera_devices,
 )
-from utils.camera import save_calibration_file, load_calibration_file
+from src.utils.camera import save_calibration_file, load_calibration_file
 
 
 class TestCameraCheck(unittest.TestCase):

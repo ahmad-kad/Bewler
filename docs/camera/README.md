@@ -9,8 +9,8 @@
 ### Single Camera (Auto Sensor Detection)
 ```bash
 python quick_calibration.py --camera 0
-# → Detects: IMX219 sensor
-# → Assigns: imx219_1
+#  Detects: IMX219 sensor
+#  Assigns: imx219_1
 ```
 
 ### Custom Camera Name
@@ -21,7 +21,7 @@ python quick_calibration.py --camera 0 --name "front_left"
 ### Batch Calibration (Sensor-Based IDs)
 ```bash
 python quick_calibration.py --batch 3
-# → imx219_1, imx219_2, imx219_3 (if all IMX219)
+#  imx219_1, imx219_2, imx219_3 (if all IMX219)
 ```
 
 ### List Calibrated Cameras
@@ -63,9 +63,9 @@ python quick_calibration.py --rename-camera imx219_1 front_left
 
 ### Sequential ID Generation
 ```
-First IMX219 camera  → imx219_1
-Second IMX219 camera → imx219_2
-First IMX477 camera  → imx477_1
+First IMX219 camera   imx219_1
+Second IMX219 camera  imx219_2
+First IMX477 camera   imx477_1
 ```
 
 ### File Storage
@@ -137,10 +137,10 @@ Files saved as: `camera_{id}_{timestamp}.json`
 
 Run `python check_calibration.py` to assess quality:
 
-- **Excellent**: 12+ frames → 95/100 score
-- **Good**: 8+ frames → 80/100 score
-- **Acceptable**: 5+ frames → 60/100 score
-- **Poor**: <5 frames → recalibrate
+- **Excellent**: 12+ frames  95/100 score
+- **Good**: 8+ frames  80/100 score
+- **Acceptable**: 5+ frames  60/100 score
+- **Poor**: <5 frames  recalibrate
 
 ---
 

@@ -4,19 +4,9 @@ Supports both standalone calibration and ROS 2 CameraInfo publishing for distrib
 """
 
 import time
-from typing import Optional, Dict, Any
+from typing import Optional
 
-try:
-    import cv2
-    import numpy as np
-
-    OPENCV_AVAILABLE = True
-except ImportError:
-    cv2 = None  # type: ignore
-    numpy = None  # type: ignore
-    OPENCV_AVAILABLE = False
-
-# ROS 2 imports removed - using manual JSON transfer instead
+import cv2
 
 
 def calibrate_camera(
@@ -39,10 +29,7 @@ def calibrate_camera(
     Returns:
         True if calibration successful, False otherwise
     """
-    if not OPENCV_AVAILABLE:
-        print("OpenCV not available for camera calibration")
-        return False
-
+    
     from ..utils.camera import (
         detect_camera_sensor,
         generate_sensor_based_camera_id,

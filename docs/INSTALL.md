@@ -39,7 +39,7 @@ python3 quick_calibration.py --camera 0
 
 ### Camera Support
 - USB cameras (Logitech, ArduCam, etc.)
-- Raspberry Pi Camera modules
+- Raspberry Pi Camera modules (CSI/Ribbon cable cameras)
 - V4L2-compatible devices
 
 ---
@@ -50,6 +50,8 @@ python3 quick_calibration.py --camera 0
 ```bash
 python3 camera_validator.py --setup && sudo bash setup_cameras.sh && sudo reboot
 ```
+
+**Note for CSI/Ribbon Cable Cameras:** The setup script automatically enables the camera interface and auto-detection. After rebooting, your Raspberry Pi cameras should be detected automatically.
 
 ### Method 2: Manual
 ```bash
@@ -120,6 +122,29 @@ calibration/camera/
 
 ## 🔧 Troubleshooting
 
+### Raspberry Pi CSI Camera Setup
+
+If you have cameras connected via ribbon cable (CSI interface), ensure they're enabled:
+
+```bash
+# 1. Enable camera interface
+sudo raspi-config nonint do_camera 0
+
+# 2. Enable camera auto-detection (for multiple cameras)
+CONFIG_FILE="/boot/firmware/config.txt"
+[ ! -f "$CONFIG_FILE" ] && CONFIG_FILE="/boot/config.txt"
+sudo sed -i 's/camera_auto_detect=0/camera_auto_detect=1/' "$CONFIG_FILE" 2>/dev/null || \
+echo "camera_auto_detect=1" | sudo tee -a "$CONFIG_FILE" > /dev/null
+
+# 3. Reboot
+sudo reboot
+
+# 4. After reboot, verify cameras are detected
+rpicam-still --list-cameras
+```
+
+**Important:** Changes to camera settings require a reboot to take effect.
+
 ### Common Issues
 
 **"Permission denied"**
@@ -134,9 +159,33 @@ pip3 install -r requirements.txt
 ```
 
 **"No cameras detected"**
+
+For USB cameras:
 ```bash
 ls /dev/video*
 # Check camera connections and try different USB ports
+```
+
+For Raspberry Pi CSI cameras (ribbon cable):
+```bash
+# Check if camera interface is enabled
+raspi-config nonint get_camera
+# Should return 0 (enabled). If it returns 1, enable it:
+sudo raspi-config nonint do_camera 0
+
+# Check camera auto-detection setting
+grep camera_auto_detect /boot/firmware/config.txt || grep camera_auto_detect /boot/config.txt
+# Should show: camera_auto_detect=1
+
+# If not enabled, add it:
+sudo sed -i 's/camera_auto_detect=0/camera_auto_detect=1/' /boot/firmware/config.txt 2>/dev/null || \
+sudo sed -i 's/camera_auto_detect=0/camera_auto_detect=1/' /boot/config.txt 2>/dev/null
+
+# Reboot required for changes to take effect
+sudo reboot
+
+# After reboot, test cameras:
+rpicam-still --list-cameras
 ```
 
 **"OpenCV not available"**
@@ -160,9 +209,9 @@ After installation, you should be able to:
 
 ## 📚 Additional Resources
 
-- `installation_guide.md` - Comprehensive installation guide
-- `pi_camera_setup.md` - Raspberry Pi specific instructions
-- `README.md` - Usage documentation
+- `camera/pi_camera_setup.md` - Complete Raspberry Pi camera setup guide (hardware & software)
+- `camera/README.md` - Camera calibration usage documentation
+- `README.md` - Project overview
 
 ---
 

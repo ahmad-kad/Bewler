@@ -16,10 +16,15 @@ Author: URC 2026 Autonomy Team
 
 import argparse
 import logging
+import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+# Add src to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 try:
     import cv2
@@ -110,21 +115,26 @@ class CameraValidator:
             logger.warning("    No camera devices found in /dev/")
 
         # Check libcamera (Raspberry Pi camera stack)
-        try:
-            result = subprocess.run(
-                ["libcamera-hello", "--version"],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
-            results["libcamera"] = result.returncode == 0
-            if results["libcamera"]:
-                logger.info("    libcamera available")
-            else:
-                logger.info(
-                    "   ℹ libcamera not available (may not be needed for USB cameras)"
+        # Try rpicam-hello (newer) or libcamera-hello (older)
+        libcamera_available = False
+        for cmd in ["rpicam-hello", "libcamera-hello"]:
+            try:
+                result = subprocess.run(
+                    [cmd, "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
                 )
-        except (subprocess.TimeoutExpired, FileNotFoundError):
+                if result.returncode == 0:
+                    libcamera_available = True
+                    break
+            except (subprocess.TimeoutExpired, FileNotFoundError):
+                continue
+        
+        results["libcamera"] = libcamera_available
+        if results["libcamera"]:
+            logger.info("    libcamera available")
+        else:
             logger.info(
                 "   ℹ libcamera not available (may not be needed for USB cameras)"
             )
@@ -156,9 +166,18 @@ class CameraValidator:
                 ("GSTREAMER", cv2.CAP_GSTREAMER),
             ]
 
+            # Try to get actual device path for this index
+            from utils.camera import get_camera_device_path
+            device_path = get_camera_device_path(camera_index)
+            
             for backend_name, backend in backends:
                 try:
-                    cap = cv2.VideoCapture(camera_index, backend)
+                    # Use device path if available, otherwise use index
+                    if device_path:
+                        # When using device path, don't specify backend (OpenCV auto-detects)
+                        cap = cv2.VideoCapture(device_path)
+                    else:
+                        cap = cv2.VideoCapture(camera_index, backend)
 
                     if cap.isOpened():
                         # Test by reading a few frames
@@ -226,16 +245,27 @@ class CameraValidator:
             "errors": [],
         }
 
+        # Try to get actual device path for this index
+        from utils.camera import get_camera_device_path
+        device_path = get_camera_device_path(camera_index)
+        
         # Try to open camera
         cap = None
         if backend:
-            cap = cv2.VideoCapture(camera_index, backend)
+            # Use device path if available, otherwise use index
+            camera_source = device_path if device_path else camera_index
+            cap = cv2.VideoCapture(camera_source, backend)
             backend_name = "CUSTOM"
         else:
             # Try backends in order
             backends = [("V4L2", cv2.CAP_V4L2), ("ANY", cv2.CAP_ANY)]
             for backend_name, backend_val in backends:
-                cap = cv2.VideoCapture(camera_index, backend_val)
+                # Use device path if available, otherwise use index
+                if device_path:
+                    # When using device path, don't specify backend (OpenCV auto-detects)
+                    cap = cv2.VideoCapture(device_path)
+                else:
+                    cap = cv2.VideoCapture(camera_index, backend_val)
                 if cap.isOpened():
                     break
                 cap.release()

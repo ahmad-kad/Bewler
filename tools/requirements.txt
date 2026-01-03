@@ -2,16 +2,18 @@
 # Install with: pip3 install -r requirements.txt
 
 # Core computer vision - Pi Zero 2 W optimized (512MB RAM constraint)
-numpy>=1.21.0,<1.25.0  # Pin older version for memory efficiency
-opencv-python-headless>=4.8.0,<4.9.0  # Headless for Pi Zero (no GUI)
+# Updated for Python 3.13 compatibility
+numpy>=2.0.0  # Python 3.13 compatible version
+opencv-python-headless>=4.8.0  # Headless for Pi Zero (no GUI)
 
 # Optional: Enhanced OpenCV with extra modules (Pi 5 only)
 # opencv-contrib-python>=4.5.0
 
 # ROS 2 dependencies for distributed architecture
 # Install via Pixi on Pi Zero 2 W, pip on Pi 5 for development
-tflite-runtime>=2.11.0  # For INT8 quantized inference on Pi Zero
-cv-bridge>=3.2.0  # ROS 2 cv_bridge for image conversion
+# Note: These packages may not be available via pip and require ROS 2 installation
+# tflite-runtime>=2.11.0  # For INT8 quantized inference on Pi Zero (install separately)
+# cv-bridge>=3.2.0  # ROS 2 cv_bridge for image conversion (install via ROS 2)
 
 # Development and testing
 pytest>=7.0.0

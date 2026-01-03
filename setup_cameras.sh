@@ -12,6 +12,10 @@ apt update && apt upgrade -y
 echo " Installing camera utilities..."
 apt install -y v4l-utils libv4l-dev
 
+# Install libcamera (for Raspberry Pi Camera Modules)
+echo " Installing libcamera applications..."
+apt install -y libcamera-apps libcamera-tools python3-picamera2
+
 # Python dependencies should be installed in virtual environment
 # Skip system-wide installation to avoid PEP 668 conflicts
 echo " Skipping system-wide Python package installation..."
@@ -22,26 +26,9 @@ echo "       in the virtual environment using: pip install -r tools/requirements
 echo " Configuring camera permissions..."
 usermod -a -G video $SUDO_USER
 
-# Enable camera interface (for CSI/Ribbon cable cameras)
+# Enable camera interface (if using Raspberry Pi camera)
 echo " Enabling camera interface..."
-raspi-config nonint do_camera 0
-
-# Enable camera auto-detection (for multiple CSI cameras)
-echo " Enabling camera auto-detection..."
-CONFIG_FILE="/boot/firmware/config.txt"
-if [ ! -f "$CONFIG_FILE" ]; then
-    CONFIG_FILE="/boot/config.txt"
-fi
-
-if [ -f "$CONFIG_FILE" ]; then
-    # Enable camera auto-detection if not already set
-    if ! grep -q "^camera_auto_detect=" "$CONFIG_FILE"; then
-        echo "camera_auto_detect=1" >> "$CONFIG_FILE"
-    else
-        sed -i 's/^camera_auto_detect=.*/camera_auto_detect=1/' "$CONFIG_FILE"
-    fi
-    echo "   Camera auto-detection enabled in $CONFIG_FILE"
-fi
+raspi-config nonint do_camera 1
 
 # Create udev rule for consistent device naming (optional)
 echo " Creating udev rule for camera devices..."
@@ -54,12 +41,5 @@ EOF
 udevadm control --reload-rules
 udevadm trigger
 
-echo ""
-echo " Setup complete!"
-echo ""
-echo " IMPORTANT: Reboot required for camera changes to take effect!"
-echo "   Camera interface and auto-detection changes require a reboot."
-echo ""
-echo " After reboot, verify cameras:"
-echo "   rpicam-still --list-cameras || libcamera-still --list-cameras"
-echo "   python3 scripts/camera_validator.py --auto-detect"
+echo "Setup complete! Please reboot for camera permissions to take effect."
+echo " After reboot, run: python3 camera_validator.py --check"

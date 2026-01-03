@@ -161,7 +161,8 @@ def get_system_info() -> Dict[str, Any]:
     )
 
     # Available commands
-    commands_to_check = ["libcamera-still", "vcgencmd", "v4l2-ctl"]
+    # Check for rpicam-still (newer) or libcamera-still (older)
+    commands_to_check = ["rpicam-still", "libcamera-still", "vcgencmd", "v4l2-ctl"]
     info["commands"] = {}
     for cmd in commands_to_check:
         info["commands"][cmd] = check_command_available(cmd)
@@ -222,7 +223,11 @@ def validate_system_requirements() -> Dict[str, Any]:
 
     # Check system tools
     requirements["v4l2_utils"] = check_command_available("v4l2-ctl")
-    requirements["libcamera"] = check_command_available("libcamera-still")
+    # Check for either rpicam-still (newer) or libcamera-still (older)
+    requirements["libcamera"] = (
+        check_command_available("rpicam-still") 
+        or check_command_available("libcamera-still")
+    )
 
     # Check camera devices
     camera_devices = get_camera_devices()

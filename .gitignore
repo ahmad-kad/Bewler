@@ -142,12 +142,6 @@ dmypy.json
 *.webm
 *.m4v
 
-# Calibration data
-calibrations/
-camera_calibration.yaml
-camera_calibration.json
-*.calib
-
 # Raspberry Pi specific
 __pycache__/opencv*
 opencv_python*.whl

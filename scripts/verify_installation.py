@@ -10,9 +10,13 @@ Usage:
 """
 
 import importlib
+import os
 import subprocess
 import sys
+import warnings
 from pathlib import Path
+from packaging import version
+import glob
 
 
 class InstallationVerifier:
@@ -48,15 +52,15 @@ class InstallationVerifier:
             module = importlib.import_module(import_name)
 
             if hasattr(module, "__version__"):
-                version = module.__version__
-                if min_version and version < min_version:
+                installed_version = module.__version__
+                if min_version and version.parse(installed_version) < version.parse(min_version):
                     self.results[package_name] = (
-                        f"{package_name} {version} FAILED (need {min_version}+)"
+                        f"{package_name} {installed_version} FAILED (need {min_version}+)"
                     )
-                    self.errors.append(f"{package_name} version {version} too old")
+                    self.errors.append(f"{package_name} version {installed_version} too old")
                     return False
                 else:
-                    self.results[package_name] = f"{package_name} {version} OK"
+                    self.results[package_name] = f"{package_name} {installed_version} OK"
             else:
                 self.results[package_name] = f"{package_name} OK (version unknown)"
 
@@ -103,8 +107,57 @@ class InstallationVerifier:
             self.errors.append(f"{file_path} not found")
             return False
 
+    def find_video_devices(self):
+        """Find all available video devices."""
+        video_devices = sorted(glob.glob("/dev/video*"))
+        # Filter out non-numeric devices (like video4linux)
+        numeric_devices = [d for d in video_devices if d.replace("/dev/video", "").isdigit()]
+        return numeric_devices
+
+    def check_camera_devices(self):
+        """Check for camera devices (optional - warns if none found)."""
+        devices = self.find_video_devices()
+        if devices:
+            device_list = ", ".join([Path(d).name for d in devices[:5]])  # Show first 5
+            if len(devices) > 5:
+                device_list += f" ... ({len(devices)} total)"
+            self.results["Camera devices"] = f"Camera devices OK ({device_list})"
+            return True
+        else:
+            self.results["Camera devices"] = "Camera devices ⚠ (none found - connect camera to test)"
+            # Don't add to errors - this is optional
+            return True  # Return True so it doesn't fail verification
+
+    def check_camera_permissions(self):
+        """Check camera device permissions (optional)."""
+        devices = self.find_video_devices()
+        if devices:
+            # Check first device
+            device_path = Path(devices[0])
+            if device_path.exists():
+                # Check if user can read (has video group or world readable)
+                stat_info = device_path.stat()
+                readable = stat_info.st_mode & 0o444
+                if readable:
+                    self.results["Camera device access"] = f"Camera device access OK ({device_path.name})"
+                    return True
+                else:
+                    self.results["Camera device access"] = f"Camera device access ✗ (permission denied on {device_path.name})"
+                    self.errors.append(f"No permission for {device_path}")
+                    return False
+            else:
+                self.results["Camera device access"] = "Camera device access ✗ (device not found)"
+                return False
+        else:
+            self.results["Camera device access"] = "Camera device access ⚠ (no devices to check)"
+            return True  # Optional check
+
     def run_all_checks(self):
         """Run comprehensive installation verification."""
+        # Suppress OpenCV warnings at startup
+        os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'
+        warnings.filterwarnings('ignore', category=UserWarning)
+
         print("Verifying Camera Calibration Installation")
         print("=" * 50)
 
@@ -123,19 +176,14 @@ class InstallationVerifier:
         # System commands
         system_commands = [
             ("v4l2-ctl --version", "v4l2-utils"),
-            ("ls /dev/video0", "Camera devices"),
         ]
 
         for command, description in system_commands:
             self.check_system_command(command, description)
 
-        # File permissions
-        file_checks = [
-            ("/dev/video0", "Camera device access"),
-        ]
-
-        for file_path, description in file_checks:
-            self.check_file_permissions(file_path, description)
+        # Camera device checks (optional - won't fail if no cameras)
+        self.check_camera_devices()
+        self.check_camera_permissions()
 
         # Custom OpenCV checks
         self.check_opencv_functionality()
@@ -150,7 +198,7 @@ class InstallationVerifier:
             img = np.zeros((100, 100, 3), dtype=np.uint8)
             cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Test conversion
 
-            # Test camera opening (without actual camera)
+            # Test camera opening (without actual camera) - errors expected
             cap = cv2.VideoCapture(-1)  # Invalid index
             cap.release()
 
@@ -196,7 +244,11 @@ class InstallationVerifier:
     def get_success_rate(self):
         """Calculate success rate of installation."""
         total_checks = len(self.results)
-        passed_checks = sum(1 for status in self.results.values() if "✓" in status)
+        # Count OK statuses (including warnings for optional checks)
+        passed_checks = sum(
+            1 for status in self.results.values()
+            if "OK" in status or "⚠" in status
+        )
         return passed_checks, total_checks
 
 

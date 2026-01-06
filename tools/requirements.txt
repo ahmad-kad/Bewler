@@ -4,7 +4,7 @@
 # Core computer vision - Pi Zero 2 W optimized (512MB RAM constraint)
 # Updated for Python 3.13 compatibility
 numpy>=2.0.0  # Python 3.13 compatible version
-opencv-python-headless>=4.8.0  # Headless for Pi Zero (no GUI)
+opencv-contrib-python-headless>=4.8.0  # Headless with contrib modules for aruco calibration
 
 # Optional: Enhanced OpenCV with extra modules (Pi 5 only)
 # opencv-contrib-python>=4.5.0

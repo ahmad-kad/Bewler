@@ -35,11 +35,9 @@ class CameraCalibrator:
         # ArUco dictionary for ChArUco boards
         self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         self.aruco_params = cv2.aruco.DetectorParameters()
-        # ChArUco board detector
+        # ChArUco board detector - created lazily when board parameters are known
         self.charuco_params = cv2.aruco.CharucoParameters()
-        self.detector = cv2.aruco.CharucoDetector(
-            self.aruco_dict, self.charuco_params, self.aruco_params
-        )
+        self.detector = None
 
     def detect_charuco_corners(
         self,
@@ -63,6 +61,11 @@ class CameraCalibrator:
         if img is None:
             print(f"Warning: Could not read image {image_path}")
             return None
+
+        # Create detector with appropriate board if not already created
+        if self.detector is None:
+            board = cv2.aruco.CharucoBoard(board_squares, 0.030, 0.018, self.aruco_dict)
+            self.detector = cv2.aruco.CharucoDetector(board, self.charuco_params, self.aruco_params)
 
         # Detect ChArUco board
         charuco_corners, charuco_ids, marker_corners, marker_ids = (

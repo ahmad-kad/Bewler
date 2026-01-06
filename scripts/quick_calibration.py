@@ -25,13 +25,16 @@ try:
 
     OPENCV_AVAILABLE = True
     # Check if GUI support is available (headless builds don't have highgui)
+    GUI_AVAILABLE = False
     try:
-        # Try to create and destroy a test window
-        cv2.namedWindow("__gui_test__", cv2.WINDOW_NORMAL)
-        cv2.destroyWindow("__gui_test__")
-        GUI_AVAILABLE = True
-    except (cv2.error, AttributeError):
-        # opencv-python-headless doesn't support GUI
+        # First check if highgui module is available
+        if hasattr(cv2, 'namedWindow') and hasattr(cv2, 'destroyWindow'):
+            # Try to create and destroy a test window
+            cv2.namedWindow("__gui_test__", cv2.WINDOW_NORMAL)
+            cv2.destroyWindow("__gui_test__")
+            GUI_AVAILABLE = True
+    except (cv2.error, AttributeError, Exception):
+        # opencv-python-headless doesn't support GUI, or other GUI issues
         GUI_AVAILABLE = False
 except ImportError:
     cv2 = None  # type: ignore
@@ -53,6 +56,9 @@ from utils.camera import (
     rename_calibration_file,
 )
 
+# Import charuco calibration library for better stability
+from charuco.calibrator import CameraCalibrator
+
 
 def calibrate_camera(
     camera_index: int = 0,
@@ -60,6 +66,7 @@ def calibrate_camera(
     auto_capture: bool = True,
     camera_name: Optional[str] = None,
     calibration_dir: str = "calibrations",
+    force_gui: bool = False,
 ) -> bool:
     """Calibrate single camera with visual feedback."""
 
@@ -85,7 +92,7 @@ def calibrate_camera(
     print(f"Calibrating Camera {camera_index} ({camera_name})")
     print("=" * 50)
 
-    # Open camera using robust helper
+    # Open camera using robust helper - optimize for smooth streaming
     from utils.camera import setup_camera_capture
     cap = setup_camera_capture(camera_index, width=1280, height=720, fps=30)
     
@@ -98,15 +105,17 @@ def calibrate_camera(
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     print(f"Resolution: {width}x{height}")
 
-    # Setup detection
-    aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+    # Setup detection using charuco library configuration for better stability
+    calibrator = CameraCalibrator()
 
-    # Try different board sizes based on detected marker IDs
     # User specified 6x8 board (48 markers, IDs 0-47)
     squares_x, squares_y = 6, 8  # 48 markers (IDs 0-47)
-    board = cv2.aruco.CharucoBoard((squares_x, squares_y), 0.030, 0.018, aruco_dict)
-    detector = cv2.aruco.ArucoDetector(aruco_dict, cv2.aruco.DetectorParameters())
-    charuco_detector = cv2.aruco.CharucoDetector(board)
+
+    # Create detectors for marker detection and charuco detection
+    board_squares = (squares_x, squares_y)
+    board = cv2.aruco.CharucoBoard(board_squares, 0.030, 0.018, calibrator.aruco_dict)
+    aruco_detector = cv2.aruco.ArucoDetector(calibrator.aruco_dict, calibrator.aruco_params)
+    charuco_detector = cv2.aruco.CharucoDetector(board, calibrator.charuco_params, calibrator.aruco_params)
 
     print(f"Using {squares_x}x{squares_y} ChArUco board for calibration (max {squares_x * squares_y} markers)")
     print("  Detected marker IDs in range suggest this board size")
@@ -116,9 +125,15 @@ def calibrate_camera(
     all_ids = []
     captured = 0
 
+    # Determine GUI mode
+    use_gui = GUI_AVAILABLE or force_gui
+    if force_gui and not GUI_AVAILABLE:
+        print("   Warning: GUI forced but GUI support not detected - may not work")
+
     print(f" Move ChArUco board around for {duration}s")
     print("   Auto-capture: ON" if auto_capture else "   Press SPACE to capture")
-    if GUI_AVAILABLE:
+    if use_gui:
+        print("   GUI preview: ENABLED")
         print("   Press Q to quit\n")
     else:
         print("   Running in headless mode (no preview window)")
@@ -130,9 +145,16 @@ def calibrate_camera(
     frame_count = 0
     last_capture_time = 0  # Track time of last successful capture
     capture_delay = 1.5  # Minimum seconds between captures
+    frame_skip_counter = 0  # For frame rate control
 
     try:
         while time.time() - start_time < duration and captured < 15:
+            # Frame rate control - process every 2nd frame for smoother performance
+            frame_skip_counter += 1
+            if frame_skip_counter % 2 != 0:
+                time.sleep(0.03)  # Brief pause to maintain timing
+                continue
+
             # Try to read a frame with retry logic for V4L2 stability
             ret = False
             frame = None
@@ -143,21 +165,6 @@ def calibrate_camera(
                 time.sleep(0.1)
 
             if not ret:
-                # #region agent log - Frame read failure
-                log_entry = {
-                    "timestamp": int(time.time() * 1000),
-                    "location": "quick_calibration.py:frame_read",
-                    "message": "Frame read failed after retries",
-                    "data": {"camera_index": camera_index, "frame_count": frame_count, "elapsed": time.time() - start_time},
-                    "sessionId": "debug-session",
-                    "runId": "calibration_debug",
-                    "hypothesisId": "frame_read_fail"
-                }
-                try:
-                    with open("/home/malaysia/Bewler/.cursor/debug.log", "a") as f:
-                        f.write(json.dumps(log_entry) + "\n")
-                except: pass
-                # #endregion
                 break
 
             frame_count += 1
@@ -165,41 +172,9 @@ def calibrate_camera(
             status = " Searching..."
             color = (0, 0, 255)  # Red
 
-            # #region agent log - Frame processing start
-            log_entry = {
-                "timestamp": int(time.time() * 1000),
-                "location": "quick_calibration.py:frame_process",
-                "message": "Processing frame",
-                "data": {"camera_index": camera_index, "frame_count": frame_count, "frame_shape": list(frame.shape) if frame is not None else None},
-                "sessionId": "debug-session",
-                "runId": "calibration_debug",
-                "hypothesisId": "frame_processing"
-            }
-            try:
-                with open("/home/malaysia/Bewler/.cursor/debug.log", "a") as f:
-                    f.write(json.dumps(log_entry) + "\n")
-            except: pass
-            # #endregion
-
-            # Detect markers
-            corners, ids, _ = detector.detectMarkers(frame)
+            # Detect markers using ArUco detector
+            corners, ids, _ = aruco_detector.detectMarkers(frame)
             marker_count = len(ids) if ids is not None else 0
-
-            # #region agent log - Marker detection results
-            log_entry = {
-                "timestamp": int(time.time() * 1000),
-                "location": "quick_calibration.py:marker_detect",
-                "message": "Marker detection results",
-                "data": {"camera_index": camera_index, "frame_count": frame_count, "marker_count": marker_count, "ids_found": ids.tolist() if ids is not None else None},
-                "sessionId": "debug-session",
-                "runId": "calibration_debug",
-                "hypothesisId": "marker_detection"
-            }
-            try:
-                with open("/home/malaysia/Bewler/.cursor/debug.log", "a") as f:
-                    f.write(json.dumps(log_entry) + "\n")
-            except: pass
-            # #endregion
 
             if ids is not None:
                 # Always attempt ChArUco board detection when we have markers
@@ -208,38 +183,7 @@ def calibrate_camera(
                         frame
                     )
                     charuco_corner_count = len(charuco_corners) if charuco_corners is not None else 0
-
-                    # #region agent log - ChArUco detection results
-                    log_entry = {
-                        "timestamp": int(time.time() * 1000),
-                        "location": "quick_calibration.py:charuco_detect",
-                        "message": "ChArUco detection results",
-                        "data": {"camera_index": camera_index, "frame_count": frame_count, "charuco_corners": charuco_corner_count, "charuco_ids_count": len(charuco_ids) if charuco_ids is not None else 0, "board_size": f"{squares_x}x{squares_y}"},
-                        "sessionId": "debug-session",
-                        "runId": "calibration_debug",
-                        "hypothesisId": "charuco_detection"
-                    }
-                    try:
-                        with open("/home/malaysia/Bewler/.cursor/debug.log", "a") as f:
-                            f.write(json.dumps(log_entry) + "\n")
-                    except: pass
-                    # #endregion
                 except Exception as e:
-                    # Log ChArUco detection errors
-                    log_entry = {
-                        "timestamp": int(time.time() * 1000),
-                        "location": "quick_calibration.py:charuco_error",
-                        "message": "ChArUco detection error",
-                        "data": {"camera_index": camera_index, "frame_count": frame_count, "error": str(e)},
-                        "sessionId": "debug-session",
-                        "runId": "calibration_debug",
-                        "hypothesisId": "charuco_error"
-                    }
-                    try:
-                        with open("/home/malaysia/Bewler/.cursor/debug.log", "a") as f:
-                            f.write(json.dumps(log_entry) + "\n")
-                    except: pass
-                    # #endregion
                     charuco_corners = None
                     charuco_ids = None
                     charuco_corner_count = 0
@@ -269,22 +213,6 @@ def calibrate_camera(
                                 should_capture = True
                                 capture_reason = "space_pressed"
 
-                    # #region agent log - Capture decision
-                    log_entry = {
-                        "timestamp": int(time.time() * 1000),
-                        "location": "quick_calibration.py:capture_decision",
-                        "message": "Capture decision made",
-                        "data": {"camera_index": camera_index, "frame_count": frame_count, "should_capture": should_capture, "reason": capture_reason, "current_captured": captured},
-                        "sessionId": "debug-session",
-                        "runId": "calibration_debug",
-                        "hypothesisId": "capture_logic"
-                    }
-                    try:
-                        with open("/home/malaysia/Bewler/.cursor/debug.log", "a") as f:
-                            f.write(json.dumps(log_entry) + "\n")
-                    except: pass
-                    # #endregion
-
                     if should_capture:
                         all_corners.append(charuco_corners)
                         all_ids.append(charuco_ids)
@@ -301,41 +229,27 @@ def calibrate_camera(
                     status = f" {marker_count} markers (need board pattern)"
                     color = (0, 165, 255)  # Orange
             else:
-                # #region agent log - No markers found
-                log_entry = {
-                    "timestamp": int(time.time() * 1000),
-                    "location": "quick_calibration.py:no_markers",
-                    "message": "No markers detected in frame",
-                    "data": {"camera_index": camera_index, "frame_count": frame_count},
-                    "sessionId": "debug-session",
-                    "runId": "calibration_debug",
-                    "hypothesisId": "no_markers_found"
-                }
-                try:
-                    with open("/home/malaysia/Bewler/.cursor/debug.log", "a") as f:
-                        f.write(json.dumps(log_entry) + "\n")
-                except: pass
-                # #endregion
+                pass
 
-            # Visual feedback overlay
-            overlay = frame.copy()
-            cv2.rectangle(overlay, (10, 10), (400, 120), (0, 0, 0), -1)
-            cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
+            # Visual feedback overlay - use separate display frame to prevent artifacts
+            display_frame = frame.copy()
+            cv2.rectangle(display_frame, (10, 10), (400, 120), (0, 0, 0), -1)
+            cv2.addWeighted(display_frame, 0.7, frame, 0.3, 0, display_frame)
 
             # Status
             cv2.putText(
-                frame, status, (20, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2
+                display_frame, status, (20, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2
             )
 
             # Progress bar
             progress = min(captured / 15, 1.0)
             bar_width = int(progress * 360)
-            cv2.rectangle(frame, (20, 50), (20 + bar_width, 60), color, -1)
-            cv2.rectangle(frame, (20, 50), (380, 60), (64, 64, 64), 2)
+            cv2.rectangle(display_frame, (20, 50), (20 + bar_width, 60), color, -1)
+            cv2.rectangle(display_frame, (20, 50), (380, 60), (64, 64, 64), 2)
 
             # Stats
             cv2.putText(
-                frame,
+                display_frame,
                 f"Frames: {captured}/15",
                 (20, 85),
                 cv2.FONT_HERSHEY_SIMPLEX,
@@ -345,7 +259,7 @@ def calibrate_camera(
             )
             time_left = int(duration - (time.time() - start_time))
             cv2.putText(
-                frame,
+                display_frame,
                 f"Time: {time_left}s",
                 (20, 105),
                 cv2.FONT_HERSHEY_SIMPLEX,
@@ -354,39 +268,23 @@ def calibrate_camera(
                 1,
             )
 
-            if GUI_AVAILABLE:
+            if use_gui:
                 try:
-                    cv2.imshow(f"Camera {camera_index}", frame)
+                    cv2.imshow(f"Camera {camera_index}", display_frame)
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
-                except cv2.error:
+                except cv2.error as e:
                     # GUI not actually available despite check
-                    # GUI_AVAILABLE is already False from module initialization
-                    print("  Warning: GUI not available, switching to headless mode")
+                    print(f"  Warning: GUI display failed ({e}), switching to headless mode")
+                    use_gui = False
             else:
                 # Headless mode: print status periodically
                 if frame_count % 30 == 0:  # Print every 30 frames (~1 second at 30fps)
                     print(f"  Status: {status.strip()} | Captured: {captured}/15 | Time: {time_left}s")
 
-            # #region agent log - Frame processing complete
-            log_entry = {
-                "timestamp": int(time.time() * 1000),
-                "location": "quick_calibration.py:frame_complete",
-                "message": "Frame processing complete",
-                "data": {"camera_index": camera_index, "frame_count": frame_count, "final_status": status.strip(), "total_captured": captured, "time_left": time_left},
-                "sessionId": "debug-session",
-                "runId": "calibration_debug",
-                "hypothesisId": "frame_completion"
-            }
-            try:
-                with open("/home/malaysia/Bewler/.cursor/debug.log", "a") as f:
-                    f.write(json.dumps(log_entry) + "\n")
-            except: pass
-            # #endregion
-
     finally:
         cap.release()
-        if GUI_AVAILABLE:
+        if use_gui:
             try:
                 cv2.destroyAllWindows()
             except cv2.error:
@@ -396,70 +294,71 @@ def calibrate_camera(
         print(f" Only {captured} frames (need 5+)")
         return False
 
-    # Calibrate
+    # Calibrate using proper ChArUco calibration
     print(" Computing calibration...")
     try:
         if len(all_corners) == 0 or len(all_ids) == 0:
             print(" No valid calibration data")
             return False
 
-        # Prepare data for standard camera calibration
-        obj_points = []  # 3D points in world coordinates
-        img_points = []  # 2D points in image coordinates
+        # Validate and filter calibration data
+        valid_corners = []
+        valid_ids = []
 
-        for corners, ids in zip(all_corners, all_ids):
-            if corners is not None and ids is not None and len(corners) > 0:
-                # Get 3D object points for these ChArUco corners
-                board_corners = board.getChessboardCorners()
-                # Filter to only the detected corner IDs
-                detected_obj_pts = board_corners[ids.flatten()]
-                obj_points.append(detected_obj_pts.astype(np.float32))
-                img_points.append(corners.astype(np.float32))
+        for i, (corners, ids) in enumerate(zip(all_corners, all_ids)):
+            # Ensure corners and ids are valid numpy arrays
+            if corners is not None and ids is not None and len(corners) >= 6:
+                # Ensure correct shapes for calibrateCameraCharucoExtended
+                # Corners should be (N, 1, 2) and IDs should be (N, 1)
+                if len(corners.shape) == 2:
+                    corners = corners.reshape(-1, 1, 2)
+                if len(ids.shape) == 1:
+                    ids = ids.reshape(-1, 1)
 
-        if len(obj_points) == 0 or len(img_points) == 0:
-            print(" No valid calibration data after processing")
+                valid_corners.append(corners.astype(np.float32))
+                valid_ids.append(ids.astype(np.int32))
+            else:
+                if corners is not None:
+                    print(f"  Warning: Skipping frame {i+1} with only {len(corners)} corners (need 6+)")
+
+        if len(valid_corners) < 5:
+            print(f" Not enough valid frames for calibration (need 5+, got {len(valid_corners)})")
             return False
 
-        # Calibrate camera using standard calibration
-        # Initialize camera matrix with reasonable defaults
-        focal_length = width * 0.8  # Rough estimate based on field of view
-        camera_matrix = np.array([
-            [focal_length, 0, width/2],
-            [0, focal_length, height/2],
-            [0, 0, 1]
-        ], dtype=np.float32)
-        dist_coeffs = np.zeros((5, 1), dtype=np.float32)
+        print(f"  Using {len(valid_corners)} valid frames out of {len(all_corners)} captured")
 
-        ret, camera_matrix, dist_coeffs, _, _ = cv2.calibrateCamera(
-            obj_points, img_points, (width, height), camera_matrix, dist_coeffs,
-            flags=cv2.CALIB_USE_INTRINSIC_GUESS
-        )
+        # Use the dedicated ChArUco calibration function with error estimation
+        # This is the proper implementation for ChArUco boards
+        try:
+            ret, camera_matrix, dist_coeffs, rvecs, tvecs, _, _, per_view_errors = cv2.aruco.calibrateCameraCharucoExtended(
+                valid_corners, valid_ids, board, (width, height), None, None
+            )
+        except cv2.error as e:
+            print(f" OpenCV calibration error: {e}")
+            return False
 
         if not ret:
             print(" Calibration failed")
             return False
 
-        # Calculate reprojection error
-        total_error = 0
-        for i, (obj_pts, img_pts) in enumerate(zip(obj_points, img_points)):
-            img_pts_projected, _ = cv2.projectPoints(obj_pts, np.zeros((3, 1)), np.zeros((3, 1)), camera_matrix, dist_coeffs)
-            error = cv2.norm(img_pts, img_pts_projected, cv2.NORM_L2) / len(img_pts_projected)
-            total_error += error
-
-        reprojection_error = total_error / len(obj_points)
+        # Calculate average reprojection error
+        reprojection_error = np.mean(per_view_errors) if len(per_view_errors) > 0 else float("inf")
 
         # Prepare calibration data
+        total_points = sum(len(c) for c in valid_corners)
         calib_data = {
             "camera_index": camera_index,
             "sensor": sensor,
             "camera_matrix": camera_matrix.tolist(),
-            "distortion_coefficients": dist_coeffs.flatten().tolist(),
+            "distortion_coefficients": dist_coeffs.tolist(),
             "image_width": width,
             "image_height": height,
-            "frames_used": captured,
-            "reprojection_error": reprojection_error,
+            "frames_used": len(valid_corners),
+            "frames_captured": captured,
+            "total_points_used": total_points,
+            "reprojection_error": float(reprojection_error),
             "opencv_version": cv2.__version__,
-            "calibration_method": "charuco_manual",
+            "calibration_method": "charuco_extended_proper",
         }
 
         # Save calibration file
@@ -571,6 +470,11 @@ Files saved as: calibrations/{camera_name}.json
         metavar=("OLD_NAME", "NEW_NAME"),
         help="Rename a camera calibration file",
     )
+    parser.add_argument(
+        "--force-gui",
+        action="store_true",
+        help="Force GUI mode even if GUI support detection fails",
+    )
 
     args = parser.parse_args()
 
@@ -601,6 +505,7 @@ Files saved as: calibrations/{camera_name}.json
             auto_capture=auto_capture,
             camera_name=args.name,
             calibration_dir=args.calibration_dir,
+            force_gui=args.force_gui,
         )
 
     exit(0 if success else 1)

@@ -375,7 +375,7 @@ class CameraCalibrator:
             except Exception as e:
                 print(f" Undistortion test failed: {e}")
         else:
-            print("⚠ No test image provided for undistortion validation")
+            print("[WARNING] No test image provided for undistortion validation")
 
         return validation_results
 

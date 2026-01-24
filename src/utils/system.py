@@ -138,9 +138,9 @@ def list_camera_devices() -> None:
                 else:
                     print("      (Could not query device info)")
         else:
-            print("❌ No video devices found in /dev/")
+            print("[ERROR] No video devices found in /dev/")
     except Exception as e:
-        print(f"❌ Error scanning devices: {e}")
+        print(f"[ERROR] Error scanning devices: {e}")
 
     print()
 

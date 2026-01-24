@@ -109,20 +109,20 @@ libcamera-vid -t 5000 -o test.h264
 ## When Do You Need libcamera?
 
 ### Required For:
-- ✅ **Raspberry Pi Camera Modules** (CSI interface)
+- **Raspberry Pi Camera Modules** (CSI interface)
   - Camera v1 (OV5647)
   - Camera v2 (IMX219)
   - Camera v3 (IMX708)
   - HQ Camera (IMX477)
 
 ### Not Required For:
-- ❌ **USB cameras** (use V4L2 directly via OpenCV)
-- ❌ **Legacy camera applications** (use old `raspistill`/`raspivid` if still available)
+- **USB cameras** (use V4L2 directly via OpenCV)
+- **Legacy camera applications** (use old `raspistill`/`raspivid` if still available)
 
 ### Recommended For:
-- ✅ **Sensor detection** (this project's `detect_camera_sensor()` function)
-- ✅ **Hardware-accelerated encoding** (H.264 video)
-- ✅ **Modern camera features** (better performance, more control)
+- **Sensor detection** (this project's `detect_camera_sensor()` function)
+- **Hardware-accelerated encoding** (H.264 video)
+- **Modern camera features** (better performance, more control)
 
 ---
 

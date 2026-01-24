@@ -120,7 +120,7 @@ calibration/camera/
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Raspberry Pi CSI Camera Setup
 

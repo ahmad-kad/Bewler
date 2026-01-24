@@ -38,7 +38,7 @@ class InstallationVerifier:
             return True
         else:
             self.results["python_version"] = (
-                f"Python {version.major}.{version.minor}.{version.micro} ✗ (need 3.8+)"
+                f"Python {version.major}.{version.minor}.{version.micro} FAILED (need 3.8+)"
             )
             self.errors.append(f"Python {required[0]}.{required[1]}+ required")
             return False
@@ -67,7 +67,7 @@ class InstallationVerifier:
             return True
 
         except ImportError:
-            self.results[package_name] = f"{package_name} ✗ (not installed)"
+            self.results[package_name] = f"{package_name} FAILED (not installed)"
             self.errors.append(f"{package_name} not installed")
             return False
 
@@ -81,11 +81,11 @@ class InstallationVerifier:
                 self.results[description] = f"{description} OK"
                 return True
             else:
-                self.results[description] = f"{description} ✗"
+                self.results[description] = f"{description} FAILED"
                 self.errors.append(f"{description} failed")
                 return False
         except (subprocess.TimeoutExpired, FileNotFoundError):
-            self.results[description] = f"{description} ✗ (not found)"
+            self.results[description] = f"{description} FAILED (not found)"
             self.errors.append(f"{description} not available")
             return False
 
@@ -99,11 +99,11 @@ class InstallationVerifier:
                 self.results[description] = f"{description} OK"
                 return True
             else:
-                self.results[description] = f"{description} ✗ (permission denied)"
+                self.results[description] = f"{description} FAILED (permission denied)"
                 self.errors.append(f"No permission for {file_path}")
                 return False
         else:
-            self.results[description] = f"{description} ✗ (not found)"
+            self.results[description] = f"{description} FAILED (not found)"
             self.errors.append(f"{file_path} not found")
             return False
 
@@ -124,7 +124,7 @@ class InstallationVerifier:
             self.results["Camera devices"] = f"Camera devices OK ({device_list})"
             return True
         else:
-            self.results["Camera devices"] = "Camera devices ⚠ (none found - connect camera to test)"
+            self.results["Camera devices"] = "Camera devices WARNING (none found - connect camera to test)"
             # Don't add to errors - this is optional
             return True  # Return True so it doesn't fail verification
 
@@ -142,14 +142,14 @@ class InstallationVerifier:
                     self.results["Camera device access"] = f"Camera device access OK ({device_path.name})"
                     return True
                 else:
-                    self.results["Camera device access"] = f"Camera device access ✗ (permission denied on {device_path.name})"
+                    self.results["Camera device access"] = f"Camera device access FAILED (permission denied on {device_path.name})"
                     self.errors.append(f"No permission for {device_path}")
                     return False
             else:
-                self.results["Camera device access"] = "Camera device access ✗ (device not found)"
+                self.results["Camera device access"] = "Camera device access FAILED (device not found)"
                 return False
         else:
-            self.results["Camera device access"] = "Camera device access ⚠ (no devices to check)"
+            self.results["Camera device access"] = "Camera device access WARNING (no devices to check)"
             return True  # Optional check
 
     def run_all_checks(self):
@@ -227,7 +227,7 @@ class InstallationVerifier:
             for error in self.errors:
                 print(f"   • {error}")
 
-            print("\n🔧 FIXES:")
+            print("\nFIXES:")
             print("   1. Run: python3 camera_validator.py --setup")
             print("   2. Run: sudo bash setup_cameras.sh")
             print("   3. Reboot: sudo reboot")
@@ -247,7 +247,7 @@ class InstallationVerifier:
         # Count OK statuses (including warnings for optional checks)
         passed_checks = sum(
             1 for status in self.results.values()
-            if "OK" in status or "⚠" in status
+            if "OK" in status or "WARNING" in status
         )
         return passed_checks, total_checks
 
@@ -259,7 +259,7 @@ def main():
     verifier.print_report()
 
     passed, total = verifier.get_success_rate()
-    print(f"\n📈 Success Rate: {passed}/{total} checks passed")
+    print(f"\nSuccess Rate: {passed}/{total} checks passed")
 
     # Exit with appropriate code
     sys.exit(0 if passed == total else 1)

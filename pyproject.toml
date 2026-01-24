@@ -1,0 +1,154 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bewler"
+version = "1.0.0"
+description = "URC 2026 Camera Calibration and ArUco Detection System"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "URC 2026 Autonomy Team"}
+]
+keywords = ["aruco", "camera", "calibration", "computer-vision", "robotics", "urc"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+
+dependencies = [
+    "numpy>=2.0.0",
+    "opencv-contrib-python-headless>=4.8.0",
+    "packaging>=21.0",
+    "Pillow>=9.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=22.0.0",
+    "flake8>=4.0.0",
+    "mypy>=0.950",
+]
+
+ros2 = [
+    # ROS 2 dependencies - install via system package manager or ROS 2 workspace
+    # rclpy>=3.0.0
+    # cv-bridge>=3.2.0
+    # sensor-msgs
+    # vision-msgs
+    # tf2-ros
+]
+
+full = [
+    "bewler[dev]",
+    # Note: ROS 2 dependencies should be installed via system package manager
+    # or ROS 2 workspace, not via pip
+]
+
+[project.urls]
+Homepage = "https://github.com/urc2026/bewler"
+Documentation = "https://github.com/urc2026/bewler/docs"
+Repository = "https://github.com/urc2026/bewler"
+Issues = "https://github.com/urc2026/bewler/issues"
+
+[project.scripts]
+aruco-servoing = "src.aruco.servoing:main"
+aruco-generate = "src.aruco.generator:main"
+aruco-validate = "src.aruco.validator:main"
+charuco-generate = "src.charuco.generator:main"
+charuco-calibrate = "src.charuco.calibrator:main"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.yaml", "*.yml"]
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "cv2.*",
+    "numpy.*",
+    "rclpy.*",
+    "sensor_msgs.*",
+    "vision_msgs.*",
+    "tf2_ros.*",
+    "cv_bridge.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "requires_camera: marks tests that require a camera",
+    "requires_ros2: marks tests that require ROS 2",
+]
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "E266", "E501", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    "venv",
+    ".eggs",
+    "*.egg",
+]
